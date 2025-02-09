@@ -1,0 +1,10 @@
+{
+  "python.linting.enabled": true,            // Habilita el linting en VS Code
+  "python.linting.flake8Enabled": true,      // Indica que Flake8 será el linter principal
+  "python.linting.lintOnSave": true,         // Ejecuta el linter cada vez que guardes el archivo
+  "python.linting.flake8Args": [             // Opciones personalizadas para Flake8
+    "--max-line-length=88"                   // Permite líneas de código de hasta 88 caracteres
+  ],
+  "python.formatting.provider": "black",  // Establece Black como el formateador principal
+  "editor.formatOnSave": true            // Formatea automáticamente al guardar
+}

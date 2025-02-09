@@ -1,0 +1,12 @@
+fastapi==0.112.2
+fastapi-cli==0.0.5
+pydantic==2.8.2
+pydantic-extra-types==2.9.0
+pydantic-settings==2.4.0
+pydantic_core==2.20.1
+SQLAlchemy==2.0.34
+sqlmodel==0.0.22
+psycopg2-binary==2.9.9
+uvicorn==0.30.6
+flake8==7.1.1
+alembic==1.13.3
