@@ -45,35 +45,19 @@ CREATE TABLE actions (
     habit_id UUID NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE,
-    
-    -- Computed duration for fast queries
-    duration_seconds INTEGER GENERATED ALWAYS AS (
-        CASE 
-            WHEN end_time IS NOT NULL THEN 
-                EXTRACT(EPOCH FROM (end_time - start_time))::INTEGER
-            ELSE NULL
-        END
-    ) STORED,
-    
-    -- Date partition helper (for potential partitioning)
-    action_date DATE GENERATED ALWAYS AS (start_time::DATE) STORED,
-    
-    -- Audit fields
+    duration_seconds INTEGER,
+    action_date DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    
-    -- Foreign key constraints
-    CONSTRAINT fk_actions_habit_id 
-        FOREIGN KEY (habit_id) REFERENCES habits(id) 
+    CONSTRAINT fk_actions_habit_id
+        FOREIGN KEY (habit_id) REFERENCES habits(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    
-    -- Business logic constraints
     CONSTRAINT actions_time_sequence CHECK (
         end_time IS NULL OR end_time > start_time
     ),
     CONSTRAINT actions_reasonable_duration CHECK (
-        end_time IS NULL OR 
-        EXTRACT(EPOCH FROM (end_time - start_time)) <= 86400 -- Max 24 hours
+        end_time IS NULL OR
+        EXTRACT(EPOCH FROM (end_time - start_time)) <= 86400
     ),
     CONSTRAINT actions_start_time_not_future CHECK (
         start_time <= CURRENT_TIMESTAMP
@@ -331,6 +315,25 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_book_stats_trigger
     AFTER INSERT OR DELETE ON reading_logs
     FOR EACH ROW EXECUTE FUNCTION update_book_stats();
+
+-- Trigger to set action fields (date and duration)
+
+CREATE OR REPLACE FUNCTION set_action_fields()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.action_date := NEW.start_time::DATE;
+  IF NEW.end_time IS NOT NULL THEN
+    NEW.duration_seconds := EXTRACT(EPOCH FROM (NEW.end_time - NEW.start_time))::INTEGER;
+  ELSE
+    NEW.duration_seconds := NULL;
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER set_action_fields_trigger
+BEFORE INSERT OR UPDATE ON actions
+FOR EACH ROW
+EXECUTE FUNCTION set_action_fields();
 
 -- =========================================
 -- VIEWS FOR COMMON QUERIES
