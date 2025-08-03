@@ -1,0 +1,539 @@
+-- =========================================
+-- OPTIMIZED POSTGRESQL SCHEMA
+-- Habit Tracking Application
+-- =========================================
+
+-- Enable UUID extension for UUID generation
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Enable pg_stat_statements for query performance monitoring
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+
+-- Create custom ENUM types
+CREATE TYPE habit_complexity AS ENUM ('Complex', 'Simple', 'Without Intervals');
+
+-- =========================================
+-- CORE TABLES
+-- =========================================
+
+-- HABITS TABLE
+-- Stores habit definitions with metadata and audit trail
+CREATE TABLE habits (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(50) NOT NULL,
+    habit_type habit_complexity NOT NULL,
+    logo TEXT, -- Base64 encoded image or URL
+    
+    -- Audit fields
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    is_active BOOLEAN DEFAULT true NOT NULL,
+    
+    -- Computed fields for analytics
+    total_actions_count INTEGER DEFAULT 0 NOT NULL,
+    last_action_date TIMESTAMP WITH TIME ZONE,
+    
+    -- Constraints
+    CONSTRAINT habits_name_not_empty CHECK (LENGTH(TRIM(name)) > 0),
+    CONSTRAINT habits_logo_size CHECK (LENGTH(logo) <= 2097152) -- 2MB limit for base64 images
+);
+
+-- ACTIONS TABLE  
+-- Time-tracked activities with optimizations for time-series queries
+CREATE TABLE actions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    habit_id UUID NOT NULL,
+    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_time TIMESTAMP WITH TIME ZONE,
+    
+    -- Computed duration for fast queries
+    duration_seconds INTEGER GENERATED ALWAYS AS (
+        CASE 
+            WHEN end_time IS NOT NULL THEN 
+                EXTRACT(EPOCH FROM (end_time - start_time))::INTEGER
+            ELSE NULL
+        END
+    ) STORED,
+    
+    -- Date partition helper (for potential partitioning)
+    action_date DATE GENERATED ALWAYS AS (start_time::DATE) STORED,
+    
+    -- Audit fields
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    
+    -- Foreign key constraints
+    CONSTRAINT fk_actions_habit_id 
+        FOREIGN KEY (habit_id) REFERENCES habits(id) 
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    
+    -- Business logic constraints
+    CONSTRAINT actions_time_sequence CHECK (
+        end_time IS NULL OR end_time > start_time
+    ),
+    CONSTRAINT actions_reasonable_duration CHECK (
+        end_time IS NULL OR 
+        EXTRACT(EPOCH FROM (end_time - start_time)) <= 86400 -- Max 24 hours
+    ),
+    CONSTRAINT actions_start_time_not_future CHECK (
+        start_time <= CURRENT_TIMESTAMP
+    )
+);
+
+-- BOOKS TABLE
+-- Book catalog with reading progress tracking
+CREATE TABLE books (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) NOT NULL,
+    image TEXT, -- Book cover image
+    total_pages INTEGER NOT NULL,
+    current_page INTEGER DEFAULT 0 NOT NULL,
+    average_of_characters_per_minute FLOAT,
+    
+    -- Additional metadata for better tracking
+    author VARCHAR(100),
+    genre VARCHAR(50),
+    
+    -- Progress tracking (computed)
+    completion_percentage DECIMAL(5,2) GENERATED ALWAYS AS (
+        CASE 
+            WHEN total_pages > 0 THEN 
+                ROUND((current_page::DECIMAL / total_pages::DECIMAL) * 100, 2)
+            ELSE 0
+        END
+    ) STORED,
+    
+    -- Reading statistics (updated via triggers)
+    total_reading_sessions INTEGER DEFAULT 0 NOT NULL,
+    total_characters_read BIGINT DEFAULT 0 NOT NULL,
+    average_session_duration INTEGER DEFAULT 0 NOT NULL, -- in seconds
+    
+    -- Audit fields
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    is_active BOOLEAN DEFAULT true NOT NULL,
+    
+    -- Constraints
+    CONSTRAINT books_name_not_empty CHECK (LENGTH(TRIM(name)) > 0),
+    CONSTRAINT books_pages_positive CHECK (total_pages > 0),
+    CONSTRAINT books_current_page_valid CHECK (
+        current_page >= 0 AND current_page <= total_pages
+    ),
+    CONSTRAINT books_image_size CHECK (LENGTH(image) <= 2097152), -- 2MB limit
+    CONSTRAINT books_reading_rate_positive CHECK (
+        average_of_characters_per_minute IS NULL OR 
+        average_of_characters_per_minute > 0
+    )
+);
+
+-- READING_LOGS TABLE
+-- Detailed reading session tracking with performance optimizations
+CREATE TABLE reading_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    action_id UUID NOT NULL UNIQUE, -- One reading log per action
+    book_id UUID NOT NULL,
+    
+    -- Reading metrics
+    number_of_characters INTEGER NOT NULL,
+    breaths INTEGER NOT NULL,
+    number_of_characters_per_minute FLOAT NOT NULL,
+    number_of_breaths_per_minute FLOAT NOT NULL,
+    using_voice BOOLEAN DEFAULT false NOT NULL,
+    
+    -- Derived fields for analytics
+    reading_date DATE GENERATED ALWAYS AS (
+        (SELECT start_time::DATE FROM actions WHERE actions.id = action_id)
+    ) STORED,
+    session_duration_seconds INTEGER,
+    
+    -- Quality metrics
+    reading_efficiency DECIMAL(5,2) GENERATED ALWAYS AS (
+        CASE 
+            WHEN number_of_breaths_per_minute > 0 THEN
+                ROUND((number_of_characters_per_minute / number_of_breaths_per_minute), 2)
+            ELSE NULL
+        END
+    ) STORED,
+    
+    -- Audit fields
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    
+    -- Foreign key constraints
+    CONSTRAINT fk_reading_logs_action_id 
+        FOREIGN KEY (action_id) REFERENCES actions(id) 
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_reading_logs_book_id 
+        FOREIGN KEY (book_id) REFERENCES books(id) 
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    
+    -- Business logic constraints
+    CONSTRAINT reading_logs_characters_positive CHECK (number_of_characters > 0),
+    CONSTRAINT reading_logs_breaths_positive CHECK (breaths > 0),
+    CONSTRAINT reading_logs_char_rate_positive CHECK (number_of_characters_per_minute > 0),
+    CONSTRAINT reading_logs_breath_rate_positive CHECK (number_of_breaths_per_minute > 0),
+    CONSTRAINT reading_logs_reasonable_char_rate CHECK (
+        number_of_characters_per_minute <= 10000 -- Max reasonable reading speed
+    ),
+    CONSTRAINT reading_logs_reasonable_breath_rate CHECK (
+        number_of_breaths_per_minute BETWEEN 0 AND 60 -- Reasonable breathing range
+    )
+);
+
+-- =========================================
+-- PERFORMANCE INDEXES
+-- =========================================
+
+-- HABITS TABLE INDEXES
+CREATE UNIQUE INDEX idx_habits_name_active ON habits(name) WHERE is_active = true;
+CREATE INDEX idx_habits_type_active ON habits(habit_type, is_active) WHERE is_active = true;
+CREATE INDEX idx_habits_created_at ON habits(created_at);
+CREATE INDEX idx_habits_last_action ON habits(last_action_date DESC) WHERE last_action_date IS NOT NULL;
+
+-- ACTIONS TABLE INDEXES (Critical for time-series queries)
+CREATE INDEX idx_actions_habit_id ON actions(habit_id);
+CREATE INDEX idx_actions_start_time ON actions(start_time DESC);
+CREATE INDEX idx_actions_date ON actions(action_date);
+
+-- Composite indexes for common query patterns
+CREATE INDEX idx_actions_habit_date ON actions(habit_id, action_date);
+CREATE INDEX idx_actions_habit_start_time ON actions(habit_id, start_time DESC);
+CREATE INDEX idx_actions_date_range ON actions(start_time, end_time) WHERE end_time IS NOT NULL;
+
+-- Duration-based queries
+CREATE INDEX idx_actions_duration ON actions(duration_seconds) WHERE duration_seconds IS NOT NULL;
+CREATE INDEX idx_actions_habit_duration ON actions(habit_id, duration_seconds) WHERE duration_seconds IS NOT NULL;
+
+-- BOOKS TABLE INDEXES
+CREATE INDEX idx_books_name ON books(name) WHERE is_active = true;
+CREATE INDEX idx_books_completion ON books(completion_percentage);
+CREATE INDEX idx_books_author ON books(author) WHERE author IS NOT NULL;
+CREATE INDEX idx_books_genre ON books(genre) WHERE genre IS NOT NULL;
+CREATE INDEX idx_books_total_sessions ON books(total_reading_sessions DESC);
+
+-- READING_LOGS TABLE INDEXES
+CREATE INDEX idx_reading_logs_book_id ON reading_logs(book_id);
+CREATE INDEX idx_reading_logs_date ON reading_logs(reading_date);
+CREATE INDEX idx_reading_logs_book_date ON reading_logs(book_id, reading_date);
+
+-- Performance analytics indexes
+CREATE INDEX idx_reading_logs_char_rate ON reading_logs(number_of_characters_per_minute);
+CREATE INDEX idx_reading_logs_efficiency ON reading_logs(reading_efficiency) WHERE reading_efficiency IS NOT NULL;
+CREATE INDEX idx_reading_logs_voice ON reading_logs(using_voice, book_id);
+
+-- Partial index for recent reading sessions (last 30 days)
+CREATE INDEX idx_reading_logs_recent ON reading_logs(book_id, reading_date) 
+WHERE reading_date >= CURRENT_DATE - INTERVAL '30 days';
+
+-- =========================================
+-- TRIGGERS FOR DATA CONSISTENCY
+-- =========================================
+
+-- Update timestamps trigger function
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Apply updated_at triggers to all tables
+CREATE TRIGGER update_habits_updated_at 
+    BEFORE UPDATE ON habits 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_actions_updated_at 
+    BEFORE UPDATE ON actions 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_books_updated_at 
+    BEFORE UPDATE ON books 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_reading_logs_updated_at 
+    BEFORE UPDATE ON reading_logs 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Trigger to update habit statistics
+CREATE OR REPLACE FUNCTION update_habit_stats()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        UPDATE habits SET 
+            total_actions_count = total_actions_count + 1,
+            last_action_date = NEW.start_time
+        WHERE id = NEW.habit_id;
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        UPDATE habits SET 
+            total_actions_count = GREATEST(total_actions_count - 1, 0),
+            last_action_date = (
+                SELECT MAX(start_time) 
+                FROM actions 
+                WHERE habit_id = OLD.habit_id AND id != OLD.id
+            )
+        WHERE id = OLD.habit_id;
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_habit_stats_trigger
+    AFTER INSERT OR DELETE ON actions
+    FOR EACH ROW EXECUTE FUNCTION update_habit_stats();
+
+-- Trigger to update book reading statistics
+CREATE OR REPLACE FUNCTION update_book_stats()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        -- Update session duration from action table
+        UPDATE reading_logs SET 
+            session_duration_seconds = (
+                SELECT duration_seconds 
+                FROM actions 
+                WHERE id = NEW.action_id
+            )
+        WHERE id = NEW.id;
+        
+        -- Update book statistics
+        UPDATE books SET 
+            total_reading_sessions = total_reading_sessions + 1,
+            total_characters_read = total_characters_read + NEW.number_of_characters,
+            average_session_duration = (
+                SELECT AVG(COALESCE(rl.session_duration_seconds, 0))::INTEGER
+                FROM reading_logs rl
+                WHERE rl.book_id = NEW.book_id
+            )
+        WHERE id = NEW.book_id;
+        
+        RETURN NEW;
+    ELSIF TG_OP = 'DELETE' THEN
+        -- Update book statistics on deletion
+        UPDATE books SET 
+            total_reading_sessions = GREATEST(total_reading_sessions - 1, 0),
+            total_characters_read = GREATEST(total_characters_read - OLD.number_of_characters, 0),
+            average_session_duration = (
+                SELECT COALESCE(AVG(rl.session_duration_seconds)::INTEGER, 0)
+                FROM reading_logs rl
+                WHERE rl.book_id = OLD.book_id AND rl.id != OLD.id
+            )
+        WHERE id = OLD.book_id;
+        
+        RETURN OLD;
+    END IF;
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_book_stats_trigger
+    AFTER INSERT OR DELETE ON reading_logs
+    FOR EACH ROW EXECUTE FUNCTION update_book_stats();
+
+-- =========================================
+-- VIEWS FOR COMMON QUERIES
+-- =========================================
+
+-- Reading progress summary view
+CREATE VIEW reading_progress_summary AS
+SELECT 
+    b.id as book_id,
+    b.name as book_name,
+    b.author,
+    b.current_page,
+    b.total_pages,
+    b.completion_percentage,
+    b.total_reading_sessions,
+    b.total_characters_read,
+    b.average_session_duration,
+    COALESCE(recent_stats.avg_char_rate, 0) as recent_avg_char_rate,
+    COALESCE(recent_stats.avg_breath_rate, 0) as recent_avg_breath_rate,
+    recent_stats.last_session_date
+FROM books b
+LEFT JOIN (
+    SELECT 
+        book_id,
+        AVG(number_of_characters_per_minute) as avg_char_rate,
+        AVG(number_of_breaths_per_minute) as avg_breath_rate,
+        MAX(reading_date) as last_session_date
+    FROM reading_logs 
+    WHERE reading_date >= CURRENT_DATE - INTERVAL '30 days'
+    GROUP BY book_id
+) recent_stats ON b.id = recent_stats.book_id
+WHERE b.is_active = true;
+
+-- Habit activity summary view
+CREATE VIEW habit_activity_summary AS
+SELECT 
+    h.id as habit_id,
+    h.name as habit_name,
+    h.habit_type,
+    h.total_actions_count,
+    h.last_action_date,
+    COALESCE(recent_activity.sessions_this_week, 0) as sessions_this_week,
+    COALESCE(recent_activity.sessions_this_month, 0) as sessions_this_month,
+    COALESCE(recent_activity.avg_session_duration, 0) as avg_session_duration_seconds
+FROM habits h
+LEFT JOIN (
+    SELECT 
+        habit_id,
+        COUNT(CASE WHEN start_time >= date_trunc('week', CURRENT_DATE) THEN 1 END) as sessions_this_week,
+        COUNT(CASE WHEN start_time >= date_trunc('month', CURRENT_DATE) THEN 1 END) as sessions_this_month,
+        AVG(duration_seconds) as avg_session_duration
+    FROM actions
+    WHERE start_time >= CURRENT_DATE - INTERVAL '30 days'
+      AND duration_seconds IS NOT NULL
+    GROUP BY habit_id
+) recent_activity ON h.id = recent_activity.habit_id
+WHERE h.is_active = true;
+
+-- =========================================
+-- PERFORMANCE TUNING SETTINGS
+-- =========================================
+
+-- Recommended PostgreSQL settings for this schema (add to postgresql.conf)
+/*
+# Memory settings (adjust based on available RAM)
+shared_buffers = 256MB                    # 25% of RAM for dedicated server
+effective_cache_size = 1GB                # 75% of RAM
+work_mem = 4MB                            # Per connection sort/hash memory
+maintenance_work_mem = 64MB               # For maintenance operations
+
+# Query planning
+random_page_cost = 1.1                    # For SSD storage
+effective_io_concurrency = 200            # For SSD storage
+default_statistics_target = 100           # More detailed query statistics
+
+# Connection and performance
+max_connections = 100                     # Adjust based on expected load
+checkpoint_completion_target = 0.9        # Spread checkpoints
+wal_buffers = 16MB                        # WAL buffer size
+checkpoint_timeout = 10min                # Checkpoint frequency
+
+# Logging for performance monitoring
+log_slow_queries = on
+log_min_duration_statement = 1000         # Log queries > 1 second
+log_checkpoints = on
+log_lock_waits = on
+*/
+
+-- =========================================
+-- PARTITIONING STRATEGY (Future Enhancement)
+-- =========================================
+
+-- For high-volume applications, consider partitioning reading_logs by date
+-- Example partitioning setup (uncomment when needed):
+
+/*
+-- Convert reading_logs to partitioned table
+ALTER TABLE reading_logs RENAME TO reading_logs_old;
+
+CREATE TABLE reading_logs (
+    LIKE reading_logs_old INCLUDING ALL
+) PARTITION BY RANGE (reading_date);
+
+-- Create monthly partitions
+CREATE TABLE reading_logs_2024_01 PARTITION OF reading_logs
+    FOR VALUES FROM ('2024-01-01') TO ('2024-02-01');
+
+-- Add automatic partition management using pg_partman extension
+*/
+
+-- =========================================
+-- MAINTENANCE PROCEDURES
+-- =========================================
+
+-- Procedure to cleanup old data (run monthly)
+CREATE OR REPLACE FUNCTION cleanup_old_data(retention_months INTEGER DEFAULT 24)
+RETURNS INTEGER AS $$
+DECLARE
+    cutoff_date DATE;
+    deleted_count INTEGER := 0;
+BEGIN
+    cutoff_date := CURRENT_DATE - INTERVAL '1 month' * retention_months;
+    
+    -- Archive old reading logs (example - adjust based on requirements)
+    DELETE FROM reading_logs 
+    WHERE reading_date < cutoff_date 
+    AND id IN (
+        SELECT rl.id FROM reading_logs rl
+        JOIN actions a ON rl.action_id = a.id
+        WHERE a.start_time < cutoff_date
+    );
+    
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    
+    -- Update statistics after cleanup
+    ANALYZE reading_logs;
+    ANALYZE actions;
+    
+    RETURN deleted_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Procedure to refresh materialized views and update statistics
+CREATE OR REPLACE FUNCTION refresh_statistics()
+RETURNS VOID AS $$
+BEGIN
+    -- Update table statistics
+    ANALYZE habits;
+    ANALYZE actions;
+    ANALYZE books;
+    ANALYZE reading_logs;
+    
+    -- Refresh any materialized views (if created)
+    -- REFRESH MATERIALIZED VIEW CONCURRENTLY view_name;
+    
+    RAISE NOTICE 'Statistics refreshed successfully';
+END;
+$$ LANGUAGE plpgsql;
+
+-- =========================================
+-- COMMENTS FOR DOCUMENTATION
+-- =========================================
+
+COMMENT ON TABLE habits IS 'Core habit definitions with metadata and computed statistics';
+COMMENT ON TABLE actions IS 'Time-tracked activities linked to habits with duration calculations';
+COMMENT ON TABLE books IS 'Book catalog with reading progress and performance metrics';
+COMMENT ON TABLE reading_logs IS 'Detailed reading session data with breathing and voice tracking';
+
+COMMENT ON COLUMN habits.total_actions_count IS 'Cached count of total actions for this habit';
+COMMENT ON COLUMN actions.duration_seconds IS 'Computed duration in seconds, stored for performance';
+COMMENT ON COLUMN books.completion_percentage IS 'Computed reading progress percentage';
+COMMENT ON COLUMN reading_logs.reading_efficiency IS 'Characters per minute divided by breaths per minute';
+
+-- =========================================
+-- SAMPLE QUERIES FOR TESTING PERFORMANCE
+-- =========================================
+
+/*
+-- Test query performance with these examples:
+
+-- 1. Get reading progress for all books
+SELECT * FROM reading_progress_summary ORDER BY completion_percentage DESC;
+
+-- 2. Get habit activity for the last month
+SELECT * FROM habit_activity_summary ORDER BY sessions_this_month DESC;
+
+-- 3. Find most productive reading sessions
+SELECT b.name, rl.number_of_characters_per_minute, rl.reading_date
+FROM reading_logs rl
+JOIN books b ON rl.book_id = b.id
+WHERE rl.reading_date >= CURRENT_DATE - INTERVAL '7 days'
+ORDER BY rl.number_of_characters_per_minute DESC
+LIMIT 10;
+
+-- 4. Get habit completion trends
+SELECT 
+    date_trunc('week', a.start_time) as week,
+    h.name,
+    COUNT(*) as sessions,
+    AVG(a.duration_seconds) as avg_duration
+FROM actions a
+JOIN habits h ON a.habit_id = h.id
+WHERE a.start_time >= CURRENT_DATE - INTERVAL '3 months'
+GROUP BY 1, 2
+ORDER BY 1 DESC, 3 DESC;
+*/
