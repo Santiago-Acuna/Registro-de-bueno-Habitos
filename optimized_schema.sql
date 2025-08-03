@@ -114,53 +114,42 @@ CREATE TABLE books (
 -- Detailed reading session tracking with performance optimizations
 CREATE TABLE reading_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    action_id UUID NOT NULL UNIQUE, -- One reading log per action
+    action_id UUID NOT NULL UNIQUE,
     book_id UUID NOT NULL,
-    
-    -- Reading metrics
     number_of_characters INTEGER NOT NULL,
     breaths INTEGER NOT NULL,
     number_of_characters_per_minute FLOAT NOT NULL,
     number_of_breaths_per_minute FLOAT NOT NULL,
     using_voice BOOLEAN DEFAULT false NOT NULL,
-    
-    -- Derived fields for analytics
-    reading_date DATE GENERATED ALWAYS AS (
-        (SELECT start_time::DATE FROM actions WHERE actions.id = action_id)
-    ) STORED,
+    reading_date DATE,
     session_duration_seconds INTEGER,
-    
-    -- Quality metrics
     reading_efficiency DECIMAL(5,2) GENERATED ALWAYS AS (
-        CASE 
+        CASE
             WHEN number_of_breaths_per_minute > 0 THEN
-                ROUND((number_of_characters_per_minute / number_of_breaths_per_minute), 2)
+                ROUND(
+                    (number_of_characters_per_minute / number_of_breaths_per_minute)::DECIMAL,
+                    2
+                )
             ELSE NULL
         END
     ) STORED,
-    
-    -- Audit fields
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    
-    -- Foreign key constraints
-    CONSTRAINT fk_reading_logs_action_id 
-        FOREIGN KEY (action_id) REFERENCES actions(id) 
+    CONSTRAINT fk_reading_logs_action_id
+        FOREIGN KEY (action_id) REFERENCES actions(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_reading_logs_book_id 
-        FOREIGN KEY (book_id) REFERENCES books(id) 
+    CONSTRAINT fk_reading_logs_book_id
+        FOREIGN KEY (book_id) REFERENCES books(id)
         ON DELETE RESTRICT ON UPDATE CASCADE,
-    
-    -- Business logic constraints
     CONSTRAINT reading_logs_characters_positive CHECK (number_of_characters > 0),
     CONSTRAINT reading_logs_breaths_positive CHECK (breaths > 0),
     CONSTRAINT reading_logs_char_rate_positive CHECK (number_of_characters_per_minute > 0),
     CONSTRAINT reading_logs_breath_rate_positive CHECK (number_of_breaths_per_minute > 0),
     CONSTRAINT reading_logs_reasonable_char_rate CHECK (
-        number_of_characters_per_minute <= 10000 -- Max reasonable reading speed
+        number_of_characters_per_minute <= 10000
     ),
     CONSTRAINT reading_logs_reasonable_breath_rate CHECK (
-        number_of_breaths_per_minute BETWEEN 0 AND 60 -- Reasonable breathing range
+        number_of_breaths_per_minute BETWEEN 0 AND 60
     )
 );
 
@@ -334,6 +323,39 @@ CREATE TRIGGER set_action_fields_trigger
 BEFORE INSERT OR UPDATE ON actions
 FOR EACH ROW
 EXECUTE FUNCTION set_action_fields();
+
+-- Trigger to set reading log fields based on action start and end times
+
+CREATE OR REPLACE FUNCTION set_reading_log_fields()
+RETURNS TRIGGER AS $$
+DECLARE
+    action_start_time TIMESTAMP WITH TIME ZONE;
+    action_end_time TIMESTAMP WITH TIME ZONE;
+BEGIN
+    -- Fetch start_time and end_time from the actions table
+    SELECT start_time, end_time
+    INTO action_start_time, action_end_time
+    FROM actions
+    WHERE id = NEW.action_id;
+
+    -- Set reading_date
+    NEW.reading_date := action_start_time::DATE;
+
+    -- Calculate and set session_duration_seconds if end_time is available
+    IF action_end_time IS NOT NULL THEN
+        NEW.session_duration_seconds := EXTRACT(EPOCH FROM (action_end_time - action_start_time))::INTEGER;
+    ELSE
+        NEW.session_duration_seconds := NULL;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_reading_log_fields_trigger
+BEFORE INSERT OR UPDATE ON reading_logs
+FOR EACH ROW
+EXECUTE FUNCTION set_reading_log_fields();
 
 -- =========================================
 -- VIEWS FOR COMMON QUERIES
