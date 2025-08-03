@@ -194,10 +194,6 @@ CREATE INDEX idx_reading_logs_char_rate ON reading_logs(number_of_characters_per
 CREATE INDEX idx_reading_logs_efficiency ON reading_logs(reading_efficiency) WHERE reading_efficiency IS NOT NULL;
 CREATE INDEX idx_reading_logs_voice ON reading_logs(using_voice, book_id);
 
--- Partial index for recent reading sessions (last 30 days)
-CREATE INDEX idx_reading_logs_recent ON reading_logs(book_id, reading_date) 
-WHERE reading_date >= CURRENT_DATE - INTERVAL '30 days';
-
 -- =========================================
 -- TRIGGERS FOR DATA CONSISTENCY
 -- =========================================
