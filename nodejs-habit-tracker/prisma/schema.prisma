@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum HabitComplexity {
+  Complex @map("Complex")
+  Simple @map("Simple")
+  WithoutIntervals @map("Without Intervals")
+
+  @@map("habit_complexity")
+}
+
+model Habit {
+  id          String          @id @default(uuid()) @db.Uuid
+  name        String          @unique @db.VarChar(50)
+  habitType   HabitComplexity @map("habit_type")
+  logo        String          @db.Text
+  
+  // Audit fields
+  createdAt   DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime        @updatedAt @map("updated_at") @db.Timestamptz(6)
+  isActive    Boolean         @default(true) @map("is_active")
+  
+  // Computed fields for analytics (updated via triggers)
+  totalActionsCount Int       @default(0) @map("total_actions_count")
+  lastActionDate    DateTime? @map("last_action_date") @db.Timestamptz(6)
+  
+  // Relations
+  actions Action[]
+
+  @@map("habits")
+}
+
+model Action {
+  id              String    @id @default(uuid()) @db.Uuid
+  habitId         String    @map("habit_id") @db.Uuid
+  startTime       DateTime  @map("start_time") @db.Timestamptz(6)
+  endTime         DateTime? @map("end_time") @db.Timestamptz(6)
+  durationSeconds Int?      @map("duration_seconds")
+  actionDate      DateTime? @map("action_date") @db.Date
+  
+  // Audit fields
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  habit      Habit        @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  readingLog ReadingLog?
+
+  @@map("actions")
+}
+
+model Book {
+  id                            String  @id @default(uuid()) @db.Uuid
+  name                          String  @db.VarChar(100)
+  image                         String? @db.Text
+  totalPages                    Int     @map("total_pages")
+  currentPage                   Int     @default(0) @map("current_page")
+  averageOfCharactersPerMinute  Float?  @map("average_of_characters_per_minute")
+  
+  // Additional metadata
+  author                        String? @db.VarChar(100)
+  genre                         String? @db.VarChar(50)
+  
+  // Progress tracking (computed via generated column in PostgreSQL)
+  // completionPercentage handled by database trigger
+  
+  // Reading statistics (updated via triggers)
+  totalReadingSessions          Int     @default(0) @map("total_reading_sessions")
+  totalCharactersRead           BigInt  @default(0) @map("total_characters_read")
+  averageSessionDuration        Int     @default(0) @map("average_session_duration")
+  
+  // Audit fields
+  createdAt                     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  isActive                      Boolean  @default(true) @map("is_active")
+  
+  // Relations
+  readingLogs ReadingLog[]
+
+  @@map("books")
+}
+
+model ReadingLog {
+  id                           String   @id @default(uuid()) @db.Uuid
+  actionId                     String   @unique @map("action_id") @db.Uuid
+  bookId                       String   @map("book_id") @db.Uuid
+  numberOfCharacters           Int      @map("number_of_characters")
+  breaths                      Int
+  numberOfCharactersPerMinute  Float    @map("number_of_characters_per_minute")
+  numberOfBreathsPerMinute     Float    @map("number_of_breaths_per_minute")
+  usingVoice                   Boolean  @default(false) @map("using_voice")
+  readingDate                  DateTime? @map("reading_date") @db.Date
+  sessionDurationSeconds       Int?     @map("session_duration_seconds")
+  
+  // Computed efficiency field (handled by database generated column)
+  // readingEfficiency handled by database trigger
+  
+  // Audit fields
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  
+  // Relations
+  action Action @relation(fields: [actionId], references: [id], onDelete: Cascade)
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Restrict)
+
+  @@map("reading_logs")
+}
