@@ -13,7 +13,7 @@ export class CreateHabitDto {
   @IsNotEmpty()
   @MinLength(1)
   @MaxLength(50)
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: 'Type/complexity of the habit',
@@ -21,7 +21,7 @@ export class CreateHabitDto {
     example: HabitComplexity.SIMPLE,
   })
   @IsEnum(HabitComplexity)
-  habitType: HabitComplexity;
+  habitType!: HabitComplexity;
 
   @ApiProperty({
     description: 'Base64 encoded logo for the habit',
@@ -29,5 +29,5 @@ export class CreateHabitDto {
   })
   @IsString()
   @IsNotEmpty()
-  logo: string;
+  logo!: string;
 }
