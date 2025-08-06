@@ -1,0 +1,107 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Habit {
+  id                String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name              String          @db.VarChar(50)
+  habitType         HabitComplexity @map("habit_type")
+  logo              String?
+  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  isActive          Boolean         @default(true) @map("is_active")
+  totalActionsCount Int             @default(0) @map("total_actions_count")
+  lastActionDate    DateTime?       @map("last_action_date") @db.Timestamptz(6)
+  actions           Action[]
+
+  @@index([createdAt], map: "idx_habits_created_at")
+  @@map("habits")
+}
+
+model Action {
+  id              String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  habitId         String      @map("habit_id") @db.Uuid
+  startTime       DateTime    @map("start_time") @db.Timestamptz(6)
+  endTime         DateTime?   @map("end_time") @db.Timestamptz(6)
+  durationSeconds Int?        @map("duration_seconds")
+  actionDate      DateTime?   @map("action_date") @db.Date
+  createdAt       DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  habit           Habit       @relation(fields: [habitId], references: [id], onDelete: Cascade, map: "fk_actions_habit_id")
+  readingLog      ReadingLog?
+
+  @@index([actionDate], map: "idx_actions_date")
+  @@index([habitId, actionDate], map: "idx_actions_habit_date")
+  @@index([habitId], map: "idx_actions_habit_id")
+  @@index([habitId, startTime(sort: Desc)], map: "idx_actions_habit_start_time")
+  @@index([startTime(sort: Desc)], map: "idx_actions_start_time")
+  @@map("actions")
+}
+
+model Book {
+  id                           String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                         String       @db.VarChar(100)
+  image                        String?
+  totalPages                   Int          @map("total_pages")
+  currentPage                  Int          @default(0) @map("current_page")
+  averageOfCharactersPerMinute Float?       @map("average_of_characters_per_minute")
+  author                       String?      @db.VarChar(100)
+  genre                        String?      @db.VarChar(50)
+  completion_percentage        Decimal?     @default(dbgenerated("\nCASE\n    WHEN (total_pages > 0) THEN round((((current_page)::numeric / (total_pages)::numeric) * (100)::numeric), 2)\n    ELSE (0)::numeric\nEND")) @db.Decimal(5, 2)
+  totalReadingSessions         Int          @default(0) @map("total_reading_sessions")
+  totalCharactersRead          BigInt       @default(0) @map("total_characters_read")
+  averageSessionDuration       Int          @default(0) @map("average_session_duration")
+  createdAt                    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                    DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  isActive                     Boolean      @default(true) @map("is_active")
+  readingLogs                  ReadingLog[]
+
+  @@index([completion_percentage], map: "idx_books_completion")
+  @@index([totalReadingSessions(sort: Desc)], map: "idx_books_total_sessions")
+  @@map("books")
+}
+
+model ReadingLog {
+  id                          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  actionId                    String    @unique @map("action_id") @db.Uuid
+  bookId                      String    @map("book_id") @db.Uuid
+  numberOfCharacters          Int       @map("number_of_characters")
+  breaths                     Int
+  numberOfCharactersPerMinute Float     @map("number_of_characters_per_minute")
+  numberOfBreathsPerMinute    Float     @map("number_of_breaths_per_minute")
+  usingVoice                  Boolean   @default(false) @map("using_voice")
+  readingDate                 DateTime? @map("reading_date") @db.Date
+  sessionDurationSeconds      Int?      @map("session_duration_seconds")
+  reading_efficiency          Decimal?  @default(dbgenerated("\nCASE\n    WHEN (number_of_breaths_per_minute > (0)::double precision) THEN round(((number_of_characters_per_minute / number_of_breaths_per_minute))::numeric, 2)\n    ELSE NULL::numeric\nEND")) @db.Decimal(5, 2)
+  createdAt                   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  action                      Action    @relation(fields: [actionId], references: [id], onDelete: Cascade, map: "fk_reading_logs_action_id")
+  book                        Book      @relation(fields: [bookId], references: [id], map: "fk_reading_logs_book_id")
+
+  @@index([bookId, readingDate], map: "idx_reading_logs_book_date")
+  @@index([bookId], map: "idx_reading_logs_book_id")
+  @@index([numberOfCharactersPerMinute], map: "idx_reading_logs_char_rate")
+  @@index([readingDate], map: "idx_reading_logs_date")
+  @@index([usingVoice, bookId], map: "idx_reading_logs_voice")
+  @@map("reading_logs")
+}
+
+model test {
+  id             Int       @id @default(autoincrement())
+  nombre         String    @db.VarChar(255)
+  fecha_creacion DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+}
+
+enum HabitComplexity {
+  Complex          @map("Complex")
+  Simple           @map("Simple")
+  WithoutIntervals @map("Without Intervals")
+
+  @@map("habit_complexity")
+}

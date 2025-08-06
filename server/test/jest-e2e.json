@@ -1,0 +1,19 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapping": {
+    "^@/(.*)$": "<rootDir>/../src-nestjs/$1"
+  },
+  "setupFilesAfterEnv": ["<rootDir>/setup-e2e.ts"],
+  "collectCoverageFrom": [
+    "src-nestjs/**/*.(t|j)s",
+    "!src-nestjs/**/*.spec.ts",
+    "!src-nestjs/**/*.e2e-spec.ts"
+  ],
+  "coverageDirectory": "../coverage-e2e"
+}
