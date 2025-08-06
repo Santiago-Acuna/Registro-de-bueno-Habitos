@@ -1,8 +1,8 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService extends PrismaClient<Prisma.PrismaClientOptions, 'query' | 'info' | 'warn' | 'error'> implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
@@ -13,26 +13,26 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         { emit: 'event', level: 'info' },
         { emit: 'event', level: 'warn' },
       ],
-      errorFormat: 'colored',
+      errorFormat: 'pretty',
     });
 
-    // Set up logging handlers
-    this.$on('query', (e) => {
+    // Set up logging handlers with proper event types
+    this.$on('query', (e: Prisma.QueryEvent) => {
       this.logger.debug(`Query: ${e.query}`);
       this.logger.debug(`Params: ${e.params}`);
       this.logger.debug(`Duration: ${e.duration}ms`);
     });
 
-    this.$on('error', (e) => {
-      this.logger.error('Database error:', e);
+    this.$on('error', (e: Prisma.LogEvent) => {
+      this.logger.error('Database error:', e.message);
     });
 
-    this.$on('warn', (e) => {
-      this.logger.warn('Database warning:', e);
+    this.$on('warn', (e: Prisma.LogEvent) => {
+      this.logger.warn('Database warning:', e.message);
     });
 
-    this.$on('info', (e) => {
-      this.logger.log('Database info:', e);
+    this.$on('info', (e: Prisma.LogEvent) => {
+      this.logger.log('Database info:', e.message);
     });
   }
 
@@ -59,7 +59,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
    * Enables soft delete behavior
    */
   async enableShutdownHooks(app: any): Promise<void> {
-    this.$on('beforeExit', async () => {
+    // Use process events instead of Prisma events for shutdown handling
+    process.on('beforeExit', async () => {
+      await this.$disconnect();
       await app.close();
     });
   }
