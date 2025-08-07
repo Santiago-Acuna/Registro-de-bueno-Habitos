@@ -11,7 +11,7 @@ export class AppException extends HttpException {
         error: AppException.name,
         message,
         statusCode,
-        ...(details && { details }),
+        ...(details ? { details } : {}),
       },
       statusCode
     );
