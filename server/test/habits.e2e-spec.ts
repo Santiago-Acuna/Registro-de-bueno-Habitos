@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import * as request from 'supertest';
-import { AppModule } from '../src-nestjs/app.module';
-import { HabitComplexity } from '../src-nestjs/domain/shared/types/common';
+import request from 'supertest';
+import { AppModule } from '../src/app.module';
+import { HabitComplexity } from '../src/domain/shared/types/common';
 
 describe('HabitsController (e2e)', () => {
   let app: INestApplication;

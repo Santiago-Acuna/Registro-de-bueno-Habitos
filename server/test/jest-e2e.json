@@ -1,19 +1,30 @@
 {
+  "preset": "ts-jest",
+  "testEnvironment": "node",
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": ".",
-  "testEnvironment": "node",
   "testRegex": ".e2e-spec.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
-  "moduleNameMapping": {
-    "^@/(.*)$": "<rootDir>/../src-nestjs/$1"
+  "moduleNameMapper": {
+    "^@/(.*)$": "<rootDir>/../src/$1"
   },
   "setupFilesAfterEnv": ["<rootDir>/setup-e2e.ts"],
   "collectCoverageFrom": [
-    "src-nestjs/**/*.(t|j)s",
-    "!src-nestjs/**/*.spec.ts",
-    "!src-nestjs/**/*.e2e-spec.ts"
+    "../src/**/*.(t|j)s",
+    "!../src/**/*.spec.ts",
+    "!../src/**/*.e2e-spec.ts",
+    "!../src/main.ts"
   ],
-  "coverageDirectory": "../coverage-e2e"
+  "coverageDirectory": "../coverage-e2e",
+  "testTimeout": 60000,
+  "maxWorkers": 1,
+  "forceExit": true,
+  "detectOpenHandles": true,
+  "globals": {
+    "ts-jest": {
+      "tsconfig": "./tsconfig.json"
+    }
+  }
 }

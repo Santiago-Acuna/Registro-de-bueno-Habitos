@@ -1,0 +1,16 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "..",
+    "types": ["jest", "node", "supertest"],
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "exactOptionalPropertyTypes": false,
+    "strictPropertyInitialization": false
+  },
+  "include": [
+    "./**/*.ts",
+    "../src/**/*.ts"
+  ],
+  "exclude": []
+}

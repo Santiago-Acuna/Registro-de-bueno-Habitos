@@ -53,7 +53,8 @@
     "noPropertyAccessFromIndexSignature": true,
 
     /* Completeness */
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["jest", "node"] 
   },
   "include": [
     "src/**/*"
@@ -63,6 +64,7 @@
     "dist",
     "tests",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "test/**/*.ts"
   ]
 }
