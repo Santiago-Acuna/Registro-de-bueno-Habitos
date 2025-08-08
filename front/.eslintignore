@@ -1,0 +1,6 @@
+node_modules
+dist
+out
+.gitignore
+.config.js
+.json
