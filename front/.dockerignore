@@ -1,0 +1,10 @@
+.git
+.svn
+.hg
+.idea
+.vscode
+node_modules
+venv
+*.pyc
+*.swp
+*.DS_Store

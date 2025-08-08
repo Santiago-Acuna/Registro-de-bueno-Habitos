@@ -1,0 +1,131 @@
+.noHabits {
+  color: white;
+  font-size: 2rem;
+}
+.container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  position: fixed;
+  background-color: blue;
+}
+.backButton {
+  align-self: start;
+  margin: 3% 3% 0% 2%;
+}
+.cardsContainers{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  grid-template-columns: repeat(3, 1fr);
+  background-color: red;
+  height: 70%;
+  width: 90%;
+}
+.formContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.closeDiv {
+  align-self: end;
+  margin-right: 2%;
+  z-index: 1;
+}
+.close {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  background: #455a64;
+  border-radius: 50%;
+  box-shadow: 0 0 20px -5px rgba(255, 255, 255, 0.5);
+  transition: 0.25s ease-in-out;
+  cursor: pointer;
+  -webkit-animation: fade-in 0.5s ease-out 0.25s both;
+  animation: fade-in 0.5s ease-out 0.25s both;
+}
+@-webkit-keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+.close .circle path {
+  stroke: white;
+  fill: none;
+  stroke-width: 1px;
+  stroke-linecap: round;
+  -webkit-animation: progress 0.5s ease-out 0.25s both;
+  animation: progress 0.5s ease-out 0.25s both;
+}
+@-webkit-keyframes progress {
+  from {
+    stroke-dasharray: 0 100;
+  }
+}
+@keyframes progress {
+  from {
+    stroke-dasharray: 0 100;
+  }
+}
+.close span {
+  display: block;
+  width: 13px;
+  height: 2px;
+  background: white;
+  box-shadow: 0 0 20px -5px rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  position: absolute;
+  transition: 0.25s ease-in-out;
+  -webkit-animation: slide-in 0.5s ease-in-out 0.25s both;
+  animation: slide-in 0.5s ease-in-out 0.25s both;
+}
+@-webkit-keyframes slide-in {
+  from {
+    width: 0;
+  }
+}
+@keyframes slide-in {
+  from {
+    width: 0;
+  }
+}
+.close span:nth-child(1) {
+  top: 19px;
+  left: 20px;
+  transform: rotate(45deg);
+  transform-origin: top left;
+}
+.close span:nth-child(2) {
+  top: 19px;
+  right: 20px;
+  transform: rotate(-45deg);
+  transform-origin: top right;
+}
+.close span:nth-child(3) {
+  bottom: 19px;
+  left: 20px;
+  transform: rotate(-45deg);
+  transform-origin: bottom left;
+}
+.close span:nth-child(4) {
+  bottom: 19px;
+  right: 20px;
+  transform: rotate(45deg);
+  transform-origin: bottom right;
+}
+.close:hover {
+  background: #37474f;
+}
+.close:hover span {
+  width: 15px;
+}

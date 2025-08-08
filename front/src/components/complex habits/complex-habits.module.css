@@ -1,0 +1,29 @@
+.noHabits {
+  color: white;
+  font-size: 2rem;
+}
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  flex-direction: column;
+  position: fixed;
+  background-color: blue;
+}
+.backButton {
+  align-self: start;
+  margin: 3% 3% 0% 2%;
+}
+.cardsContainers{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  grid-template-columns: repeat(3, 1fr);
+  background-color: red;
+  height: 70%;
+  width: 90%;
+
+
+}
