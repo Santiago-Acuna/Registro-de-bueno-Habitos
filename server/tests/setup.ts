@@ -1,5 +1,5 @@
 // Global test setup for unit tests
-import { jest } from '@jest/globals';
+import { jest, expect } from '@jest/globals';
 
 // Set test timeout
 jest.setTimeout(30000);

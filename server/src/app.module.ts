@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { HabitsModule } from './habits/habits.module';
 import { BooksModule } from './books/books.module';
@@ -26,8 +25,8 @@ import { configValidation } from './infrastructure/config/config.validation';
       useFactory: () => ({
         throttlers: [
           {
-            ttl: parseInt(process.env.RATE_LIMIT_WINDOW || '60000', 10), // 1 minute
-            limit: parseInt(process.env.RATE_LIMIT_MAX || '100', 10), // 100 requests
+            ttl: parseInt(process.env['RATE_LIMIT_WINDOW'] || '60000', 10), // 1 minute
+            limit: parseInt(process.env['RATE_LIMIT_MAX'] || '100', 10), // 100 requests
           },
         ],
       }),
