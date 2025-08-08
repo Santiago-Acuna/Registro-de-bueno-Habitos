@@ -48,6 +48,7 @@
     "class-validator": "^0.14.2",
     "dotenv": "^16.3.1",
     "helmet": "^8.1.0",
+    "nestjs-joi": "^1.11.0",
     "pino": "^8.17.2",
     "pino-pretty": "^10.3.1",
     "reflect-metadata": "^0.2.2",

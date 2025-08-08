@@ -11,7 +11,7 @@ export class BooksService {
 
   async findAll(): Promise<{ message: string }> {
     this.logger.log('Fetching all books - placeholder implementation');
-    
+    console.log(this.booksRepository)
     // TODO: Implement full books functionality
     return {
       message: 'Books module placeholder - to be implemented with full CRUD operations',
