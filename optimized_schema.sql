@@ -153,6 +153,20 @@ CREATE TABLE reading_logs (
     )
 );
 
+  CREATE TABLE pronunciation_logs (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      action_id UUID NOT NULL UNIQUE,
+      original_text TEXT NOT NULL,
+      speech_to_text_result TEXT NOT NULL,
+      accuracy_percentage DECIMAL(5,2) NOT NULL CHECK (accuracy_percentage >= 0 AND accuracy_percentage <= 100),
+      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+      -- Foreign key constraint to establish 1-to-1 relationship with actions table
+      CONSTRAINT fk_pronunciation_logs_action_id
+          FOREIGN KEY (action_id) REFERENCES actions(id)
+          ON DELETE CASCADE ON UPDATE CASCADE
+  );
+
 -- =========================================
 -- PERFORMANCE INDEXES
 -- =========================================
@@ -193,6 +207,11 @@ CREATE INDEX idx_reading_logs_book_date ON reading_logs(book_id, reading_date);
 CREATE INDEX idx_reading_logs_char_rate ON reading_logs(number_of_characters_per_minute);
 CREATE INDEX idx_reading_logs_efficiency ON reading_logs(reading_efficiency) WHERE reading_efficiency IS NOT NULL;
 CREATE INDEX idx_reading_logs_voice ON reading_logs(using_voice, book_id);
+
+-- PRONUNCIATION_LOGS TABLE INDEXES    
+CREATE INDEX idx_pronunciation_logs_action_id ON pronunciation_logs (action_id);
+CREATE INDEX idx_pronunciation_logs_created_at ON pronunciation_logs (created_at);
+CREATE INDEX idx_pronunciation_logs_accuracy ON pronunciation_logs (accuracy_percentage);
 
 -- =========================================
 -- TRIGGERS FOR DATA CONSISTENCY
@@ -352,3 +371,17 @@ CREATE TRIGGER set_reading_log_fields_trigger
 BEFORE INSERT OR UPDATE ON reading_logs
 FOR EACH ROW
 EXECUTE FUNCTION set_reading_log_fields();
+
+-- Create a trigger to prevent updates (enforce immutability)
+
+CREATE OR REPLACE FUNCTION prevent_pronunciation_logs_update()
+  RETURNS TRIGGER AS $$
+  BEGIN
+      RAISE EXCEPTION 'Updates are not allowed on pronunciation_logs table. Records are immutable.';
+  END;
+  $$ LANGUAGE plpgsql;
+
+  CREATE TRIGGER trigger_prevent_pronunciation_logs_update
+      BEFORE UPDATE ON pronunciation_logs
+      FOR EACH ROW
+      EXECUTE FUNCTION prevent_pronunciation_logs_update();
