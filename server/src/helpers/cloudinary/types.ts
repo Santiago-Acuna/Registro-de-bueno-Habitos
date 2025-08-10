@@ -6,6 +6,7 @@ export interface CloudinaryConfig {
   apiKey: string;
   apiSecret: string;
   secure?: boolean;
+  folder?:string
 }
 
 /**

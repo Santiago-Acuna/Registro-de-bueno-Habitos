@@ -22,6 +22,7 @@ export class CloudinaryService {
       apiKey: this.configService.get<string>('CLOUDINARY_API_KEY') || '',
       apiSecret: this.configService.get<string>('CLOUDINARY_API_SECRET') || '',
       secure: true,
+      folder: "habits"
     };
 
     this.validateConfiguration();
