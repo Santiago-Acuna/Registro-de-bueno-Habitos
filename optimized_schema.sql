@@ -22,7 +22,7 @@ CREATE TABLE habits (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(50) NOT NULL,
     habit_type habit_complexity NOT NULL,
-    logo TEXT, -- Base64 encoded image or URL
+    logo TEXT NOT NULL, -- Base64 encoded image or URL
     
     -- Audit fields
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
