@@ -6,20 +6,20 @@ export interface CloudinaryConfig {
   apiKey: string;
   apiSecret: string;
   secure?: boolean;
-  folder?:string
+  folder?: string
 }
 
 /**
  * Supported image formats for upload
  */
-export type SupportedImageFormat = 
-  | 'jpg' 
-  | 'jpeg' 
-  | 'png' 
-  | 'webp' 
-  | 'gif' 
-  | 'bmp' 
-  | 'tiff' 
+export type SupportedImageFormat =
+  | 'jpg'
+  | 'jpeg'
+  | 'png'
+  | 'webp'
+  | 'gif'
+  | 'bmp'
+  | 'tiff'
   | 'svg';
 
 /**
@@ -34,6 +34,7 @@ export interface CloudinaryUploadOptions {
   quality?: 'auto' | 'auto:best' | 'auto:good' | 'auto:eco' | number;
   transformation?: Record<string, any>;
   tags?: string[];
+  public_id?: string
 }
 
 /**
@@ -81,4 +82,4 @@ export interface UploadResult {
 /**
  * File input types
  */
-export type FileInput = string | Buffer | NodeJS.ReadableStream;
+export type FileInput = Express.Multer.File;

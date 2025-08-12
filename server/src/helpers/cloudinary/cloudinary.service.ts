@@ -62,31 +62,31 @@ export class CloudinaryService {
    * @param options - Upload options
    * @returns Promise<UploadResult>
    */
-  async uploadImage(
-    file: FileInput,
-    options: CloudinaryUploadOptions = {}
-  ): Promise<UploadResult> {
-    try {
-      this.validateFile(file);
-      
-      const uploadOptions = this.buildUploadOptions(options);
-      
-      this.logger.log(`Uploading image to Cloudinary with options: ${JSON.stringify(uploadOptions)}`);
+    async uploadImage(file: Express.Multer.File, uploadOptions: CloudinaryUploadOptions): Promise<UploadResult> {
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        this.buildUploadOptions(uploadOptions),
+        (error, result) => {
+                 if (error) {
+          return reject(this.handleUploadError(error));
+        }
+        // Check if the result is valid before resolving
+        if (!result) {
+          return reject(new Error('Cloudinary upload failed: no result returned'));
+        }
+        const response = this.mapCloudinaryResponse(result);
+              this.logger.log(`Image uploaded successfully. URL: ${response.secureUrl}`);
 
-      const result = await cloudinary.uploader.upload(file as string, uploadOptions);
-      
-      const response = this.mapCloudinaryResponse(result);
-      
-      this.logger.log(`Image uploaded successfully. URL: ${response.secureUrl}`);
-
-      return {
+        resolve({
         success: true,
         data: response,
         url: response.secureUrl,
-      };
-    } catch (error) {
-      return this.handleUploadError(error);
-    }
+      });
+        },
+      );
+
+      stream.end(file.buffer);
+    });
   }
 
   /**
@@ -146,19 +146,6 @@ export class CloudinaryService {
   /**
    * Validates the input file
    */
-  private validateFile(file: FileInput): void {
-    if (!file) {
-      throw new Error('File is required');
-    }
-
-    if (typeof file === 'string' && !file.trim()) {
-      throw new Error('File path cannot be empty');
-    }
-
-    if (Buffer.isBuffer(file) && file.length === 0) {
-      throw new Error('File buffer cannot be empty');
-    }
-  }
 
   /**
    * Builds upload options for Cloudinary

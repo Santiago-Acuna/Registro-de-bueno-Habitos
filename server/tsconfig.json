@@ -54,7 +54,7 @@
 
     /* Completeness */
     "skipLibCheck": true,
-    "types": ["jest", "node"] 
+    "types": ["jest", "node", "multer"] 
   },
   "include": [
     "src/**/*"
