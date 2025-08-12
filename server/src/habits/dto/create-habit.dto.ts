@@ -22,12 +22,4 @@ export class CreateHabitDto {
   })
   @IsEnum(HabitComplexity)
   habitType!: HabitComplexity;
-
-  @ApiProperty({
-    description: 'Base64 encoded logo for the habit',
-    example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-  })
-  @IsString()
-  @IsNotEmpty()
-  logo!: string;
 }

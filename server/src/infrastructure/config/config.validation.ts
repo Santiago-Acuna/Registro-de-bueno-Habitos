@@ -19,4 +19,9 @@ export const configValidation = Joi.object({
   LOG_LEVEL: Joi.string()
     .valid('error', 'warn', 'log', 'debug', 'verbose')
     .default('log'),
+
+  // Cloudinary Configuration
+  CLOUDINARY_CLOUD_NAME: Joi.string().required(),
+  CLOUDINARY_API_KEY: Joi.string().required(),
+  CLOUDINARY_API_SECRET: Joi.string().required(),
 });
