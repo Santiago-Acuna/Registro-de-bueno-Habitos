@@ -11,6 +11,9 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UseInterceptors,
+  UploadedFile
+
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,9 +22,10 @@ import {
   ApiParam,
   ApiQuery,
   ApiBody,
+
 } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
-
+import { FileInterceptor } from '@nestjs/platform-express';
 import { HabitsService } from '../services/habits.service';
 import { CreateHabitDto } from '../dto/create-habit.dto';
 import { UpdateHabitDto } from '../dto/update-habit.dto';
@@ -29,17 +33,26 @@ import { HabitResponseDto } from '../dto/habit-response.dto';
 import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
 import { UUID } from '../../domain/shared/types/common';
+import { UploadImageDto } from '../../helpers/cloudinary';
+import { validate } from 'class-validator';
+import {
+  ValidationException
+} from '../../infrastructure/exceptions/app.exceptions';
+
+
+
 
 @ApiTags('habits')
 @Controller('habits')
 @UseGuards(ThrottlerGuard)
 export class HabitsController {
-  constructor(private readonly habitsService: HabitsService) {}
-
+  constructor(private readonly habitsService: HabitsService,
+  ) { }
   @Post()
+  @UseInterceptors(FileInterceptor('logo'))
   @Version('1')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create a new habit',
     description: 'Creates a new habit with the provided information. Habit names must be unique.',
   })
@@ -65,13 +78,28 @@ export class HabitsController {
     status: 409,
     description: 'Habit with the same name already exists',
   })
-  async create(@Body() createHabitDto: CreateHabitDto): Promise<HabitResponseDto> {
-    return this.habitsService.create(createHabitDto);
+  async create(@Body() createHabitDto: CreateHabitDto,
+    @UploadedFile() logo: Express.Multer.File,
+  ): Promise<HabitResponseDto> {
+
+    const uploadImageDto = new UploadImageDto();
+    uploadImageDto.image = logo;
+
+    const errors = await validate(uploadImageDto);
+    if (errors.length > 0) {
+      const message = errors
+        .map(err => Object.values(err.constraints || {}).join(', '))
+        .join('; ');
+
+      throw new ValidationException(message || 'Uncontrolled error with the image you sent');
+    }
+
+    return this.habitsService.create(createHabitDto, logo);
   }
 
   @Get()
   @Version('1')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get all habits',
     description: 'Retrieves a paginated list of habits with optional filtering.',
   })
@@ -123,7 +151,7 @@ export class HabitsController {
 
   @Get(':id')
   @Version('1')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get habit by ID',
     description: 'Retrieves a specific habit by its unique identifier.',
   })
@@ -149,7 +177,7 @@ export class HabitsController {
 
   @Patch(':id')
   @Version('1')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update habit',
     description: 'Updates a habit with the provided information. Only provided fields will be updated.',
   })
@@ -188,7 +216,7 @@ export class HabitsController {
   @Delete(':id')
   @Version('1')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Delete habit',
     description: 'Soft deletes a habit by setting its status to inactive.',
   })
@@ -213,7 +241,7 @@ export class HabitsController {
 
   @Post(':id/increment-action')
   @Version('1')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Increment habit action count',
     description: 'Increments the action count for a habit and updates the last action date.',
   })
