@@ -4,120 +4,118 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_MIGRATION")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
-model Habit {
-  id                String          @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name              String          @db.VarChar(50)
-  habitType         HabitComplexity @map("habit_type")
-  logo              String?
-  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  isActive          Boolean         @default(true) @map("is_active")
-  totalActionsCount Int             @default(0) @map("total_actions_count")
-  lastActionDate    DateTime?       @map("last_action_date") @db.Timestamptz(6)
-  actions           Action[]
-
-  @@index([createdAt], map: "idx_habits_created_at")
-  @@map("habits")
-}
-
-model Action {
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model actions {
   id                 String              @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  habitId            String              @map("habit_id") @db.Uuid
-  startTime          DateTime            @map("start_time") @db.Timestamptz(6)
-  endTime            DateTime?           @map("end_time") @db.Timestamptz(6)
-  durationSeconds    Int?                @map("duration_seconds")
-  actionDate         DateTime?           @map("action_date") @db.Date
-  createdAt          DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  habit              Habit               @relation(fields: [habitId], references: [id], onDelete: Cascade, map: "fk_actions_habit_id")
+  start_time         DateTime            @db.Timestamptz(6)
+  end_time           DateTime?           @db.Timestamptz(6)
+  duration_seconds   Int?
+  action_date        DateTime?           @db.Date
+  created_at         DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime            @default(now()) @db.Timestamptz(6)
   pronunciation_logs pronunciation_logs?
-  readingLog         ReadingLog?
+  reading_logs       reading_logs?
 
-  @@index([actionDate], map: "idx_actions_date")
-  @@index([habitId, actionDate], map: "idx_actions_habit_date")
-  @@index([habitId], map: "idx_actions_habit_id")
-  @@index([habitId, startTime(sort: Desc)], map: "idx_actions_habit_start_time")
-  @@index([startTime(sort: Desc)], map: "idx_actions_start_time")
-  @@map("actions")
+  @@index([action_date], map: "idx_actions_date")
+  @@index([start_time(sort: Desc)], map: "idx_actions_start_time")
 }
 
-model Book {
-  id                           String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name                         String       @db.VarChar(100)
-  image                        String?
-  totalPages                   Int          @map("total_pages")
-  currentPage                  Int          @default(0) @map("current_page")
-  averageOfCharactersPerMinute Float?       @map("average_of_characters_per_minute")
-  author                       String?      @db.VarChar(100)
-  genre                        String?      @db.VarChar(50)
-  completion_percentage        Decimal?     @default(dbgenerated("\nCASE\n    WHEN (total_pages > 0) THEN round((((current_page)::numeric / (total_pages)::numeric) * (100)::numeric), 2)\n    ELSE (0)::numeric\nEND")) @db.Decimal(5, 2)
-  totalReadingSessions         Int          @default(0) @map("total_reading_sessions")
-  totalCharactersRead          BigInt       @default(0) @map("total_characters_read")
-  averageSessionDuration       Int          @default(0) @map("average_session_duration")
-  createdAt                    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                    DateTime     @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  isActive                     Boolean      @default(true) @map("is_active")
-  readingLogs                  ReadingLog[]
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model books {
+  id                               String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                             String         @db.VarChar(100)
+  image                            String?
+  total_pages                      Int
+  current_page                     Int            @default(0)
+  average_of_characters_per_minute Float?
+  author                           String?        @db.VarChar(100)
+  genre                            String?        @db.VarChar(50)
+  completion_percentage            Decimal?       @default(dbgenerated("\nCASE\n    WHEN (total_pages > 0) THEN round((((current_page)::numeric / (total_pages)::numeric) * (100)::numeric), 2)\n    ELSE (0)::numeric\nEND")) @db.Decimal(5, 2)
+  total_reading_sessions           Int            @default(0)
+  total_characters_read            BigInt         @default(0)
+  average_session_duration         Int            @default(0)
+  created_at                       DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at                       DateTime       @default(now()) @db.Timestamptz(6)
+  is_active                        Boolean        @default(true)
+  reading_logs                     reading_logs[]
 
   @@index([completion_percentage], map: "idx_books_completion")
-  @@index([totalReadingSessions(sort: Desc)], map: "idx_books_total_sessions")
-  @@map("books")
+  @@index([total_reading_sessions(sort: Desc)], map: "idx_books_total_sessions")
 }
 
-model ReadingLog {
-  id                          String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  actionId                    String    @unique @map("action_id") @db.Uuid
-  bookId                      String    @map("book_id") @db.Uuid
-  numberOfCharacters          Int       @map("number_of_characters")
-  breaths                     Int
-  numberOfCharactersPerMinute Float     @map("number_of_characters_per_minute")
-  numberOfBreathsPerMinute    Float     @map("number_of_breaths_per_minute")
-  usingVoice                  Boolean   @default(false) @map("using_voice")
-  readingDate                 DateTime? @map("reading_date") @db.Date
-  sessionDurationSeconds      Int?      @map("session_duration_seconds")
-  reading_efficiency          Decimal?  @default(dbgenerated("\nCASE\n    WHEN (number_of_breaths_per_minute > (0)::double precision) THEN round(((number_of_characters_per_minute / number_of_breaths_per_minute))::numeric, 2)\n    ELSE NULL::numeric\nEND")) @db.Decimal(5, 2)
-  createdAt                   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt                   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  action                      Action    @relation(fields: [actionId], references: [id], onDelete: Cascade, map: "fk_reading_logs_action_id")
-  book                        Book      @relation(fields: [bookId], references: [id], map: "fk_reading_logs_book_id")
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model habits {
+  id                  String               @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name                String               @db.VarChar(50)
+  habit_type          habit_complexity
+  logo                String
+  created_at          DateTime             @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime             @default(now()) @db.Timestamptz(6)
+  is_active           Boolean              @default(true)
+  total_actions_count Int                  @default(0)
+  last_action_date    DateTime?            @db.Timestamptz(6)
+  pronunciation_logs  pronunciation_logs[]
+  reading_logs        reading_logs[]
 
-  @@index([bookId, readingDate], map: "idx_reading_logs_book_date")
-  @@index([bookId], map: "idx_reading_logs_book_id")
-  @@index([numberOfCharactersPerMinute], map: "idx_reading_logs_char_rate")
-  @@index([readingDate], map: "idx_reading_logs_date")
-  @@index([usingVoice, bookId], map: "idx_reading_logs_voice")
-  @@map("reading_logs")
+  @@index([created_at], map: "idx_habits_created_at")
 }
 
-model test {
-  id             Int       @id @default(autoincrement())
-  nombre         String    @db.VarChar(255)
-  fecha_creacion DateTime? @default(dbgenerated("CURRENT_DATE")) @db.Date
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model reading_logs {
+  id                              String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  habit_id                        String    @db.Uuid
+  action_id                       String    @unique @db.Uuid
+  book_id                         String    @db.Uuid
+  number_of_characters            Int
+  breaths                         Int
+  number_of_characters_per_minute Float
+  number_of_breaths_per_minute    Float
+  using_voice                     Boolean   @default(false)
+  reading_date                    DateTime? @db.Date
+  session_duration_seconds        Int?
+  reading_efficiency              Decimal?  @default(dbgenerated("\nCASE\n    WHEN (number_of_breaths_per_minute > (0)::double precision) THEN round(((number_of_characters_per_minute / number_of_breaths_per_minute))::numeric, 2)\n    ELSE NULL::numeric\nEND")) @db.Decimal(5, 2)
+  created_at                      DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                      DateTime  @default(now()) @db.Timestamptz(6)
+  actions                         actions   @relation(fields: [action_id], references: [id], onDelete: Cascade, map: "fk_reading_logs_action_id")
+  books                           books     @relation(fields: [book_id], references: [id], map: "fk_reading_logs_book_id")
+  habits                          habits    @relation(fields: [habit_id], references: [id], onDelete: Cascade, map: "fk_reading_logs_habit_id")
+
+  @@index([book_id, reading_date], map: "idx_reading_logs_book_date")
+  @@index([book_id], map: "idx_reading_logs_book_id")
+  @@index([number_of_characters_per_minute], map: "idx_reading_logs_char_rate")
+  @@index([reading_date], map: "idx_reading_logs_date")
+  @@index([using_voice, book_id], map: "idx_reading_logs_voice")
+  @@index([habit_id, reading_date], map: "idx_reading_logs_habit_date")
+  @@index([habit_id], map: "idx_reading_logs_habit_id")
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model pronunciation_logs {
   id                    String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  habit_id              String   @db.Uuid
   action_id             String   @unique @db.Uuid
   original_text         String
   speech_to_text_result String
   accuracy_percentage   Decimal  @db.Decimal(5, 2)
   created_at            DateTime @default(now()) @db.Timestamptz(6)
-  actions               Action   @relation(fields: [action_id], references: [id], onDelete: Cascade, map: "fk_pronunciation_logs_action_id")
+  updated_at            DateTime @default(now()) @db.Timestamptz(6)
+  actions               actions  @relation(fields: [action_id], references: [id], onDelete: Cascade, map: "fk_pronunciation_logs_action_id")
+  habits                habits   @relation(fields: [habit_id], references: [id], onDelete: Cascade, map: "fk_pronunciation_logs_habit_id")
 
   @@index([accuracy_percentage], map: "idx_pronunciation_logs_accuracy")
   @@index([action_id], map: "idx_pronunciation_logs_action_id")
   @@index([created_at], map: "idx_pronunciation_logs_created_at")
+  @@index([habit_id, accuracy_percentage], map: "idx_pronunciation_logs_habit_accuracy")
+  @@index([habit_id], map: "idx_pronunciation_logs_habit_id")
 }
 
-enum HabitComplexity {
-  Complex          @map("Complex")
-  Simple           @map("Simple")
-  WithoutIntervals @map("Without Intervals")
-
-  @@map("habit_complexity")
+enum habit_complexity {
+  Complex
+  Simple
+  Without_Intervals @map("Without Intervals")
 }
