@@ -1,18 +1,20 @@
 services:
   habits_postgres:
     image: postgres:17.6-alpine3.22
-    container_name: ${CONTAINER_NAME} 
+    container_name: ${CONTAINER_NAME}
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_DB: "${DATABASE_NAME}"
-      POSTGRES_USER: "${DATABASE_USER}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
       POSTGRES_PASSWORD: "${DATABASE_PASSWORD}"
       DATABASE_NAME: "${DATABASE_NAME}"
-      DATABASE_USER: "${DATABASE_USER}"
+      PRISMA_USER: "${PRISMA_USER}"
+      FLYWAY_USER: "${FLYWAY_USER}"
       DATABASE_PASSWORD: "${DATABASE_PASSWORD}"
     volumes:
       - postgres_data:/var/lib/postgresql/data 
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+
 volumes:
   postgres_data:
