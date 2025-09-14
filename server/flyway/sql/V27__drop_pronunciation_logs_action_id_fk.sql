@@ -1,0 +1,2 @@
+ALTER TABLE pronunciation_logs
+DROP CONSTRAINT fk_pronunciation_logs_action_id;
