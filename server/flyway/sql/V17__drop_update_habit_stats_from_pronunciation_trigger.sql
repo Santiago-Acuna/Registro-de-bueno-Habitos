@@ -1,0 +1,1 @@
+DROP TRIGGER update_habit_stats_from_pronunciation_trigger ON public.pronunciation_logs;
