@@ -1,0 +1,2 @@
+ALTER TABLE reading_logs
+DROP CONSTRAINT fk_reading_logs_action_id;

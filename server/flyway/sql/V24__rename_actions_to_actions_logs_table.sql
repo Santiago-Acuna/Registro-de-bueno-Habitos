@@ -1,0 +1,1 @@
+ALTER TABLE actions RENAME TO action_logs;

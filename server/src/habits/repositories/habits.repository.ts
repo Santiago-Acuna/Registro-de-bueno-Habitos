@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { IHabitsRepository } from '../interfaces/habits-repository.interface';
 import { Habit } from '../../domain/entities/habit.entity';
@@ -19,7 +18,7 @@ export class HabitsRepository implements IHabitsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(habit: Habit): Promise<Habit> {
-    const data = await this.prisma.habit.create({
+    const data = await this.prisma.habits.create({
       data: {
         id: uuidv4(),
         name: habit.name.getValue(),
@@ -35,7 +34,7 @@ export class HabitsRepository implements IHabitsRepository {
   }
 
   async findById(id: UUID): Promise<Habit | null> {
-    const data = await this.prisma.habit.findUnique({
+    const data = await this.prisma.habits.findUnique({
       where: { id },
     });
 
@@ -54,13 +53,13 @@ export class HabitsRepository implements IHabitsRepository {
     };
 
     const [data, total] = await Promise.all([
-      this.prisma.habit.findMany({
+      this.prisma.habits.findMany({
         where,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.habit.count({ where }),
+      this.prisma.habits.count({ where }),
     ]);
 
     const habits = data.map((item) => this.mapToDomain(item));
@@ -97,7 +96,7 @@ export class HabitsRepository implements IHabitsRepository {
     }
 
     try {
-      const data = await this.prisma.habit.update({
+      const data = await this.prisma.habits.update({
         where: { id },
         data: updateData,
       });
@@ -114,7 +113,7 @@ export class HabitsRepository implements IHabitsRepository {
   async delete(id: UUID): Promise<void> {
     try {
       // Soft delete by setting isActive to false
-      await this.prisma.habit.update({
+      await this.prisma.habits.update({
         where: { id },
         data: { isActive: false },
       });
@@ -127,7 +126,7 @@ export class HabitsRepository implements IHabitsRepository {
   }
 
   async findByName(name: string): Promise<Habit | null> {
-    const data = await this.prisma.habit.findFirst({
+    const data = await this.prisma.habits.findFirst({
       where: { 
         name,
         isActive: true,
@@ -139,7 +138,7 @@ export class HabitsRepository implements IHabitsRepository {
 
   async incrementActionCount(id: UUID): Promise<Habit> {
     try {
-      const data = await this.prisma.habit.update({
+      const data = await this.prisma.habits.update({
         where: { id },
         data: {
           totalActionsCount: { increment: 1 },

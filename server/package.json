@@ -16,11 +16,6 @@
     "format": "prettier --write src/**/*.ts",
     "type-check": "tsc --noEmit",
     "db:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev",
-    "db:migrate:prod": "prisma migrate deploy",
-    "db:studio": "prisma studio",
-    "db:seed": "ts-node scripts/seed.ts",
     "prepare": "husky install",
     "pre-commit": "lint-staged"
   },

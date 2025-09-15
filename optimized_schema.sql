@@ -29,7 +29,7 @@ CREATE TABLE habits (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     is_active BOOLEAN DEFAULT true NOT NULL,
     
-    -- Computed fields for analytics
+    -- Computed fields for analytics (based on reading and pronunciation logs)
     total_actions_count INTEGER DEFAULT 0 NOT NULL,
     last_action_date TIMESTAMP WITH TIME ZONE,
     
@@ -42,16 +42,12 @@ CREATE TABLE habits (
 -- Time-tracked activities with optimizations for time-series queries
 CREATE TABLE actions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    habit_id UUID NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE,
     duration_seconds INTEGER,
     action_date DATE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    CONSTRAINT fk_actions_habit_id
-        FOREIGN KEY (habit_id) REFERENCES habits(id)
-        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT actions_time_sequence CHECK (
         end_time IS NULL OR end_time > start_time
     ),
@@ -114,6 +110,7 @@ CREATE TABLE books (
 -- Detailed reading session tracking with performance optimizations
 CREATE TABLE reading_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    habit_id UUID NOT NULL,
     action_id UUID NOT NULL UNIQUE,
     book_id UUID NOT NULL,
     number_of_characters INTEGER NOT NULL,
@@ -135,6 +132,9 @@ CREATE TABLE reading_logs (
     ) STORED,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT fk_reading_logs_habit_id
+        FOREIGN KEY (habit_id) REFERENCES habits(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT fk_reading_logs_action_id
         FOREIGN KEY (action_id) REFERENCES actions(id)
         ON DELETE CASCADE ON UPDATE CASCADE,
@@ -153,19 +153,26 @@ CREATE TABLE reading_logs (
     )
 );
 
-  CREATE TABLE pronunciation_logs (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      action_id UUID NOT NULL UNIQUE,
-      original_text TEXT NOT NULL,
-      speech_to_text_result TEXT NOT NULL,
-      accuracy_percentage DECIMAL(5,2) NOT NULL CHECK (accuracy_percentage >= 0 AND accuracy_percentage <= 100),
-      created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+-- PRONUNCIATION_LOGS TABLE
+-- Speech practice and pronunciation tracking with habit association
+CREATE TABLE pronunciation_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    habit_id UUID NOT NULL,
+    action_id UUID NOT NULL UNIQUE,
+    original_text TEXT NOT NULL,
+    speech_to_text_result TEXT NOT NULL,
+    accuracy_percentage DECIMAL(5,2) NOT NULL CHECK (accuracy_percentage >= 0 AND accuracy_percentage <= 100),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
-      -- Foreign key constraint to establish 1-to-1 relationship with actions table
-      CONSTRAINT fk_pronunciation_logs_action_id
-          FOREIGN KEY (action_id) REFERENCES actions(id)
-          ON DELETE CASCADE ON UPDATE CASCADE
-  );
+    -- Foreign key constraints
+    CONSTRAINT fk_pronunciation_logs_habit_id
+        FOREIGN KEY (habit_id) REFERENCES habits(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_pronunciation_logs_action_id
+        FOREIGN KEY (action_id) REFERENCES actions(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
 
 -- =========================================
 -- PERFORMANCE INDEXES
@@ -178,18 +185,12 @@ CREATE INDEX idx_habits_created_at ON habits(created_at);
 CREATE INDEX idx_habits_last_action ON habits(last_action_date DESC) WHERE last_action_date IS NOT NULL;
 
 -- ACTIONS TABLE INDEXES (Critical for time-series queries)
-CREATE INDEX idx_actions_habit_id ON actions(habit_id);
 CREATE INDEX idx_actions_start_time ON actions(start_time DESC);
 CREATE INDEX idx_actions_date ON actions(action_date);
-
--- Composite indexes for common query patterns
-CREATE INDEX idx_actions_habit_date ON actions(habit_id, action_date);
-CREATE INDEX idx_actions_habit_start_time ON actions(habit_id, start_time DESC);
 CREATE INDEX idx_actions_date_range ON actions(start_time, end_time) WHERE end_time IS NOT NULL;
 
 -- Duration-based queries
 CREATE INDEX idx_actions_duration ON actions(duration_seconds) WHERE duration_seconds IS NOT NULL;
-CREATE INDEX idx_actions_habit_duration ON actions(habit_id, duration_seconds) WHERE duration_seconds IS NOT NULL;
 
 -- BOOKS TABLE INDEXES
 CREATE INDEX idx_books_name ON books(name) WHERE is_active = true;
@@ -199,8 +200,10 @@ CREATE INDEX idx_books_genre ON books(genre) WHERE genre IS NOT NULL;
 CREATE INDEX idx_books_total_sessions ON books(total_reading_sessions DESC);
 
 -- READING_LOGS TABLE INDEXES
+CREATE INDEX idx_reading_logs_habit_id ON reading_logs(habit_id);
 CREATE INDEX idx_reading_logs_book_id ON reading_logs(book_id);
 CREATE INDEX idx_reading_logs_date ON reading_logs(reading_date);
+CREATE INDEX idx_reading_logs_habit_date ON reading_logs(habit_id, reading_date);
 CREATE INDEX idx_reading_logs_book_date ON reading_logs(book_id, reading_date);
 
 -- Performance analytics indexes
@@ -209,9 +212,11 @@ CREATE INDEX idx_reading_logs_efficiency ON reading_logs(reading_efficiency) WHE
 CREATE INDEX idx_reading_logs_voice ON reading_logs(using_voice, book_id);
 
 -- PRONUNCIATION_LOGS TABLE INDEXES    
-CREATE INDEX idx_pronunciation_logs_action_id ON pronunciation_logs (action_id);
-CREATE INDEX idx_pronunciation_logs_created_at ON pronunciation_logs (created_at);
-CREATE INDEX idx_pronunciation_logs_accuracy ON pronunciation_logs (accuracy_percentage);
+CREATE INDEX idx_pronunciation_logs_habit_id ON pronunciation_logs(habit_id);
+CREATE INDEX idx_pronunciation_logs_action_id ON pronunciation_logs(action_id);
+CREATE INDEX idx_pronunciation_logs_created_at ON pronunciation_logs(created_at);
+CREATE INDEX idx_pronunciation_logs_accuracy ON pronunciation_logs(accuracy_percentage);
+CREATE INDEX idx_pronunciation_logs_habit_accuracy ON pronunciation_logs(habit_id, accuracy_percentage);
 
 -- =========================================
 -- TRIGGERS FOR DATA CONSISTENCY
@@ -243,33 +248,69 @@ CREATE TRIGGER update_reading_logs_updated_at
     BEFORE UPDATE ON reading_logs 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Trigger to update habit statistics
+CREATE TRIGGER update_pronunciation_logs_updated_at 
+    BEFORE UPDATE ON pronunciation_logs 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Trigger to update habit statistics based on reading and pronunciation logs
 CREATE OR REPLACE FUNCTION update_habit_stats()
 RETURNS TRIGGER AS $$
+DECLARE
+    action_start_time TIMESTAMP WITH TIME ZONE;
+    habit_uuid UUID;
 BEGIN
     IF TG_OP = 'INSERT' THEN
+        -- Get habit_id and action start time
+        IF TG_TABLE_NAME = 'reading_logs' THEN
+            habit_uuid := NEW.habit_id;
+            SELECT start_time INTO action_start_time FROM actions WHERE id = NEW.action_id;
+        ELSIF TG_TABLE_NAME = 'pronunciation_logs' THEN
+            habit_uuid := NEW.habit_id;
+            SELECT start_time INTO action_start_time FROM actions WHERE id = NEW.action_id;
+        END IF;
+        
         UPDATE habits SET 
             total_actions_count = total_actions_count + 1,
-            last_action_date = NEW.start_time
-        WHERE id = NEW.habit_id;
+            last_action_date = GREATEST(COALESCE(last_action_date, action_start_time), action_start_time)
+        WHERE id = habit_uuid;
         RETURN NEW;
+        
     ELSIF TG_OP = 'DELETE' THEN
+        -- Get habit_id
+        IF TG_TABLE_NAME = 'reading_logs' THEN
+            habit_uuid := OLD.habit_id;
+        ELSIF TG_TABLE_NAME = 'pronunciation_logs' THEN
+            habit_uuid := OLD.habit_id;
+        END IF;
+        
         UPDATE habits SET 
             total_actions_count = GREATEST(total_actions_count - 1, 0),
             last_action_date = (
-                SELECT MAX(start_time) 
-                FROM actions 
-                WHERE habit_id = OLD.habit_id AND id != OLD.id
+                SELECT MAX(a.start_time) 
+                FROM actions a
+                WHERE a.id IN (
+                    SELECT rl.action_id FROM reading_logs rl WHERE rl.habit_id = habit_uuid
+                    UNION
+                    SELECT pl.action_id FROM pronunciation_logs pl WHERE pl.habit_id = habit_uuid
+                )
+                AND a.id != (CASE 
+                    WHEN TG_TABLE_NAME = 'reading_logs' THEN OLD.action_id
+                    WHEN TG_TABLE_NAME = 'pronunciation_logs' THEN OLD.action_id
+                END)
             )
-        WHERE id = OLD.habit_id;
+        WHERE id = habit_uuid;
         RETURN OLD;
     END IF;
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_habit_stats_trigger
-    AFTER INSERT OR DELETE ON actions
+CREATE TRIGGER update_habit_stats_from_reading_trigger
+    AFTER INSERT OR DELETE ON reading_logs
+    FOR EACH ROW EXECUTE FUNCTION update_habit_stats();
+
+CREATE TRIGGER update_habit_stats_from_pronunciation_trigger
+    AFTER INSERT OR DELETE ON pronunciation_logs
     FOR EACH ROW EXECUTE FUNCTION update_habit_stats();
 
 -- Trigger to update book reading statistics

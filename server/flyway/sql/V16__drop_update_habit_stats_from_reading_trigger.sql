@@ -1,0 +1,1 @@
+DROP TRIGGER update_habit_stats_from_reading_trigger ON public.reading_logs;

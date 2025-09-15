@@ -1,0 +1,2 @@
+ALTER TABLE IF EXISTS public.habits
+    ALTER COLUMN logo SET NOT NULL;
