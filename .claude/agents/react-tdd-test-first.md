@@ -1,6 +1,6 @@
 ---
 name: react-tdd-test-first
-description: Use this agent when starting any new functionality development in React, before writing any implementation code. Examples: <example>Context: User is about to implement a new login form component. user: 'I need to create a login form component with email and password fields' assistant: 'I'll use the tdd-test-first agent to write comprehensive tests first before implementing the component' <commentary>Since the user is starting new functionality, use the tdd-test-first agent to write failing tests first following TDD principles.</commentary></example> 
+description: Use this agent when starting any new functionality development in React, before writing any implementation code. Examples: <example>Context: User is about to implement a new login form component. user: 'I need to create a login form component with email and password fields' assistant: 'I'll use the react-tdd-test-first agent to write comprehensive tests first before implementing the component' <commentary>Since the user is starting new functionality, use the react-tdd-test-first agent to write failing tests first following TDD principles.</commentary></example> 
 model: sonnet
 color: yellow
 ---
