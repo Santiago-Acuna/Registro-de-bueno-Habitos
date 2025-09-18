@@ -14,8 +14,8 @@ const fetchHabits = createAsyncThunk("habit/fetchAllHabits", async () => {
     let retryCount = 0;
 
     const fetchData = async (): Promise<boolean> => {
-      const response = await axios.get("http://localhost:5000/habits/");
-      const habitDataIsThere: Habit[] = response.data;
+      const response = await axios.get("http://localhost:3000/api/v1/habits");
+      const habitDataIsThere: Habit[] = response.data.data;
 
       if (habitDataIsThere.length !== 0) {
         habitData = habitDataIsThere;
@@ -50,7 +50,7 @@ const postHabits = createAsyncThunk(
   async (habit: HabitBody) => {
     console.log("post dispached");
     try {
-      const response = await axios.post("http://localhost:5000/habits/", habit);
+      const response = await axios.post("http://localhost:3000/api/v1/habits/", habit);
       console.log(response.data);
       return response.data;
     } catch (e) {
@@ -65,7 +65,7 @@ const patchHabits = createAsyncThunk(
   async (payload: { habit: HabitBody; habitID: string }) => {
     const { habit, habitID } = payload;
     try {
-      const response = await axios.patch(`http://localhost:5000/habits/${habitID}`, habit);
+      const response = await axios.patch(`http://localhost:3000/api/v1/habits/${habitID}`, habit);
       console.log(response.data);
       return response.data;
     } catch (e) {

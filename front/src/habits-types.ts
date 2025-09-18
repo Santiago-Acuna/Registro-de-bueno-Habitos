@@ -13,7 +13,7 @@ interface HabitBody {
 interface Habit {
   id: string;
   name: string;
-  habit_type: HabitType;
+  habitType: HabitType | string;
   logo: string;
 }
 
