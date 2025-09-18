@@ -15,8 +15,8 @@ const fetchBooks = createAsyncThunk("book/fetchAllbooks", async () => {
     let retryCount = 0;
 
     const fetchData = async (): Promise<boolean> => {
-      const response = await axios.get("http://localhost:5000/books/");
-      const bookDataIsThere: BookType[] = response.data;
+      const response = await axios.get("http://localhost:3000/api/v1/books/");
+      const bookDataIsThere: BookType[] = response.data.data;
       console.log(bookDataIsThere)
 
       if (bookDataIsThere.length !== 0) {
@@ -52,7 +52,7 @@ const postBooks = createAsyncThunk(
   async (book: BookBody) => {
     console.log("post dispached");
     try {
-      const response = await axios.post("http://localhost:5000/books/", book);
+      const response = await axios.post("http://localhost:3000/api/v1/books/", book);
       console.log(response.data);
       return response.data;
     } catch (e) {
@@ -67,7 +67,7 @@ const patchBooks = createAsyncThunk(
   async (payload: { book: BookBody; bookID: string }) => {
     const { book, bookID } = payload;
     try {
-      const response = await axios.patch(`http://localhost:5000/books/${bookID}`, book);
+      const response = await axios.patch(`http://localhost:3000/api/v1/books/${bookID}`, book);
       console.log(response.data);
       return response.data;
     } catch (e) {

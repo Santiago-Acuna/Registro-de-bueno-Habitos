@@ -17,7 +17,7 @@ const habitsSlice = createSlice({
   reducers: {
     filterByComplexity: (state: State, action: PayloadAction<string>) => {
       const allHabits2 = state.backUpHabits;
-      const complexityFiltered =allHabits2.filter((e) => e.habit_type?.includes(action.payload));
+      const complexityFiltered =allHabits2.filter((e) => e.habitType?.includes(action.payload));
       state.habits = complexityFiltered;
     },
   },
