@@ -22,7 +22,7 @@ This report documents the comprehensive Test-Driven Development (TDD) implementa
 - **Key Test Categories:**
   - Habit creation with factory method and constructor
   - Immutable entity updates (name, logo, deactivation)
-  - Business logic methods (incrementActionCount, type checks)
+  - Business logic methods (type checks)
   - Validation and error handling
   - Equality comparison and edge cases
 

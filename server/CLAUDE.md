@@ -29,7 +29,7 @@ src/
 ## Key DDD Patterns Implemented
 
 1. **Rich Domain Model**: Entities contain business logic, not just data
-   - `Habit` entity with methods like `incrementActionCount()`, `deactivate()`
+   - `Habit` entity with methods like `deactivate()`
    - Domain-driven validation and business rules enforcement
 
 2. **Value Objects**: Encapsulate validation and business rules
