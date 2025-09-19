@@ -82,19 +82,6 @@ export class Habit implements HabitProps {
     );
   }
 
-  public incrementActionCount(): Habit {
-    return new Habit(
-      this.id,
-      this.name,
-      this.habitType,
-      this.logo,
-      this.createdAt,
-      new Date(),
-      this.isActive,
-      this.totalActionsCount + 1,
-      new Date()
-    );
-  }
 
   public isComplex(): boolean {
     return this.habitType === HabitComplexity.COMPLEX;

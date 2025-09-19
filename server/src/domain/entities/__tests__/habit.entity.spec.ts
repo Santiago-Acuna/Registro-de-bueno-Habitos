@@ -241,70 +241,6 @@ describe('Habit Domain Entity', () => {
     });
   });
 
-  describe('incrementActionCount()', () => {
-    let habit: Habit;
-
-    beforeEach(() => {
-      habit = Habit.create(
-        validHabitId,
-        validHabitName,
-        validHabitType,
-        validLogo,
-        fixedDate,
-        fixedDate
-      );
-    });
-
-    it('should return new habit instance with incremented action count and updated last action date', () => {
-      const beforeIncrement = new Date();
-      const incrementedHabit = habit.incrementActionCount();
-      const afterIncrement = new Date();
-
-      expect(incrementedHabit).not.toBe(habit); // New instance
-      expect(incrementedHabit.totalActionsCount).toBe(habit.totalActionsCount + 1);
-      expect(incrementedHabit.lastActionDate).toBeInstanceOf(Date);
-      expect(incrementedHabit.lastActionDate!.getTime()).toBeGreaterThanOrEqual(
-        beforeIncrement.getTime()
-      );
-      expect(incrementedHabit.lastActionDate!.getTime()).toBeLessThanOrEqual(
-        afterIncrement.getTime()
-      );
-      expect(incrementedHabit.updatedAt.getTime()).toBeGreaterThanOrEqual(
-        beforeIncrement.getTime()
-      );
-      expect(incrementedHabit.updatedAt.getTime()).toBeLessThanOrEqual(afterIncrement.getTime());
-    });
-
-    it('should increment from existing action count', () => {
-      const habitName = HabitName.create(validHabitName);
-      const existingHabit = new Habit(
-        validHabitId,
-        habitName,
-        validHabitType,
-        validLogo,
-        fixedDate,
-        fixedDate,
-        true,
-        10,
-        fixedDate
-      );
-
-      const incrementedHabit = existingHabit.incrementActionCount();
-
-      expect(incrementedHabit.totalActionsCount).toBe(11);
-    });
-
-    it('should preserve other habit properties', () => {
-      const incrementedHabit = habit.incrementActionCount();
-
-      expect(incrementedHabit.id).toBe(habit.id);
-      expect(incrementedHabit.name).toBe(habit.name);
-      expect(incrementedHabit.habitType).toBe(habit.habitType);
-      expect(incrementedHabit.logo).toBe(habit.logo);
-      expect(incrementedHabit.isActive).toBe(habit.isActive);
-      expect(incrementedHabit.createdAt).toBe(habit.createdAt);
-    });
-  });
 
   describe('habit type check methods', () => {
     it('should correctly identify complex habits', () => {
@@ -400,12 +336,9 @@ describe('Habit Domain Entity', () => {
 
       const updatedHabit = originalHabit
         .updateName('New Name')
-        .incrementActionCount()
-        .incrementActionCount()
         .deactivate();
 
       expect(updatedHabit.name.getValue()).toBe('New Name');
-      expect(updatedHabit.totalActionsCount).toBe(2);
       expect(updatedHabit.isActive).toBe(false);
       expect(updatedHabit.lastActionDate).toBeInstanceOf(Date);
 
