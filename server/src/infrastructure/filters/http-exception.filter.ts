@@ -6,8 +6,8 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
 import { Prisma } from '@prisma/client';
+import { Request, Response } from 'express';
 
 interface ErrorResponse {
   error: string;
@@ -61,16 +61,16 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
     return {
       error: exception.constructor.name,
-      message: typeof exceptionResponse === 'string' 
-        ? exceptionResponse 
-        : (exceptionResponse as any).message || exception.message,
+      message:
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : (exceptionResponse as any).message || exception.message,
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
-      ...(typeof exceptionResponse === 'object' && 
-          exceptionResponse !== null && 
-          'details' in exceptionResponse && 
-          { details: (exceptionResponse as any).details }),
+      ...(typeof exceptionResponse === 'object' &&
+        exceptionResponse !== null &&
+        'details' in exceptionResponse && { details: (exceptionResponse as any).details }),
     };
   }
 
