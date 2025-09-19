@@ -22,7 +22,6 @@ const mockHabitsRepository = {
   update: jest.fn(),
   delete: jest.fn(),
   findByName: jest.fn(),
-  incrementActionCount: jest.fn(),
 };
 
 const mockCloudinaryService = {
@@ -571,51 +570,6 @@ describe('Habits API Integration Tests', () => {
     });
   });
 
-  describe('POST /habits/:id/increment-action', () => {
-    it('should successfully increment action count', async () => {
-      // Arrange
-      const habitWithIncrementedCount = createMockHabit({
-        totalActionsCount: 1,
-        lastActionDate: new Date('2024-01-01T12:00:00.000Z'),
-      });
-      habitsRepository.incrementActionCount.mockResolvedValue(habitWithIncrementedCount);
-
-      // Act & Assert
-      const response = await request(app.getHttpServer())
-        .post(`/habits/${mockHabitId}/increment-action`)
-        .set('X-API-Version', '1')
-        .expect(200);
-
-      expect(response.body).toEqual(
-        expect.objectContaining({
-          id: mockHabitId,
-          totalActionsCount: 1,
-          lastActionDate: expect.any(String),
-        })
-      );
-    });
-
-    it('should return 404 when habit not found', async () => {
-      // Arrange
-      habitsRepository.incrementActionCount.mockRejectedValue(
-        new NotFoundError('Habit', mockHabitId)
-      );
-
-      // Act & Assert
-      await request(app.getHttpServer())
-        .post(`/habits/${mockHabitId}/increment-action`)
-        .set('X-API-Version', '1')
-        .expect(404);
-    });
-
-    it('should return 400 for invalid UUID format', async () => {
-      // Act & Assert
-      await request(app.getHttpServer())
-        .post('/habits/invalid-uuid/increment-action')
-        .set('X-API-Version', '1')
-        .expect(400);
-    });
-  });
 
   describe('API versioning', () => {
     it('should require API version header', async () => {
