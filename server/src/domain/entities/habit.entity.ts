@@ -35,14 +35,7 @@ export class Habit implements HabitProps {
     const habitName = HabitName.create(name);
     const now = new Date();
 
-    return new Habit(
-      id,
-      habitName,
-      habitType,
-      logo,
-      createdAt || now,
-      updatedAt || now
-    );
+    return new Habit(id, habitName, habitType, logo, createdAt || now, updatedAt || now);
   }
 
   public updateName(newName: string): Habit {
