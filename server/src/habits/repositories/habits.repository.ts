@@ -137,24 +137,6 @@ export class HabitsRepository implements IHabitsRepository {
     return data ? this.mapToDomain(data) : null;
   }
 
-  async incrementActionCount(id: UUID): Promise<Habit> {
-    try {
-      const data = await this.prisma.habits.update({
-        where: { id },
-        data: {
-          totalActionsCount: { increment: 1 },
-          lastActionDate: new Date(),
-        },
-      });
-
-      return this.mapToDomain(data);
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new NotFoundError('Habit', id);
-      }
-      throw error;
-    }
-  }
 
   private mapToDomain(data: any): Habit {
     const habitName = HabitName.create(data.name);

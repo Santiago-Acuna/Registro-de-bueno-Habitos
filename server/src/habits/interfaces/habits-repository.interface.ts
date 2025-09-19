@@ -13,5 +13,4 @@ export interface IHabitsRepository {
   update(id: UUID, habit: Partial<Habit>): Promise<Habit>;
   delete(id: UUID): Promise<void>;
   findByName(name: string): Promise<Habit | null>;
-  incrementActionCount(id: UUID): Promise<Habit>;
 }

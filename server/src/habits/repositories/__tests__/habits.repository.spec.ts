@@ -630,71 +630,6 @@ describe('HabitsRepository', () => {
     });
   });
 
-  describe('incrementActionCount()', () => {
-    it('should increment action count and update last action date', async () => {
-      // Arrange
-      const lastActionDate = new Date();
-      const mockUpdatedData = createMockPrismaData({
-        totalActionsCount: 1,
-        lastActionDate,
-      });
-      mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
-
-      // Act
-      const result = await repository.incrementActionCount(mockHabitId);
-
-      // Assert
-      expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
-        where: { id: mockHabitId },
-        data: {
-          totalActionsCount: { increment: 1 },
-          lastActionDate: expect.any(Date),
-        },
-      });
-      expect(result).toBeInstanceOf(Habit);
-      expect(result.totalActionsCount).toBe(1);
-      expect(result.lastActionDate).toBeInstanceOf(Date);
-    });
-
-    it('should throw NotFoundError when habit does not exist', async () => {
-      // Arrange
-      const prismaError = { code: 'P2025', message: 'Record not found' };
-      mockPrismaService.habits.update.mockRejectedValue(prismaError);
-
-      // Act & Assert
-      await expect(repository.incrementActionCount(mockHabitId)).rejects.toThrow(NotFoundError);
-      await expect(repository.incrementActionCount(mockHabitId)).rejects.toThrow('Habit');
-    });
-
-    it('should propagate other database errors', async () => {
-      // Arrange
-      const dbError = new Error('Database constraint error');
-      mockPrismaService.habits.update.mockRejectedValue(dbError);
-
-      // Act & Assert
-      await expect(repository.incrementActionCount(mockHabitId)).rejects.toThrow(
-        'Database constraint error'
-      );
-    });
-
-    it('should use Prisma increment operation', async () => {
-      // Arrange
-      const mockUpdatedData = createMockPrismaData({ totalActionsCount: 5 });
-      mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
-
-      // Act
-      await repository.incrementActionCount(mockHabitId);
-
-      // Assert
-      expect(mockPrismaService.habits.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          data: expect.objectContaining({
-            totalActionsCount: { increment: 1 },
-          }),
-        })
-      );
-    });
-  });
 
   describe('mapToDomain() - domain mapping verification', () => {
     it('should correctly map all Prisma data to domain entity', async () => {
@@ -783,14 +718,13 @@ describe('HabitsRepository', () => {
       // Act - Simulate concurrent operations
       const promises = [
         repository.findById(mockHabitId),
-        repository.incrementActionCount(mockHabitId),
         repository.findById(mockHabitId),
       ];
 
       const results = await Promise.all(promises);
 
       // Assert
-      expect(results).toHaveLength(3);
+      expect(results).toHaveLength(2);
       results.forEach(result => {
         expect(result).toBeInstanceOf(Habit);
       });
