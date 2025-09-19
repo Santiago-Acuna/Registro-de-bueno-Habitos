@@ -31,7 +31,6 @@ const mockHabitsService = {
   findOne: jest.fn(),
   update: jest.fn(),
   remove: jest.fn(),
-  incrementActionCount: jest.fn(),
 };
 
 // Mock ThrottlerGuard
@@ -407,43 +406,6 @@ describe('HabitsController', () => {
     });
   });
 
-  describe('incrementActionCount()', () => {
-    it('should successfully increment action count', async () => {
-      // Arrange
-      const expectedResponse = createMockHabitResponse({
-        totalActionsCount: 1,
-        lastActionDate: new Date('2024-01-01T12:00:00.000Z'),
-        updatedAt: new Date('2024-01-01T12:00:00.000Z'),
-      });
-      habitsService.incrementActionCount.mockResolvedValue(expectedResponse);
-
-      // Act
-      const result = await controller.incrementActionCount(mockHabitId);
-
-      // Assert
-      expect(habitsService.incrementActionCount).toHaveBeenCalledWith(mockHabitId);
-      expect(result).toEqual(expectedResponse);
-      expect(result.totalActionsCount).toBe(1);
-      expect(result.lastActionDate).toBeInstanceOf(Date);
-    });
-
-    it('should handle NotFoundError from service', async () => {
-      // Arrange
-      habitsService.incrementActionCount.mockRejectedValue(new NotFoundError('Habit', mockHabitId));
-
-      // Act & Assert
-      await expect(controller.incrementActionCount(mockHabitId)).rejects.toThrow(NotFoundError);
-    });
-
-    it('should handle other service errors', async () => {
-      // Arrange
-      const serviceError = new Error('Update failed');
-      habitsService.incrementActionCount.mockRejectedValue(serviceError);
-
-      // Act & Assert
-      await expect(controller.incrementActionCount(mockHabitId)).rejects.toThrow('Update failed');
-    });
-  });
 
   describe('controller decorators and middleware integration', () => {
     it('should be decorated with ApiTags', () => {
@@ -467,7 +429,6 @@ describe('HabitsController', () => {
       expect(controller.findOne).toBeDefined();
       expect(controller.update).toBeDefined();
       expect(controller.remove).toBeDefined();
-      expect(controller.incrementActionCount).toBeDefined();
     });
   });
 

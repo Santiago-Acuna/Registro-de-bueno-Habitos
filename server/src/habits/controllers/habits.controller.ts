@@ -224,29 +224,4 @@ export class HabitsController {
     return this.habitsService.remove(id);
   }
 
-  @Post(':id/increment-action')
-  @Version('1')
-  @ApiOperation({
-    summary: 'Increment habit action count',
-    description: 'Increments the action count for a habit and updates the last action date.',
-  })
-  @ApiParam({
-    name: 'id',
-    type: 'string',
-    format: 'uuid',
-    description: 'Unique identifier of the habit',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Action count incremented successfully',
-    type: HabitResponseDto,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Habit not found',
-  })
-  async incrementActionCount(@Param('id') id: UUID): Promise<HabitResponseDto> {
-    return this.habitsService.incrementActionCount(id);
-  }
 }
