@@ -167,15 +167,6 @@ export class HabitsService {
     this.logger.log(`Successfully removed habit with id: ${id}`);
   }
 
-  async incrementActionCount(id: UUID): Promise<HabitResponseDto> {
-    this.logger.log(`Incrementing action count for habit with id: ${id}`);
-
-    const updatedHabit = await this.habitsRepository.incrementActionCount(id);
-
-    this.logger.log(`Successfully incremented action count for habit with id: ${id}`);
-
-    return this.mapToResponse(updatedHabit);
-  }
 
   private mapToResponse(habit: Habit): HabitResponseDto {
     return {

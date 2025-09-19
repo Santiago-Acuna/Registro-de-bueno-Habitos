@@ -30,7 +30,6 @@ const mockHabitsRepository = {
   update: jest.fn(),
   delete: jest.fn(),
   findByName: jest.fn(),
-  incrementActionCount: jest.fn(),
 };
 
 const mockCloudinaryService = {
@@ -574,33 +573,6 @@ describe('HabitsService', () => {
     });
   });
 
-  describe('incrementActionCount()', () => {
-    it('should successfully increment action count', async () => {
-      // Arrange
-      const habitWithIncrementedCount = createMockHabit({
-        totalActionsCount: 1,
-        lastActionDate: new Date(),
-      });
-      habitsRepository.incrementActionCount.mockResolvedValue(habitWithIncrementedCount);
-
-      // Act
-      const result = await service.incrementActionCount(mockHabitId);
-
-      // Assert
-      expect(habitsRepository.incrementActionCount).toHaveBeenCalledWith(mockHabitId);
-      expect(result.totalActionsCount).toBe(1);
-      expect(result.lastActionDate).toBeInstanceOf(Date);
-    });
-
-    it('should handle repository errors', async () => {
-      // Arrange
-      const repositoryError = new Error('Repository error');
-      habitsRepository.incrementActionCount.mockRejectedValue(repositoryError);
-
-      // Act & Assert
-      await expect(service.incrementActionCount(mockHabitId)).rejects.toThrow('Repository error');
-    });
-  });
 
   describe('mapToResponse() - private method behavior verification', () => {
     it('should correctly map all habit properties to response DTO', async () => {
