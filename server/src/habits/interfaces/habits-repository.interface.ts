@@ -1,5 +1,10 @@
 import { Habit } from '../../domain/entities/habit.entity';
-import { PaginatedResult, PaginationParams, FilterOptions, UUID } from '../../domain/shared/types/common';
+import {
+  PaginatedResult,
+  PaginationParams,
+  FilterOptions,
+  UUID,
+} from '../../domain/shared/types/common';
 
 export interface IHabitsRepository {
   create(habit: Habit): Promise<Habit>;

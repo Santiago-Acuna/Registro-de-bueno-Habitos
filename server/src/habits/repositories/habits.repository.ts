@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
-import { PrismaService } from '../../infrastructure/database/prisma.service';
-import { IHabitsRepository } from '../interfaces/habits-repository.interface';
+
 import { Habit } from '../../domain/entities/habit.entity';
-import { HabitName } from '../../domain/value-objects/habit-name';
-import { 
-  PaginatedResult, 
-  PaginationParams, 
-  FilterOptions, 
-  UUID, 
-  HabitComplexity 
+import {
+  PaginatedResult,
+  PaginationParams,
+  FilterOptions,
+  UUID,
+  HabitComplexity,
 } from '../../domain/shared/types/common';
+import { HabitName } from '../../domain/value-objects/habit-name';
+import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { NotFoundError } from '../../infrastructure/exceptions/app.exceptions';
+import { IHabitsRepository } from '../interfaces/habits-repository.interface';
 
 @Injectable()
 export class HabitsRepository implements IHabitsRepository {
@@ -42,7 +43,7 @@ export class HabitsRepository implements IHabitsRepository {
   }
 
   async findAll(
-    params: PaginationParams, 
+    params: PaginationParams,
     filters?: FilterOptions
   ): Promise<PaginatedResult<Habit>> {
     const { page, limit } = params;
@@ -62,7 +63,7 @@ export class HabitsRepository implements IHabitsRepository {
       this.prisma.habits.count({ where }),
     ]);
 
-    const habits = data.map((item) => this.mapToDomain(item));
+    const habits = data.map(item => this.mapToDomain(item));
 
     return {
       data: habits,
@@ -127,7 +128,7 @@ export class HabitsRepository implements IHabitsRepository {
 
   async findByName(name: string): Promise<Habit | null> {
     const data = await this.prisma.habits.findFirst({
-      where: { 
+      where: {
         name,
         isActive: true,
       },
@@ -157,7 +158,7 @@ export class HabitsRepository implements IHabitsRepository {
 
   private mapToDomain(data: any): Habit {
     const habitName = HabitName.create(data.name);
-    
+
     return new Habit(
       data.id,
       habitName,

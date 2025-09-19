@@ -1,24 +1,20 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 
-import { IHabitsRepository } from '../interfaces/habits-repository.interface';
 import { Habit } from '../../domain/entities/habit.entity';
-import { CreateHabitDto } from '../dto/create-habit.dto';
-import { UpdateHabitDto } from '../dto/update-habit.dto';
-import { HabitResponseDto } from '../dto/habit-response.dto';
-import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
+import { PaginatedResult, FilterOptions, UUID } from '../../domain/shared/types/common';
+import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
-import {
-  PaginatedResult,
-  FilterOptions,
-  UUID
-} from '../../domain/shared/types/common';
+import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
 import {
   NotFoundError,
   ConflictError,
-  ValidationException
+  ValidationException,
 } from '../../infrastructure/exceptions/app.exceptions';
-import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
+import { CreateHabitDto } from '../dto/create-habit.dto';
+import { HabitResponseDto } from '../dto/habit-response.dto';
+import { UpdateHabitDto } from '../dto/update-habit.dto';
+import { IHabitsRepository } from '../interfaces/habits-repository.interface';
 
 @Injectable()
 export class HabitsService {
@@ -28,9 +24,12 @@ export class HabitsService {
     @Inject('IHabitsRepository')
     private readonly habitsRepository: IHabitsRepository,
     private readonly cloudinaryService: CloudinaryService
-  ) { }
+  ) {}
 
-  async create(createHabitDto: CreateHabitDto, logo:Express.Multer.File): Promise<HabitResponseDto> {
+  async create(
+    createHabitDto: CreateHabitDto,
+    logo: Express.Multer.File
+  ): Promise<HabitResponseDto> {
     this.logger.log(`Creating new habit: ${createHabitDto.name}`);
 
     // Check if habit with same name already exists
@@ -39,15 +38,17 @@ export class HabitsService {
       throw new ConflictError(`Habit with name '${createHabitDto.name}' already exists`);
     }
 
-    const result = await this.cloudinaryService.uploadImage(logo,
-      {public_id: logo.originalname.split('.')[0] as string, 
-          folder: 'habits',  
-          resourceType: 'auto',});
-    var imageUrl = result.url;
+    const result = await this.cloudinaryService.uploadImage(logo, {
+      public_id: logo.originalname.split('.')[0] as string,
+      folder: 'habits',
+      resourceType: 'auto',
+    });
+    const imageUrl = result.url;
     if (!result.success) {
-      throw new ValidationException(result.error?.message || 'Failed to upload image. Uncontrolled error');
+      throw new ValidationException(
+        result.error?.message || 'Failed to upload image. Uncontrolled error'
+      );
     }
-
 
     try {
       // Create domain entity
@@ -79,7 +80,9 @@ export class HabitsService {
     paginationQuery: PaginationQueryDto,
     filters?: FilterOptions
   ): Promise<PaginatedResponseDto<HabitResponseDto>> {
-    this.logger.log(`Fetching habits - page: ${paginationQuery.page}, limit: ${paginationQuery.limit}`);
+    this.logger.log(
+      `Fetching habits - page: ${paginationQuery.page}, limit: ${paginationQuery.limit}`
+    );
 
     const result: PaginatedResult<Habit> = await this.habitsRepository.findAll(
       {
@@ -89,14 +92,9 @@ export class HabitsService {
       filters
     );
 
-    const responseData = result.data.map((habit) => this.mapToResponse(habit));
+    const responseData = result.data.map(habit => this.mapToResponse(habit));
 
-    return new PaginatedResponseDto(
-      responseData,
-      result.total,
-      result.page,
-      result.limit
-    );
+    return new PaginatedResponseDto(responseData, result.total, result.page, result.limit);
   }
 
   async findOne(id: UUID): Promise<HabitResponseDto> {
@@ -146,7 +144,10 @@ export class HabitsService {
 
       return this.mapToResponse(savedHabit);
     } catch (error) {
-      if (error instanceof Error && (error.message.includes('Logo') || error.message.includes('Habit name'))) {
+      if (
+        error instanceof Error &&
+        (error.message.includes('Logo') || error.message.includes('Habit name'))
+      ) {
         throw new ValidationException(error.message);
       }
       throw error;

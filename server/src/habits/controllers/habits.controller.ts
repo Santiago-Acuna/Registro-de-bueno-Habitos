@@ -12,42 +12,28 @@ import {
   HttpStatus,
   UseGuards,
   UseInterceptors,
-  UploadedFile
-
+  UploadedFile,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-
-} from '@nestjs/swagger';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { HabitsService } from '../services/habits.service';
-import { CreateHabitDto } from '../dto/create-habit.dto';
-import { UpdateHabitDto } from '../dto/update-habit.dto';
-import { HabitResponseDto } from '../dto/habit-response.dto';
-import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
-import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { validate } from 'class-validator';
+
 import { UUID } from '../../domain/shared/types/common';
 import { UploadImageDto } from '../../helpers/cloudinary';
-import { validate } from 'class-validator';
-import {
-  ValidationException
-} from '../../infrastructure/exceptions/app.exceptions';
-
-
-
+import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
+import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
+import { ValidationException } from '../../infrastructure/exceptions/app.exceptions';
+import { CreateHabitDto } from '../dto/create-habit.dto';
+import { HabitResponseDto } from '../dto/habit-response.dto';
+import { UpdateHabitDto } from '../dto/update-habit.dto';
+import { HabitsService } from '../services/habits.service';
 
 @ApiTags('habits')
 @Controller('habits')
 @UseGuards(ThrottlerGuard)
 export class HabitsController {
-  constructor(private readonly habitsService: HabitsService,
-  ) { }
+  constructor(private readonly habitsService: HabitsService) {}
   @Post()
   @UseInterceptors(FileInterceptor('logo'))
   @Version('1')
@@ -78,18 +64,16 @@ export class HabitsController {
     status: 409,
     description: 'Habit with the same name already exists',
   })
-  async create(@Body() createHabitDto: CreateHabitDto,
-    @UploadedFile() logo: Express.Multer.File,
+  async create(
+    @Body() createHabitDto: CreateHabitDto,
+    @UploadedFile() logo: Express.Multer.File
   ): Promise<HabitResponseDto> {
-
     const uploadImageDto = new UploadImageDto();
     uploadImageDto.image = logo;
 
     const errors = await validate(uploadImageDto);
     if (errors.length > 0) {
-      const message = errors
-        .map(err => Object.values(err.constraints || {}).join(', '))
-        .join('; ');
+      const message = errors.map(err => Object.values(err.constraints || {}).join(', ')).join('; ');
 
       throw new ValidationException(message || 'Uncontrolled error with the image you sent');
     }
@@ -179,7 +163,8 @@ export class HabitsController {
   @Version('1')
   @ApiOperation({
     summary: 'Update habit',
-    description: 'Updates a habit with the provided information. Only provided fields will be updated.',
+    description:
+      'Updates a habit with the provided information. Only provided fields will be updated.',
   })
   @ApiParam({
     name: 'id',
