@@ -176,9 +176,9 @@ export class HabitsService {
       logo: habit.logo,
       isActive: habit.isActive,
       totalActionsCount: habit.totalActionsCount,
-      lastActionDate: habit.lastActionDate,
-      createdAt: habit.createdAt,
-      updatedAt: habit.updatedAt,
+      lastActionDate: habit.lastActionDate ? new Date(habit.lastActionDate) : null,
+      createdAt: new Date(habit.createdAt),
+      updatedAt: new Date(habit.updatedAt),
     };
   }
 }
