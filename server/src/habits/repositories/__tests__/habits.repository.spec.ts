@@ -162,7 +162,7 @@ describe('HabitsRepository', () => {
 
     it('should handle habit with action count and last action date', async () => {
       // Arrange
-      const lastActionDate = new Date('2024-01-01T12:00:00.000Z');
+      const lastActionDate = new Date('2024-01-01T12:00:00.000Z').toISOString();
       const habitWithActions = createMockHabit({
         totalActionsCount: 5,
         lastActionDate,
