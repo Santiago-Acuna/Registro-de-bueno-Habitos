@@ -6,7 +6,7 @@ import {
   ValidationArguments,
 } from 'class-validator';
 
-@ValidatorConstraint({ async: false })
+@ValidatorConstraint({ name: 'isImageFile', async: false })
 class IsImageFileConstraint implements ValidatorConstraintInterface {
   validate(file: Express.Multer.File, args: ValidationArguments) {
     if (!file) {

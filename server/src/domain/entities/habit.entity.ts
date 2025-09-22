@@ -40,9 +40,28 @@ export class Habit implements HabitProps {
     const habitName = HabitName.create(name);
     const now = new Date().toISOString();
 
-    // Validate provided dates, but allow undefined/null to use defaults
-    const finalCreatedAt = createdAt === undefined || createdAt === null ? now : createdAt;
-    const finalUpdatedAt = updatedAt === undefined || updatedAt === null ? now : updatedAt;
+    // Validate provided dates if they are provided (not undefined)
+    // null values should be rejected with proper error messages
+    let finalCreatedAt: string;
+    let finalUpdatedAt: string;
+
+    if (createdAt === undefined) {
+      finalCreatedAt = now;
+    } else {
+      if (createdAt === null || typeof createdAt !== 'string' || !createdAt) {
+        throw new Error('Invalid date format: createdAt must be a non-empty string');
+      }
+      finalCreatedAt = createdAt;
+    }
+
+    if (updatedAt === undefined) {
+      finalUpdatedAt = now;
+    } else {
+      if (updatedAt === null || typeof updatedAt !== 'string' || !updatedAt) {
+        throw new Error('Invalid date format: updatedAt must be a non-empty string');
+      }
+      finalUpdatedAt = updatedAt;
+    }
 
     return new Habit(id, habitName, habitType, logo, finalCreatedAt, finalUpdatedAt);
   }

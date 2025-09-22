@@ -5,8 +5,12 @@ export class HabitName {
   private constructor(private readonly value: string) {}
 
   public static create(name: string): HabitName {
-    if (!name || typeof name !== 'string') {
+    if (typeof name !== 'string') {
       throw new Error('Habit name must be a non-empty string');
+    }
+
+    if (name === '' || !name) {
+      throw new Error('Habit name cannot be empty');
     }
 
     const trimmedName = name.trim();
