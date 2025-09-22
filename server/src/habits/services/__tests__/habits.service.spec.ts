@@ -59,8 +59,8 @@ describe('HabitsService', () => {
       name: habitName,
       habitType: HabitComplexity.SIMPLE,
       logo: mockLogo,
-      createdAt: fixedDate,
-      updatedAt: fixedDate,
+      createdAt: fixedDate.toISOString(),
+      updatedAt: fixedDate.toISOString(),
       isActive: true,
       totalActionsCount: 0,
       lastActionDate: null,
@@ -545,6 +545,266 @@ describe('HabitsService', () => {
         ValidationException
       );
     });
+
+    describe('logo update functionality', () => {
+      const mockFile = createMockMulterFile({ originalname: 'new-logo.png' });
+      const newLogoUrl = 'https://example.com/new-logo.png';
+
+      it('should successfully update habit with new logo', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+        const updatedHabit = existingHabit.updateLogo(newLogoUrl);
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: true,
+          url: newLogoUrl,
+          data: {
+            publicId: 'new-logo',
+            url: newLogoUrl,
+            secureUrl: newLogoUrl,
+            version: 1,
+            signature: 'test-signature',
+            width: 100,
+            height: 100,
+            format: 'png',
+            resourceType: 'image',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            tags: [],
+            bytes: 1024,
+            type: 'upload',
+            etag: 'test-etag',
+            placeholder: false,
+          },
+        });
+        habitsRepository.update.mockResolvedValue(updatedHabit);
+
+        // Act
+        const result = await service.update(mockHabitId, updateWithLogo);
+
+        // Assert
+        expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(
+          mockFile,
+          expect.objectContaining({
+            public_id: 'new-logo',
+            folder: 'habits',
+            resourceType: 'auto',
+          })
+        );
+        expect(habitsRepository.update).toHaveBeenCalledWith(
+          mockHabitId,
+          expect.objectContaining({
+            logo: newLogoUrl,
+          })
+        );
+        expect(result.logo).toBe(newLogoUrl);
+      });
+
+      it('should successfully update habit by removing logo (set to null)', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updateWithNullLogo: UpdateHabitDto = { logo: null };
+        const updatedHabit = existingHabit.updateLogo(''); // Empty string represents removed logo
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        habitsRepository.update.mockResolvedValue(updatedHabit);
+
+        // Act
+        const result = await service.update(mockHabitId, updateWithNullLogo);
+
+        // Assert
+        expect(cloudinaryService.uploadImage).not.toHaveBeenCalled();
+        expect(habitsRepository.update).toHaveBeenCalledWith(
+          mockHabitId,
+          expect.objectContaining({
+            logo: '',
+          })
+        );
+        expect(result.logo).toBe('');
+      });
+
+      it('should successfully update habit name and logo together', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updateDto: UpdateHabitDto = {
+          name: 'Updated Name',
+          logo: mockFile
+        };
+        let updatedHabit = existingHabit.updateName(updateDto.name!);
+        updatedHabit = updatedHabit.updateLogo(newLogoUrl);
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        habitsRepository.findByName.mockResolvedValue(null);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: true,
+          url: newLogoUrl,
+          data: {
+            publicId: 'new-logo',
+            url: newLogoUrl,
+            secureUrl: newLogoUrl,
+            version: 1,
+            signature: 'test-signature',
+            width: 100,
+            height: 100,
+            format: 'png',
+            resourceType: 'image',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            tags: [],
+            bytes: 1024,
+            type: 'upload',
+            etag: 'test-etag',
+            placeholder: false,
+          },
+        });
+        habitsRepository.update.mockResolvedValue(updatedHabit);
+
+        // Act
+        const result = await service.update(mockHabitId, updateDto);
+
+        // Assert
+        expect(habitsRepository.findByName).toHaveBeenCalledWith(updateDto.name);
+        expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(mockFile, expect.any(Object));
+        expect(result.name).toBe(updateDto.name);
+        expect(result.logo).toBe(newLogoUrl);
+      });
+
+      it('should throw ValidationException when logo upload fails', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: false,
+          error: { message: 'Invalid image format', name: 'ValidationError' },
+        });
+
+        // Act & Assert
+        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+          ValidationException
+        );
+        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+          'Invalid image format'
+        );
+
+        expect(habitsRepository.update).not.toHaveBeenCalled();
+      });
+
+      it('should throw ValidationException when logo upload has no error message', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: false,
+        });
+
+        // Act & Assert
+        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+          'Failed to upload image. Uncontrolled error'
+        );
+      });
+
+      it('should throw ValidationException for invalid logo during entity update', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: true,
+          url: '', // Invalid empty logo URL
+          data: {
+            publicId: 'new-logo',
+            url: '',
+            secureUrl: '',
+            version: 1,
+            signature: 'test-signature',
+            width: 100,
+            height: 100,
+            format: 'png',
+            resourceType: 'image',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            tags: [],
+            bytes: 1024,
+            type: 'upload',
+            etag: 'test-etag',
+            placeholder: false,
+          },
+        });
+
+        // Act & Assert
+        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+          ValidationException
+        );
+        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+          'Logo must be a non-empty string'
+        );
+      });
+
+      it('should validate logo file size constraints', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const largeLogo = 'x'.repeat(3 * 1024 * 1024); // 3MB string (exceeds 2MB limit)
+        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: true,
+          url: largeLogo,
+          data: {
+            publicId: 'new-logo',
+            url: largeLogo,
+            secureUrl: largeLogo,
+            version: 1,
+            signature: 'test-signature',
+            width: 100,
+            height: 100,
+            format: 'png',
+            resourceType: 'image',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            tags: [],
+            bytes: 3 * 1024 * 1024,
+            type: 'upload',
+            etag: 'test-etag',
+            placeholder: false,
+          },
+        });
+
+        // Act & Assert
+        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+          ValidationException
+        );
+        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+          'Logo size cannot exceed 2MB'
+        );
+      });
+
+      it('should not update logo when no logo is provided in update', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updateWithoutLogo: UpdateHabitDto = { name: 'Updated Name' };
+        const updatedHabit = existingHabit.updateName(updateWithoutLogo.name!);
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        habitsRepository.findByName.mockResolvedValue(null);
+        habitsRepository.update.mockResolvedValue(updatedHabit);
+
+        // Act
+        await service.update(mockHabitId, updateWithoutLogo);
+
+        // Assert
+        expect(cloudinaryService.uploadImage).not.toHaveBeenCalled();
+        expect(habitsRepository.update).toHaveBeenCalledWith(
+          mockHabitId,
+          expect.objectContaining({
+            logo: existingHabit.logo, // Should keep original logo
+          })
+        );
+      });
+    });
   });
 
   describe('remove()', () => {
@@ -582,11 +842,11 @@ describe('HabitsService', () => {
         HabitName.create(mockHabitName),
         HabitComplexity.COMPLEX,
         mockLogo,
-        fixedDate,
-        new Date('2024-01-02T00:00:00.000Z'), // Different updated date
+        fixedDate.toISOString(),
+        new Date('2024-01-02T00:00:00.000Z').toISOString(), // Different updated date
         false, // inactive
         5,
-        new Date('2024-01-01T12:00:00.000Z') // Last action date
+        new Date('2024-01-01T12:00:00.000Z').toISOString() // Last action date
       );
 
       habitsRepository.findById.mockResolvedValue(mockHabit);
@@ -603,7 +863,7 @@ describe('HabitsService', () => {
         isActive: false,
         totalActionsCount: 5,
         lastActionDate: new Date('2024-01-01T12:00:00.000Z'),
-        createdAt: fixedDate,
+        createdAt: fixedDate.toISOString(),
         updatedAt: new Date('2024-01-02T00:00:00.000Z'),
       });
     });

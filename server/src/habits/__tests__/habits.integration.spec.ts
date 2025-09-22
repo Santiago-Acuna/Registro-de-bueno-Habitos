@@ -1,4 +1,4 @@
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication, ValidationPipe, VersioningType } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerModule } from '@nestjs/throttler';
 import request from 'supertest';
@@ -7,7 +7,6 @@ import { Habit } from '../../domain/entities/habit.entity';
 import { HabitComplexity, UUID, PaginatedResult } from '../../domain/shared/types/common';
 import { HabitName } from '../../domain/value-objects/habit-name';
 import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
-import { NotFoundError } from '../../infrastructure/exceptions/app.exceptions';
 import { HttpExceptionFilter } from '../../infrastructure/filters/http-exception.filter';
 import { CreateHabitDto } from '../dto/create-habit.dto';
 import { UpdateHabitDto } from '../dto/update-habit.dto';
@@ -51,8 +50,8 @@ describe('Habits API Integration Tests', () => {
       name: habitName,
       habitType: HabitComplexity.SIMPLE,
       logo: mockLogo,
-      createdAt: fixedDate,
-      updatedAt: fixedDate,
+      createdAt: fixedDate.toISOString(),
+      updatedAt: fixedDate.toISOString(),
       isActive: true,
       totalActionsCount: 0,
       lastActionDate: null,
@@ -99,6 +98,9 @@ describe('Habits API Integration Tests', () => {
 
     app = moduleFixture.createNestApplication();
 
+    // Setup global prefix to match production configuration
+    app.setGlobalPrefix('api');
+
     // Setup global pipes and filters
     app.useGlobalPipes(
       new ValidationPipe({
@@ -109,8 +111,11 @@ describe('Habits API Integration Tests', () => {
     );
     app.useGlobalFilters(new HttpExceptionFilter());
 
-    // Enable versioning
-    app.enableVersioning();
+    // Enable versioning with URI type and default version
+    app.enableVersioning({
+      type: VersioningType.URI,
+      defaultVersion: 'v1',
+    });
 
     await app.init();
 
@@ -161,8 +166,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .post('/habits')
-        .set('X-API-Version', '1')
+        .post('/api/v1/habits')
         .field('name', createHabitDto.name)
         .field('habitType', createHabitDto.habitType)
         .attach('logo', createImageBuffer(), 'test-logo.png')
@@ -188,8 +192,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .post('/habits')
-        .set('X-API-Version', '1')
+        .post('/api/v1/habits')
         .field('name', createHabitDto.name)
         .field('habitType', createHabitDto.habitType)
         .attach('logo', createImageBuffer(), 'test-logo.png')
@@ -206,8 +209,7 @@ describe('Habits API Integration Tests', () => {
     it('should return 400 for invalid habit data', async () => {
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .post('/habits')
-        .set('X-API-Version', '1')
+        .post('/api/v1/habits')
         .field('name', '') // Invalid empty name
         .field('habitType', createHabitDto.habitType)
         .attach('logo', createImageBuffer(), 'test-logo.png')
@@ -224,8 +226,7 @@ describe('Habits API Integration Tests', () => {
     it('should return 400 for invalid habit type', async () => {
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .post('/habits')
-        .set('X-API-Version', '1')
+        .post('/api/v1/habits')
         .field('name', createHabitDto.name)
         .field('habitType', 'INVALID_TYPE')
         .attach('logo', createImageBuffer(), 'test-logo.png')
@@ -242,8 +243,7 @@ describe('Habits API Integration Tests', () => {
     it('should return 400 when no image is uploaded', async () => {
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .post('/habits')
-        .set('X-API-Version', '1')
+        .post('/api/v1/habits')
         .field('name', createHabitDto.name)
         .field('habitType', createHabitDto.habitType)
         .expect(400);
@@ -266,8 +266,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .post('/habits')
-        .set('X-API-Version', '1')
+        .post('/api/v1/habits')
         .field('name', createHabitDto.name)
         .field('habitType', createHabitDto.habitType)
         .attach('logo', createImageBuffer(), 'test-logo.png')
@@ -297,8 +296,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .get('/habits')
-        .set('X-API-Version', '1')
+        .get('/api/v1/habits')
         .expect(200);
 
       expect(response.body).toEqual(
@@ -331,8 +329,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .get('/habits')
-        .set('X-API-Version', '1')
+        .get('/api/v1/habits')
         .query({ isActive: true })
         .expect(200);
 
@@ -353,8 +350,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .get('/habits')
-        .set('X-API-Version', '1')
+        .get('/api/v1/habits')
         .query({ page: 2, limit: 5 })
         .expect(200);
 
@@ -369,8 +365,7 @@ describe('Habits API Integration Tests', () => {
     it('should validate pagination parameters', async () => {
       // Act & Assert
       const response1 = await request(app.getHttpServer())
-        .get('/habits')
-        .set('X-API-Version', '1')
+        .get('/api/v1/habits')
         .query({ page: 0 }) // Invalid page
         .expect(400);
 
@@ -382,8 +377,7 @@ describe('Habits API Integration Tests', () => {
       );
 
       const response2 = await request(app.getHttpServer())
-        .get('/habits')
-        .set('X-API-Version', '1')
+        .get('/api/v1/habits')
         .query({ limit: 101 }) // Exceeds max limit
         .expect(400);
 
@@ -404,8 +398,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .get(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .get(`/api/v1/habits/${mockHabitId}`)
         .expect(200);
 
       expect(response.body).toEqual(
@@ -423,8 +416,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .get(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .get(`/api/v1/habits/${mockHabitId}`)
         .expect(404);
 
       expect(response.body).toEqual(
@@ -438,8 +430,7 @@ describe('Habits API Integration Tests', () => {
     it('should return 400 for invalid UUID format', async () => {
       // Act & Assert
       await request(app.getHttpServer())
-        .get('/habits/invalid-uuid')
-        .set('X-API-Version', '1')
+        .get('/api/v1/habits/invalid-uuid')
         .expect(400);
     });
   });
@@ -459,8 +450,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .patch(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .patch(`/api/v1/habits/${mockHabitId}`)
         .send(updateHabitDto)
         .expect(200);
 
@@ -478,8 +468,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       await request(app.getHttpServer())
-        .patch(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .patch(`/api/v1/habits/${mockHabitId}`)
         .send(updateHabitDto)
         .expect(404);
     });
@@ -493,8 +482,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .patch(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .patch(`/api/v1/habits/${mockHabitId}`)
         .send(updateHabitDto)
         .expect(409);
 
@@ -509,8 +497,7 @@ describe('Habits API Integration Tests', () => {
     it('should return 400 for invalid update data', async () => {
       // Act & Assert
       await request(app.getHttpServer())
-        .patch(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .patch(`/api/v1/habits/${mockHabitId}`)
         .send({ name: '' }) // Invalid empty name
         .expect(400);
     });
@@ -523,8 +510,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .patch(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .patch(`/api/v1/habits/${mockHabitId}`)
         .send({}) // Empty update
         .expect(200);
 
@@ -533,6 +519,213 @@ describe('Habits API Integration Tests', () => {
           id: mockHabitId,
         })
       );
+    });
+
+    describe('logo update functionality', () => {
+      const newLogoUrl = 'https://example.com/new-logo.png';
+
+      it('should successfully update habit with new logo', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updatedHabit = existingHabit.updateLogo(newLogoUrl);
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: true,
+          url: newLogoUrl,
+          data: {
+            publicId: 'new-logo',
+            url: newLogoUrl,
+            secureUrl: newLogoUrl,
+            version: 1,
+            signature: 'test-signature',
+            width: 100,
+            height: 100,
+            format: 'png',
+            resourceType: 'image',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            tags: [],
+            bytes: 1024,
+            type: 'upload',
+            etag: 'test-etag',
+            placeholder: false,
+          },
+        });
+        habitsRepository.update.mockResolvedValue(updatedHabit);
+
+        // Act & Assert
+        const response = await request(app.getHttpServer())
+          .patch(`/api/v1/habits/${mockHabitId}`)
+          .attach('logo', createImageBuffer(), 'new-logo.png')
+          .expect(200);
+
+        expect(response.body).toEqual(
+          expect.objectContaining({
+            id: mockHabitId,
+            logo: newLogoUrl,
+          })
+        );
+      });
+
+      it('should successfully update habit name and logo together', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const newName = 'Updated Exercise Name';
+        let updatedHabit = existingHabit.updateName(newName);
+        updatedHabit = updatedHabit.updateLogo(newLogoUrl);
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        habitsRepository.findByName.mockResolvedValue(null);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: true,
+          url: newLogoUrl,
+          data: {
+            publicId: 'new-logo',
+            url: newLogoUrl,
+            secureUrl: newLogoUrl,
+            version: 1,
+            signature: 'test-signature',
+            width: 100,
+            height: 100,
+            format: 'png',
+            resourceType: 'image',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            tags: [],
+            bytes: 1024,
+            type: 'upload',
+            etag: 'test-etag',
+            placeholder: false,
+          },
+        });
+        habitsRepository.update.mockResolvedValue(updatedHabit);
+
+        // Act & Assert
+        const response = await request(app.getHttpServer())
+          .patch(`/api/v1/habits/${mockHabitId}`)
+          .field('name', newName)
+          .attach('logo', createImageBuffer(), 'new-logo.png')
+          .expect(200);
+
+        expect(response.body).toEqual(
+          expect.objectContaining({
+            id: mockHabitId,
+            name: newName,
+            logo: newLogoUrl,
+          })
+        );
+      });
+
+      it('should successfully remove habit logo', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updatedHabit = existingHabit.updateLogo(''); // Empty string represents removed logo
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        habitsRepository.update.mockResolvedValue(updatedHabit);
+
+        // Act & Assert
+        const response = await request(app.getHttpServer())
+          .patch(`/api/v1/habits/${mockHabitId}`)
+          .field('removeLogo', 'true') // Special field to indicate logo removal
+          .expect(200);
+
+        expect(response.body).toEqual(
+          expect.objectContaining({
+            id: mockHabitId,
+            logo: '',
+          })
+        );
+      });
+
+      it('should return 400 when logo upload fails', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: false,
+          error: { message: 'Invalid image format', name: 'ValidationError' },
+        });
+
+        // Act & Assert
+        const response = await request(app.getHttpServer())
+          .patch(`/api/v1/habits/${mockHabitId}`)
+          .attach('logo', createImageBuffer(), 'invalid-logo.txt')
+          .expect(400);
+
+        expect(response.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: 'Invalid image format',
+          })
+        );
+      });
+
+      it('should return 400 for invalid logo file size', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const largeLogo = 'x'.repeat(3 * 1024 * 1024); // 3MB string (exceeds 2MB limit)
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: true,
+          url: largeLogo,
+          data: {
+            publicId: 'new-logo',
+            url: largeLogo,
+            secureUrl: largeLogo,
+            version: 1,
+            signature: 'test-signature',
+            width: 100,
+            height: 100,
+            format: 'png',
+            resourceType: 'image',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            tags: [],
+            bytes: 3 * 1024 * 1024,
+            type: 'upload',
+            etag: 'test-etag',
+            placeholder: false,
+          },
+        });
+
+        // Act & Assert
+        const response = await request(app.getHttpServer())
+          .patch(`/api/v1/habits/${mockHabitId}`)
+          .attach('logo', createImageBuffer(), 'large-logo.png')
+          .expect(400);
+
+        expect(response.body).toEqual(
+          expect.objectContaining({
+            statusCode: 400,
+            message: 'Logo size cannot exceed 2MB',
+          })
+        );
+      });
+
+      it('should maintain existing logo when no logo field is provided', async () => {
+        // Arrange
+        const existingHabit = createMockHabit();
+        const updatedHabit = existingHabit.updateName('Updated Name');
+
+        habitsRepository.findById.mockResolvedValue(existingHabit);
+        habitsRepository.findByName.mockResolvedValue(null);
+        habitsRepository.update.mockResolvedValue(updatedHabit);
+
+        // Act & Assert
+        const response = await request(app.getHttpServer())
+          .patch(`/api/v1/habits/${mockHabitId}`)
+          .send({ name: 'Updated Name' })
+          .expect(200);
+
+        expect(response.body).toEqual(
+          expect.objectContaining({
+            id: mockHabitId,
+            name: 'Updated Name',
+            logo: mockLogo, // Should keep original logo
+          })
+        );
+        expect(cloudinaryService.uploadImage).not.toHaveBeenCalled();
+      });
     });
   });
 
@@ -545,8 +738,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       await request(app.getHttpServer())
-        .delete(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .delete(`/api/v1/habits/${mockHabitId}`)
         .expect(204);
     });
 
@@ -556,25 +748,23 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       await request(app.getHttpServer())
-        .delete(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .delete(`/api/v1/habits/${mockHabitId}`)
         .expect(404);
     });
 
     it('should return 400 for invalid UUID format', async () => {
       // Act & Assert
       await request(app.getHttpServer())
-        .delete('/habits/invalid-uuid')
-        .set('X-API-Version', '1')
+        .delete('/api/v1/habits/invalid-uuid')
         .expect(400);
     });
   });
 
 
   describe('API versioning', () => {
-    it('should require API version header', async () => {
+    it('should require API version in URL', async () => {
       // Act & Assert
-      await request(app.getHttpServer()).get('/habits').expect(404); // No version specified
+      await request(app.getHttpServer()).get('/api/habits').expect(404); // No version specified
     });
 
     it('should accept version 1', async () => {
@@ -588,7 +778,7 @@ describe('Habits API Integration Tests', () => {
       });
 
       // Act & Assert
-      await request(app.getHttpServer()).get('/habits').set('X-API-Version', '1').expect(200);
+      await request(app.getHttpServer()).get('/api/v1/habits').expect(200);
     });
   });
 
@@ -605,7 +795,7 @@ describe('Habits API Integration Tests', () => {
       });
 
       // Act & Assert
-      await request(app.getHttpServer()).get('/habits').set('X-API-Version', '1').expect(200);
+      await request(app.getHttpServer()).get('/api/v1/habits').expect(200);
 
       // The ThrottlerGuard should be applied (tested in unit tests)
     });
@@ -618,8 +808,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       const response = await request(app.getHttpServer())
-        .get('/habits')
-        .set('X-API-Version', '1')
+        .get('/api/v1/habits')
         .expect(500);
 
       expect(response.body).toEqual(
@@ -633,8 +822,7 @@ describe('Habits API Integration Tests', () => {
     it('should validate request body structure', async () => {
       // Act & Assert
       await request(app.getHttpServer())
-        .patch(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .patch(`/api/v1/habits/${mockHabitId}`)
         .send({ invalidField: 'value' })
         .expect(400);
     });
@@ -642,8 +830,7 @@ describe('Habits API Integration Tests', () => {
     it('should handle malformed JSON', async () => {
       // Act & Assert
       await request(app.getHttpServer())
-        .patch(`/habits/${mockHabitId}`)
-        .set('X-API-Version', '1')
+        .patch(`/api/v1/habits/${mockHabitId}`)
         .set('Content-Type', 'application/json')
         .send('{ invalid json }')
         .expect(400);
@@ -663,8 +850,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       await request(app.getHttpServer())
-        .get('/habits')
-        .set('X-API-Version', '1')
+        .get('/api/v1/habits')
         .expect(200)
         .expect('Content-Type', /json/);
     });
@@ -681,8 +867,7 @@ describe('Habits API Integration Tests', () => {
 
       // Act & Assert
       await request(app.getHttpServer())
-        .get('/habits')
-        .set('X-API-Version', '1')
+        .get('/api/v1/habits')
         .set('Accept', 'application/json')
         .expect(200);
     });
