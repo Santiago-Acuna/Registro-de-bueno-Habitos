@@ -73,7 +73,7 @@ describe('HabitsRepository', () => {
     isActive: true,
     totalActionsCount: 0,
     lastActionDate: null,
-    createdAt: fixedDate,
+    createdAt: fixedDate.toISOString(),
     updatedAt: fixedDate.toISOString(),
     ...overrides,
   });
