@@ -55,12 +55,6 @@ describe('HabitName Value Object', () => {
         expect(habitName.getValue()).toBe(name);
       });
 
-      it('should handle names with Unicode characters', () => {
-        const name = 'Ejercicio Matutino 🏃‍♂️';
-        const habitName = HabitName.create(name);
-
-        expect(habitName.getValue()).toBe(name);
-      });
     });
 
     describe('invalid inputs', () => {
@@ -86,7 +80,7 @@ describe('HabitName Value Object', () => {
       });
 
       it('should throw error for empty string', () => {
-        expect(() => HabitName.create('')).toThrow('Habit name cannot be empty');
+        expect(() => HabitName.create('')).toThrow('Habit name must be a non-empty string');
       });
 
       it('should throw error for string with only whitespace', () => {
@@ -109,6 +103,77 @@ describe('HabitName Value Object', () => {
         // Edge case: string that might be close to limit
         const name = 'a'.repeat(100); // Way over limit
         expect(() => HabitName.create(name)).toThrow('Habit name cannot exceed 50 characters');
+      });
+
+      it('should throw error for names with emoji characters', () => {
+        const namesWithEmojis = [
+          'Ejercicio Matutino 🏃‍♂️',
+          'Reading 📚 time',
+          'Water intake 💧',
+          'Meditation 🧘‍♀️',
+          '🌅 Morning routine',
+          'Healthy eating 🥗🍎',
+        ];
+
+        namesWithEmojis.forEach(name => {
+          expect(() => HabitName.create(name)).toThrow(
+            'Names with Unicode characters are not allowed'
+          );
+        });
+      });
+
+      it('should throw error for names with accented characters', () => {
+        const namesWithAccents = [
+          'Café reading',
+          'Niño exercise',
+          'Résumé writing',
+          'Naïve approach',
+          'Piñata making',
+          'Façade cleaning',
+        ];
+
+        namesWithAccents.forEach(name => {
+          expect(() => HabitName.create(name)).toThrow(
+            'Names with Unicode characters are not allowed'
+          );
+        });
+      });
+
+      it('should throw error for names with various Unicode symbols', () => {
+        const namesWithSymbols = [
+          'Exercise ™',
+          'Reading © books',
+          'Math ∞ problems',
+          'Temperature 20°C',
+          'Currency €100',
+          'Greek α beta',
+          'Japanese こんにちは',
+          'Chinese 你好',
+          'Arabic مرحبا',
+          'Hebrew שלום',
+        ];
+
+        namesWithSymbols.forEach(name => {
+          expect(() => HabitName.create(name)).toThrow(
+            'Names with Unicode characters are not allowed'
+          );
+        });
+      });
+
+      it('should throw error for names with mixed Unicode and ASCII characters', () => {
+        const mixedNames = [
+          'Morning exercise 🌅 routine',
+          'Café ☕ reading session',
+          'Study français 📖',
+          'Workout № 1',
+          'Task ✓ completion',
+        ];
+
+        mixedNames.forEach(name => {
+          expect(() => HabitName.create(name)).toThrow(
+            'Names with Unicode characters are not allowed'
+          );
+        });
       });
     });
 
@@ -202,10 +267,10 @@ describe('HabitName Value Object', () => {
       expect(habitName1.equals(habitName3)).toBe(false);
     });
 
-    it('should handle Unicode characters in comparison', () => {
-      const habitName1 = HabitName.create('Ejercicio 🏃‍♂️');
-      const habitName2 = HabitName.create('Ejercicio 🏃‍♂️');
-      const habitName3 = HabitName.create('Ejercicio 🚴‍♂️');
+    it('should handle complex ASCII characters in comparison', () => {
+      const habitName1 = HabitName.create('Exercise & Meditation (Phase 1)');
+      const habitName2 = HabitName.create('Exercise & Meditation (Phase 1)');
+      const habitName3 = HabitName.create('Exercise & Meditation (Phase 2)');
 
       expect(habitName1.equals(habitName2)).toBe(true);
       expect(habitName1.equals(habitName3)).toBe(false);
@@ -267,7 +332,7 @@ describe('HabitName Value Object', () => {
     });
 
     it('should provide specific error message for empty strings', () => {
-      expect(() => HabitName.create('')).toThrow('Habit name cannot be empty');
+      expect(() => HabitName.create('')).toThrow('Habit name must be a non-empty string');
       expect(() => HabitName.create('   ')).toThrow('Habit name cannot be empty');
     });
 
