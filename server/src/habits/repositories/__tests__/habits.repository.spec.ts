@@ -45,8 +45,8 @@ describe('HabitsRepository', () => {
       name: habitName,
       habitType: HabitComplexity.SIMPLE,
       logo: mockLogo,
-      createdAt: fixedDate,
-      updatedAt: fixedDate,
+      createdAt: fixedDate.toISOString(),
+      updatedAt: fixedDate.toISOString(),
       isActive: true,
       totalActionsCount: 0,
       lastActionDate: null,
@@ -74,7 +74,7 @@ describe('HabitsRepository', () => {
     totalActionsCount: 0,
     lastActionDate: null,
     createdAt: fixedDate,
-    updatedAt: fixedDate,
+    updatedAt: fixedDate.toISOString(),
     ...overrides,
   });
 
@@ -641,8 +641,8 @@ describe('HabitsRepository', () => {
         isActive: false,
         totalActionsCount: 10,
         lastActionDate: new Date('2024-01-01T12:00:00.000Z'),
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-01T12:00:00.000Z'),
+        createdAt: '2024-01-01T00:00:00.000Z',
+        updatedAt: '2024-01-01T12:00:00.000Z',
       });
       mockPrismaService.habits.findUnique.mockResolvedValue(complexPrismaData);
 
@@ -659,8 +659,8 @@ describe('HabitsRepository', () => {
       expect(result!.isActive).toBe(false);
       expect(result!.totalActionsCount).toBe(10);
       expect(result!.lastActionDate).toEqual(new Date('2024-01-01T12:00:00.000Z'));
-      expect(result!.createdAt).toEqual(new Date('2024-01-01T00:00:00.000Z'));
-      expect(result!.updatedAt).toEqual(new Date('2024-01-01T12:00:00.000Z'));
+      expect(result!.createdAt).toEqual('2024-01-01T00:00:00.000Z');
+      expect(result!.updatedAt).toEqual('2024-01-01T12:00:00.000Z');
     });
 
     it('should handle null lastActionDate in domain mapping', async () => {
