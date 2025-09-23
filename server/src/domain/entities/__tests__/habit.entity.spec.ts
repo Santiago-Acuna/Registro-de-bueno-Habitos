@@ -78,8 +78,8 @@ describe('Habit Domain Entity', () => {
           validHabitName,
           validHabitType,
           validLogo,
-          validDate,
-          validDate
+          new Date(validDate),
+          new Date(validDate)
         )).not.toThrow();
       });
 
@@ -96,16 +96,16 @@ describe('Habit Domain Entity', () => {
     });
 
     describe('Invalid date formats', () => {
-      it.each(invalidDateFormats.filter(date => date !== null && date !== undefined))(
-        'should reject invalid date format: %s', (invalidDate) => {
+      it('should reject invalid Date objects', () => {
+        const invalidDate = new Date('invalid-date-string'); // Creates invalid Date
         expect(() => Habit.create(
           validHabitId,
           validHabitName,
           validHabitType,
           validLogo,
-          invalidDate as string,
-          invalidDate as string
-        )).toThrow('Invalid date format');
+          invalidDate,
+          invalidDate
+        )).toThrow('Invalid date: createdAt must be a valid Date object');
       });
 
       it('should reject null createdAt', () => {
@@ -115,8 +115,8 @@ describe('Habit Domain Entity', () => {
           validHabitType,
           validLogo,
           null as any,
-          fixedIsoDate
-        )).toThrow('Invalid date format');
+          new Date(fixedIsoDate)
+        )).toThrow('Invalid date: createdAt must be a Date object');
       });
 
       it('should reject null updatedAt', () => {
@@ -125,9 +125,9 @@ describe('Habit Domain Entity', () => {
           validHabitName,
           validHabitType,
           validLogo,
-          fixedIsoDate,
+          new Date(fixedIsoDate),
           null as any
-        )).toThrow('Invalid date format');
+        )).toThrow('Invalid date: updatedAt must be a Date object');
       });
 
       it('should validate dates are compatible with PostgreSQL TIMESTAMP WITH TIME ZONE', () => {
@@ -155,15 +155,15 @@ describe('Habit Domain Entity', () => {
           validHabitName,
           validHabitType,
           validLogo,
-          validDate,
-          validDate
+          new Date(validDate),
+          new Date(validDate)
         );
 
-        // These should be stored as ISO strings, not Date objects
-        expect(typeof habit.createdAt).toBe('string');
-        expect(typeof habit.updatedAt).toBe('string');
-        expect(habit.createdAt).toBe(validDate);
-        expect(habit.updatedAt).toBe(validDate);
+        // These should be stored as Date objects
+        expect(habit.createdAt instanceof Date).toBe(true);
+        expect(habit.updatedAt instanceof Date).toBe(true);
+        expect(habit.createdAt.toISOString()).toBe(validDate);
+        expect(habit.updatedAt.toISOString()).toBe(validDate);
       });
     });
   });
@@ -175,16 +175,18 @@ describe('Habit Domain Entity', () => {
         validHabitName,
         validHabitType,
         validLogo,
-        fixedIsoDate,
-        fixedIsoDate
+        new Date(fixedIsoDate),
+        new Date(fixedIsoDate)
       );
 
       expect(habit.id).toBe(validHabitId);
       expect(habit.name.getValue()).toBe(validHabitName);
       expect(habit.habitType).toBe(validHabitType);
       expect(habit.logo).toBe(validLogo);
-      expect(habit.createdAt).toBe(fixedIsoDate);
-      expect(habit.updatedAt).toBe(fixedIsoDate);
+      expect(habit.createdAt instanceof Date).toBe(true);
+      expect(habit.updatedAt instanceof Date).toBe(true);
+      expect(habit.createdAt.toISOString()).toBe(fixedIsoDate);
+      expect(habit.updatedAt.toISOString()).toBe(fixedIsoDate);
       expect(habit.isActive).toBe(true);
       expect(habit.totalActionsCount).toBe(0);
       expect(habit.lastActionDate).toBeNull();
@@ -195,17 +197,15 @@ describe('Habit Domain Entity', () => {
       const habit = Habit.create(validHabitId, validHabitName, validHabitType, validLogo);
       const afterCreation = new Date();
 
-      expect(typeof habit.createdAt).toBe('string');
-      expect(typeof habit.updatedAt).toBe('string');
-      expect(isValidPostgresIsoDate(habit.createdAt)).toBe(true);
-      expect(isValidPostgresIsoDate(habit.updatedAt)).toBe(true);
+      expect(habit.createdAt instanceof Date).toBe(true);
+      expect(habit.updatedAt instanceof Date).toBe(true);
+      expect(isValidPostgresIsoDate(habit.createdAt.toISOString())).toBe(true);
+      expect(isValidPostgresIsoDate(habit.updatedAt.toISOString())).toBe(true);
 
-      const createdAtDate = new Date(habit.createdAt);
-      const updatedAtDate = new Date(habit.updatedAt);
-      expect(createdAtDate.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
-      expect(createdAtDate.getTime()).toBeLessThanOrEqual(afterCreation.getTime());
-      expect(updatedAtDate.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
-      expect(updatedAtDate.getTime()).toBeLessThanOrEqual(afterCreation.getTime());
+      expect(habit.createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
+      expect(habit.createdAt.getTime()).toBeLessThanOrEqual(afterCreation.getTime());
+      expect(habit.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
+      expect(habit.updatedAt.getTime()).toBeLessThanOrEqual(afterCreation.getTime());
     });
 
     it('should throw error for invalid habit name', () => {
@@ -237,18 +237,19 @@ describe('Habit Domain Entity', () => {
   });
 
   describe('Habit constructor', () => {
-    it('should create habit instance with all parameters', () => {
+    it('should create habit instance with all parameters including Date objects', () => {
       const habitName = HabitName.create(validHabitName);
+      const lastActionDate = new Date(fixedIsoDate);
       const habit = new Habit(
         validHabitId,
         habitName,
         validHabitType,
         validLogo,
-        fixedIsoDate,
-        fixedIsoDate,
+        new Date(fixedIsoDate),
+        new Date(fixedIsoDate),
         true,
         5,
-        fixedIsoDate
+        lastActionDate
       );
 
       expect(habit.id).toBe(validHabitId);
@@ -257,13 +258,85 @@ describe('Habit Domain Entity', () => {
       expect(habit.logo).toBe(validLogo);
       expect(habit.isActive).toBe(true);
       expect(habit.totalActionsCount).toBe(5);
-      expect(habit.lastActionDate).toBe(fixedIsoDate);
+
+      // Test that lastActionDate is a Date object, not a string
+      expect(habit.lastActionDate).toBeInstanceOf(Date);
+      expect(habit.lastActionDate).toEqual(lastActionDate);
+      expect(habit.lastActionDate?.toISOString()).toBe(fixedIsoDate);
+    });
+
+    it('should create habit instance with null lastActionDate', () => {
+      const habitName = HabitName.create(validHabitName);
+      const habit = new Habit(
+        validHabitId,
+        habitName,
+        validHabitType,
+        validLogo,
+        new Date(fixedIsoDate),
+        new Date(fixedIsoDate),
+        true,
+        5,
+        null
+      );
+
+      expect(habit.lastActionDate).toBeNull();
+    });
+
+    it('should validate that all Date parameters are proper Date objects', () => {
+      const habitName = HabitName.create(validHabitName);
+      const createdAt = new Date(fixedIsoDate);
+      const updatedAt = new Date(fixedIsoDate);
+      const lastActionDate = new Date(fixedIsoDate);
+
+      const habit = new Habit(
+        validHabitId,
+        habitName,
+        validHabitType,
+        validLogo,
+        createdAt,
+        updatedAt,
+        true,
+        5,
+        lastActionDate
+      );
+
+      // Validate that all date properties are Date objects
+      expect(habit.createdAt).toBeInstanceOf(Date);
+      expect(habit.updatedAt).toBeInstanceOf(Date);
+      expect(habit.lastActionDate).toBeInstanceOf(Date);
+
+      // Validate that Date objects have correct values
+      expect(habit.createdAt).toEqual(createdAt);
+      expect(habit.updatedAt).toEqual(updatedAt);
+      expect(habit.lastActionDate).toEqual(lastActionDate);
+
+      // Validate ISO string representations
+      expect(habit.createdAt.toISOString()).toBe(fixedIsoDate);
+      expect(habit.updatedAt.toISOString()).toBe(fixedIsoDate);
+      expect(habit.lastActionDate?.toISOString()).toBe(fixedIsoDate);
+    });
+
+    it('should throw error for invalid lastActionDate', () => {
+      const habitName = HabitName.create(validHabitName);
+      const invalidDate = new Date('invalid-date-string');
+
+      expect(() => new Habit(
+        validHabitId,
+        habitName,
+        validHabitType,
+        validLogo,
+        new Date(fixedIsoDate),
+        new Date(fixedIsoDate),
+        true,
+        5,
+        invalidDate
+      )).toThrow('Invalid date: lastActionDate must be a valid Date object');
     });
 
     it('should validate logo during construction', () => {
       const habitName = HabitName.create(validHabitName);
       expect(
-        () => new Habit(validHabitId, habitName, validHabitType, '', fixedIsoDate, fixedIsoDate)
+        () => new Habit(validHabitId, habitName, validHabitType, '', new Date(fixedIsoDate), new Date(fixedIsoDate))
       ).toThrow('Logo must be a non-empty string');
     });
   });
@@ -277,8 +350,8 @@ describe('Habit Domain Entity', () => {
         validHabitName,
         validHabitType,
         validLogo,
-        fixedIsoDate,
-        fixedIsoDate
+        new Date(fixedIsoDate),
+        new Date(fixedIsoDate)
       );
     });
 
@@ -295,11 +368,10 @@ describe('Habit Domain Entity', () => {
       expect(updatedHabit.logo).toBe(habit.logo);
       expect(updatedHabit.createdAt).toBe(habit.createdAt);
 
-      expect(typeof updatedHabit.updatedAt).toBe('string');
-      expect(isValidPostgresIsoDate(updatedHabit.updatedAt)).toBe(true);
-      const updatedAtDate = new Date(updatedHabit.updatedAt);
-      expect(updatedAtDate.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
-      expect(updatedAtDate.getTime()).toBeLessThanOrEqual(afterUpdate.getTime());
+      expect(updatedHabit.updatedAt instanceof Date).toBe(true);
+      expect(isValidPostgresIsoDate(updatedHabit.updatedAt.toISOString())).toBe(true);
+      expect(updatedHabit.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+      expect(updatedHabit.updatedAt.getTime()).toBeLessThanOrEqual(afterUpdate.getTime());
 
       expect(updatedHabit.isActive).toBe(habit.isActive);
       expect(updatedHabit.totalActionsCount).toBe(habit.totalActionsCount);
@@ -333,8 +405,8 @@ describe('Habit Domain Entity', () => {
         validHabitName,
         validHabitType,
         validLogo,
-        fixedIsoDate,
-        fixedIsoDate
+        new Date(fixedIsoDate),
+        new Date(fixedIsoDate)
       );
     });
 
@@ -351,11 +423,10 @@ describe('Habit Domain Entity', () => {
       expect(updatedHabit.habitType).toBe(habit.habitType);
       expect(updatedHabit.createdAt).toBe(habit.createdAt);
 
-      expect(typeof updatedHabit.updatedAt).toBe('string');
-      expect(isValidPostgresIsoDate(updatedHabit.updatedAt)).toBe(true);
-      const updatedAtDate = new Date(updatedHabit.updatedAt);
-      expect(updatedAtDate.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
-      expect(updatedAtDate.getTime()).toBeLessThanOrEqual(afterUpdate.getTime());
+      expect(updatedHabit.updatedAt instanceof Date).toBe(true);
+      expect(isValidPostgresIsoDate(updatedHabit.updatedAt.toISOString())).toBe(true);
+      expect(updatedHabit.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+      expect(updatedHabit.updatedAt.getTime()).toBeLessThanOrEqual(afterUpdate.getTime());
     });
 
     it('should throw error for invalid new logo', () => {
@@ -378,8 +449,8 @@ describe('Habit Domain Entity', () => {
         validHabitName,
         validHabitType,
         validLogo,
-        fixedIsoDate,
-        fixedIsoDate
+        new Date(fixedIsoDate),
+        new Date(fixedIsoDate)
       );
     });
 
@@ -396,11 +467,10 @@ describe('Habit Domain Entity', () => {
       expect(deactivatedHabit.logo).toBe(habit.logo);
       expect(deactivatedHabit.createdAt).toBe(habit.createdAt);
 
-      expect(typeof deactivatedHabit.updatedAt).toBe('string');
-      expect(isValidPostgresIsoDate(deactivatedHabit.updatedAt)).toBe(true);
-      const updatedAtDate = new Date(deactivatedHabit.updatedAt);
-      expect(updatedAtDate.getTime()).toBeGreaterThanOrEqual(beforeDeactivation.getTime());
-      expect(updatedAtDate.getTime()).toBeLessThanOrEqual(afterDeactivation.getTime());
+      expect(deactivatedHabit.updatedAt instanceof Date).toBe(true);
+      expect(isValidPostgresIsoDate(deactivatedHabit.updatedAt.toISOString())).toBe(true);
+      expect(deactivatedHabit.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeDeactivation.getTime());
+      expect(deactivatedHabit.updatedAt.getTime()).toBeLessThanOrEqual(afterDeactivation.getTime());
 
       expect(deactivatedHabit.totalActionsCount).toBe(habit.totalActionsCount);
       expect(deactivatedHabit.lastActionDate).toBe(habit.lastActionDate);
