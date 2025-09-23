@@ -2,8 +2,8 @@ export type UUID = string;
 
 export interface BaseEntity {
   readonly id: UUID;
-  readonly createdAt: string;
-  readonly updatedAt: string;
+  readonly createdAt: Date;
+  readonly updatedAt: Date;
 }
 
 export interface SoftDeletable {

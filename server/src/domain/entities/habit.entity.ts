@@ -6,7 +6,7 @@ export interface HabitProps extends BaseEntity, SoftDeletable {
   habitType: HabitComplexity;
   logo: string;
   totalActionsCount: number;
-  lastActionDate: string | null;
+  lastActionDate: Date | null;
 }
 
 export class Habit implements HabitProps {
@@ -15,17 +15,17 @@ export class Habit implements HabitProps {
     public readonly name: HabitName,
     public readonly habitType: HabitComplexity,
     public readonly logo: string,
-    public readonly createdAt: string,
-    public readonly updatedAt: string,
+    public readonly createdAt: Date,
+    public readonly updatedAt: Date,
     public readonly isActive: boolean = true,
     public readonly totalActionsCount: number = 0,
-    public readonly lastActionDate: string | null = null
+    public readonly lastActionDate: Date | null = null
   ) {
     this.validateLogo(logo);
-    this.validateIsoDate(createdAt, 'createdAt');
-    this.validateIsoDate(updatedAt, 'updatedAt');
+    this.validateDate(createdAt, 'createdAt');
+    this.validateDate(updatedAt, 'updatedAt');
     if (lastActionDate !== null) {
-      this.validateIsoDate(lastActionDate, 'lastActionDate');
+      this.validateDate(lastActionDate, 'lastActionDate');
     }
   }
 
@@ -34,22 +34,25 @@ export class Habit implements HabitProps {
     name: string,
     habitType: HabitComplexity,
     logo: string,
-    createdAt?: string,
-    updatedAt?: string
+    createdAt?: Date,
+    updatedAt?: Date
   ): Habit {
     const habitName = HabitName.create(name);
-    const now = new Date().toISOString();
+    const now = new Date();
 
     // Validate provided dates if they are provided (not undefined)
     // null values should be rejected with proper error messages
-    let finalCreatedAt: string;
-    let finalUpdatedAt: string;
+    let finalCreatedAt: Date;
+    let finalUpdatedAt: Date;
 
     if (createdAt === undefined) {
       finalCreatedAt = now;
     } else {
-      if (createdAt === null || typeof createdAt !== 'string' || !createdAt) {
-        throw new Error('Invalid date format: createdAt must be a non-empty string');
+      if (createdAt === null || !(createdAt instanceof Date)) {
+        throw new Error('Invalid date: createdAt must be a Date object');
+      }
+      if (isNaN(createdAt.getTime())) {
+        throw new Error('Invalid date: createdAt must be a valid Date object');
       }
       finalCreatedAt = createdAt;
     }
@@ -57,8 +60,11 @@ export class Habit implements HabitProps {
     if (updatedAt === undefined) {
       finalUpdatedAt = now;
     } else {
-      if (updatedAt === null || typeof updatedAt !== 'string' || !updatedAt) {
-        throw new Error('Invalid date format: updatedAt must be a non-empty string');
+      if (updatedAt === null || !(updatedAt instanceof Date)) {
+        throw new Error('Invalid date: updatedAt must be a Date object');
+      }
+      if (isNaN(updatedAt.getTime())) {
+        throw new Error('Invalid date: updatedAt must be a valid Date object');
       }
       finalUpdatedAt = updatedAt;
     }
@@ -74,7 +80,7 @@ export class Habit implements HabitProps {
       this.habitType,
       this.logo,
       this.createdAt,
-      new Date().toISOString(),
+      new Date(),
       this.isActive,
       this.totalActionsCount,
       this.lastActionDate
@@ -89,7 +95,7 @@ export class Habit implements HabitProps {
       this.habitType,
       newLogo,
       this.createdAt,
-      new Date().toISOString(),
+      new Date(),
       this.isActive,
       this.totalActionsCount,
       this.lastActionDate
@@ -103,7 +109,7 @@ export class Habit implements HabitProps {
       this.habitType,
       this.logo,
       this.createdAt,
-      new Date().toISOString(),
+      new Date(),
       false,
       this.totalActionsCount,
       this.lastActionDate
@@ -135,27 +141,16 @@ export class Habit implements HabitProps {
     }
   }
 
-  private validateIsoDate(dateString: string, fieldName: string): void {
-    if (!dateString || typeof dateString !== 'string') {
-      throw new Error(`Invalid date format: ${fieldName} must be a non-empty string`);
+  private validateDate(date: Date, fieldName: string): void {
+    if (!(date instanceof Date)) {
+      if (fieldName === 'lastActionDate') {
+        throw new Error(`Invalid date: ${fieldName} must be a valid Date object or null`);
+      }
+      throw new Error(`Invalid date: ${fieldName} must be a valid Date object`);
     }
 
-    // Validate ISO 8601 format with UTC timezone for PostgreSQL compatibility
-    const isoDateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/;
-    if (!isoDateRegex.test(dateString)) {
-      throw new Error(`Invalid date format: ${fieldName} must be ISO 8601 format with UTC timezone (YYYY-MM-DDTHH:mm:ss.sssZ)`);
-    }
-
-    // Additional validation: ensure it's a valid date
-    const date = new Date(dateString);
     if (isNaN(date.getTime())) {
-      throw new Error(`Invalid date format: ${fieldName} must be a valid ISO 8601 date`);
-    }
-
-    // Normalize to compare (both should produce the same ISO string)
-    const normalizedInput = dateString.includes('.') ? dateString : dateString.replace('Z', '.000Z');
-    if (date.toISOString() !== normalizedInput) {
-      throw new Error(`Invalid date format: ${fieldName} must be a valid ISO 8601 date`);
+      throw new Error(`Invalid date: ${fieldName} must be a valid Date object`);
     }
   }
 
