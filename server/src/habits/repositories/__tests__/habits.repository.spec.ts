@@ -45,8 +45,8 @@ describe('HabitsRepository', () => {
       name: habitName,
       habitType: HabitComplexity.SIMPLE,
       logo: mockLogo,
-      createdAt: fixedDate.toISOString(),
-      updatedAt: fixedDate.toISOString(),
+      createdAt: fixedDate,
+      updatedAt: fixedDate,
       isActive: true,
       totalActionsCount: 0,
       lastActionDate: null,
@@ -73,8 +73,8 @@ describe('HabitsRepository', () => {
     isActive: true,
     totalActionsCount: 0,
     lastActionDate: null,
-    createdAt: fixedDate.toISOString(),
-    updatedAt: fixedDate.toISOString(),
+    createdAt: fixedDate,
+    updatedAt: fixedDate,
     ...overrides,
   });
 
@@ -162,7 +162,7 @@ describe('HabitsRepository', () => {
 
     it('should handle habit with action count and last action date', async () => {
       // Arrange
-      const lastActionDate = new Date('2024-01-01T12:00:00.000Z').toISOString();
+      const lastActionDate = new Date('2024-01-01T12:00:00.000Z');
       const habitWithActions = createMockHabit({
         totalActionsCount: 5,
         lastActionDate,
@@ -641,8 +641,8 @@ describe('HabitsRepository', () => {
         isActive: false,
         totalActionsCount: 10,
         lastActionDate: new Date('2024-01-01T12:00:00.000Z'),
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T12:00:00.000Z',
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2024-01-01T12:00:00.000Z'),
       });
       mockPrismaService.habits.findUnique.mockResolvedValue(complexPrismaData);
 
@@ -659,8 +659,8 @@ describe('HabitsRepository', () => {
       expect(result!.isActive).toBe(false);
       expect(result!.totalActionsCount).toBe(10);
       expect(result!.lastActionDate).toEqual(new Date('2024-01-01T12:00:00.000Z'));
-      expect(result!.createdAt).toEqual('2024-01-01T00:00:00.000Z');
-      expect(result!.updatedAt).toEqual('2024-01-01T12:00:00.000Z');
+      expect(result!.createdAt).toEqual(new Date('2024-01-01T00:00:00.000Z'));
+      expect(result!.updatedAt).toEqual(new Date('2024-01-01T12:00:00.000Z'));
     });
 
     it('should handle null lastActionDate in domain mapping', async () => {
