@@ -31,7 +31,6 @@
   "author": "Your Name",
   "license": "MIT",
   "dependencies": {
-    "@nestjs/class-validator": "^0.13.4",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
