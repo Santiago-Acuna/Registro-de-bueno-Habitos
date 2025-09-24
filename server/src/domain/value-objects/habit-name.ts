@@ -10,7 +10,7 @@ export class HabitName {
     }
 
     if (name === '' || !name) {
-      throw new Error('Habit name cannot be empty');
+      throw new Error('Habit name must be a non-empty string');
     }
 
     const trimmedName = name.trim();
@@ -23,7 +23,16 @@ export class HabitName {
       throw new Error(`Habit name cannot exceed ${this.MAX_LENGTH} characters`);
     }
 
+    // Check for Unicode characters (only allow ASCII characters)
+    if (!this.isAsciiOnly(trimmedName)) {
+      throw new Error('Names with Unicode characters are not allowed');
+    }
+
     return new HabitName(trimmedName);
+  }
+
+  private static isAsciiOnly(str: string): boolean {
+    return /^[\x00-\x7F]*$/.test(str);
   }
 
   public getValue(): string {
