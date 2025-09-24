@@ -3,7 +3,7 @@ import { PrismaClient, Prisma } from '@prisma/client';
 
 @Injectable()
 export class PrismaService
-  extends PrismaClient<Prisma.PrismaClientOptions, 'query' | 'info' | 'warn' | 'error'>
+  extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly logger = new Logger(PrismaService.name);
@@ -20,28 +20,28 @@ export class PrismaService
     });
 
     // Set up logging handlers with proper event types
-    this.$on('query', (e: Prisma.QueryEvent) => {
+    (this as any).$on('query', (e: Prisma.QueryEvent) => {
       this.logger.debug(`Query: ${e.query}`);
       this.logger.debug(`Params: ${e.params}`);
       this.logger.debug(`Duration: ${e.duration}ms`);
     });
 
-    this.$on('error', (e: Prisma.LogEvent) => {
+    (this as any).$on('error', (e: Prisma.LogEvent) => {
       this.logger.error('Database error:', e.message);
     });
 
-    this.$on('warn', (e: Prisma.LogEvent) => {
+    (this as any).$on('warn', (e: Prisma.LogEvent) => {
       this.logger.warn('Database warning:', e.message);
     });
 
-    this.$on('info', (e: Prisma.LogEvent) => {
+    (this as any).$on('info', (e: Prisma.LogEvent) => {
       this.logger.log('Database info:', e.message);
     });
   }
 
   async onModuleInit(): Promise<void> {
     try {
-      await this.$connect();
+      await (this as any).$connect();
       this.logger.log('✅ Database connected successfully');
     } catch (error) {
       this.logger.error('❌ Failed to connect to database:', error);
@@ -51,7 +51,7 @@ export class PrismaService
 
   async onModuleDestroy(): Promise<void> {
     try {
-      await this.$disconnect();
+      await (this as any).$disconnect();
       this.logger.log('✅ Database disconnected successfully');
     } catch (error) {
       this.logger.error('❌ Failed to disconnect from database:', error);
@@ -64,7 +64,7 @@ export class PrismaService
   async enableShutdownHooks(app: any): Promise<void> {
     // Use process events instead of Prisma events for shutdown handling
     process.on('beforeExit', async () => {
-      await this.$disconnect();
+      await (this as any).$disconnect();
       await app.close();
     });
   }
@@ -74,7 +74,7 @@ export class PrismaService
    */
   async healthCheck(): Promise<boolean> {
     try {
-      await this.$queryRaw`SELECT 1`;
+      await (this as any).$queryRaw`SELECT 1`;
       return true;
     } catch {
       return false;
