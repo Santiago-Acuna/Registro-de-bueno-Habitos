@@ -736,7 +736,7 @@ describe('HabitsRepository', () => {
       mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithEmptyName);
 
       // Act & Assert - Should throw during HabitName creation
-      await expect(repository.findById(mockHabitId)).rejects.toThrow('Habit name cannot be empty');
+      await expect(repository.findById(mockHabitId)).rejects.toThrow('Habit name must be a non-empty string');
     });
 
     it('should handle very long habit names during domain mapping', async () => {

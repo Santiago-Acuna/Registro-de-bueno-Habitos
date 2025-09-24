@@ -102,7 +102,7 @@ describe('Habit Domain Entity', () => {
 
     it('should throw error for invalid habit name', () => {
       expect(() => Habit.create(validHabitId, '', validHabitType, validLogo)).toThrow(
-        'Habit name cannot be empty'
+        'Habit name must be a non-empty string'
       );
 
       expect(() => Habit.create(validHabitId, 'a'.repeat(51), validHabitType, validLogo)).toThrow(
@@ -264,7 +264,7 @@ describe('Habit Domain Entity', () => {
     });
 
     it('should throw error for invalid new name', () => {
-      expect(() => habit.updateName('')).toThrow('Habit name cannot be empty');
+      expect(() => habit.updateName('')).toThrow('Habit name must be a non-empty string');
       expect(() => habit.updateName('a'.repeat(51))).toThrow(
         'Habit name cannot exceed 50 characters'
       );
