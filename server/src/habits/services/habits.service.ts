@@ -50,6 +50,11 @@ export class HabitsService {
       );
     }
 
+    // Validate that Cloudinary returned a valid URL
+    if (!imageUrl || imageUrl.trim() === '') {
+      throw new ValidationException('Logo must be a non-empty string');
+    }
+
     try {
       // Create domain entity
       const habit = Habit.create(
@@ -118,7 +123,7 @@ export class HabitsService {
     }
 
     // Check for name conflicts if name is being updated
-    if (updateHabitDto.name && updateHabitDto.name !== existingHabit.name.getValue()) {
+    if ('name' in updateHabitDto && updateHabitDto.name !== undefined && updateHabitDto.name !== existingHabit.name.getValue()) {
       const habitWithSameName = await this.habitsRepository.findByName(updateHabitDto.name);
       if (habitWithSameName && habitWithSameName.id !== id) {
         throw new ConflictError(`Habit with name '${updateHabitDto.name}' already exists`);
@@ -130,7 +135,7 @@ export class HabitsService {
       let updatedHabit = existingHabit;
 
       // Handle name update
-      if (updateHabitDto.name) {
+      if ('name' in updateHabitDto && updateHabitDto.name !== undefined) {
         updatedHabit = updatedHabit.updateName(updateHabitDto.name);
       }
 
@@ -153,7 +158,12 @@ export class HabitsService {
             );
           }
 
-          updatedHabit = updatedHabit.updateLogo(result.url!);
+          // Validate that Cloudinary returned a valid URL
+          if (!result.url || result.url.trim() === '') {
+            throw new ValidationException('Logo must be a non-empty string');
+          }
+
+          updatedHabit = updatedHabit.updateLogo(result.url);
         }
       }
 
