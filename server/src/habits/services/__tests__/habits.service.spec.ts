@@ -59,8 +59,8 @@ describe('HabitsService', () => {
       name: habitName,
       habitType: HabitComplexity.SIMPLE,
       logo: mockLogo,
-      createdAt: fixedDate.toISOString(),
-      updatedAt: fixedDate.toISOString(),
+      createdAt: fixedDate,
+      updatedAt: fixedDate,
       isActive: true,
       totalActionsCount: 0,
       lastActionDate: null,
@@ -842,11 +842,11 @@ describe('HabitsService', () => {
         HabitName.create(mockHabitName),
         HabitComplexity.COMPLEX,
         mockLogo,
-        fixedDate.toISOString(),
-        new Date('2024-01-02T00:00:00.000Z').toISOString(), // Different updated date
+        fixedDate,
+        new Date('2024-01-02T00:00:00.000Z'), // Different updated date
         false, // inactive
         5,
-        new Date('2024-01-01T12:00:00.000Z').toISOString() // Last action date
+        new Date('2024-01-01T12:00:00.000Z') // Last action date
       );
 
       habitsRepository.findById.mockResolvedValue(mockHabit);
