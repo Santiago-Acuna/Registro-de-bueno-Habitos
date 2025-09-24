@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService
@@ -19,22 +19,22 @@ export class PrismaService
       errorFormat: 'pretty',
     });
 
-    // Set up logging handlers with proper event types
-    (this as any).$on('query', (e: Prisma.QueryEvent) => {
+    // Set up logging handlers
+    (this as any).$on('query', (e: any) => {
       this.logger.debug(`Query: ${e.query}`);
       this.logger.debug(`Params: ${e.params}`);
       this.logger.debug(`Duration: ${e.duration}ms`);
     });
 
-    (this as any).$on('error', (e: Prisma.LogEvent) => {
+    (this as any).$on('error', (e: any) => {
       this.logger.error('Database error:', e.message);
     });
 
-    (this as any).$on('warn', (e: Prisma.LogEvent) => {
+    (this as any).$on('warn', (e: any) => {
       this.logger.warn('Database warning:', e.message);
     });
 
-    (this as any).$on('info', (e: Prisma.LogEvent) => {
+    (this as any).$on('info', (e: any) => {
       this.logger.log('Database info:', e.message);
     });
   }
