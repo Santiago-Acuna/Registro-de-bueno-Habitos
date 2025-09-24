@@ -1,3 +1,15 @@
+// Mock cloudinary module to avoid ValidatorConstraint compilation issues
+jest.mock('../../../helpers/cloudinary', () => ({
+  UploadImageDto: class MockUploadImageDto {
+    image: any;
+  },
+  CloudinaryService: jest.fn().mockImplementation(() => ({
+    uploadImage: jest.fn(),
+    deleteImage: jest.fn(),
+  })),
+  CloudinaryModule: jest.fn(),
+}));
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { validate } from 'class-validator';
