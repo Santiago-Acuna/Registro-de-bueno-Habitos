@@ -129,13 +129,33 @@ export class HabitsService {
       // Update the domain entity
       let updatedHabit = existingHabit;
 
+      // Handle name update
       if (updateHabitDto.name) {
         updatedHabit = updatedHabit.updateName(updateHabitDto.name);
       }
 
-      // if (updateHabitDto.logo) {
-      //   updatedHabit = updatedHabit.updateLogo(updateHabitDto.logo);
-      // }
+      // Handle logo update
+      if ('logo' in updateHabitDto) {
+        if (updateHabitDto.logo === null) {
+          // Remove logo (set to empty string)
+          updatedHabit = updatedHabit.updateLogo('');
+        } else if (updateHabitDto.logo) {
+          // Upload new logo
+          const result = await this.cloudinaryService.uploadImage(updateHabitDto.logo, {
+            public_id: updateHabitDto.logo.originalname.split('.')[0] as string,
+            folder: 'habits',
+            resourceType: 'auto',
+          });
+
+          if (!result.success) {
+            throw new ValidationException(
+              result.error?.message || 'Failed to upload image. Uncontrolled error'
+            );
+          }
+
+          updatedHabit = updatedHabit.updateLogo(result.url!);
+        }
+      }
 
       // Save updated entity
       const savedHabit = await this.habitsRepository.update(id, updatedHabit);

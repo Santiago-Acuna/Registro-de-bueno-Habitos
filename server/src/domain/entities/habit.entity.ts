@@ -130,8 +130,13 @@ export class Habit implements HabitProps {
   }
 
   private validateLogo(logo: string): void {
-    if (!logo || typeof logo !== 'string') {
-      throw new Error('Logo must be a non-empty string');
+    if (typeof logo !== 'string') {
+      throw new Error('Logo must be a string');
+    }
+
+    // Allow empty string for logo removal
+    if (logo.length === 0) {
+      return;
     }
 
     // Maximum 2MB for base64 encoded images

@@ -863,7 +863,7 @@ describe('HabitsService', () => {
         isActive: false,
         totalActionsCount: 5,
         lastActionDate: new Date('2024-01-01T12:00:00.000Z'),
-        createdAt: fixedDate.toISOString(),
+        createdAt: fixedDate,
         updatedAt: new Date('2024-01-02T00:00:00.000Z'),
       });
     });
