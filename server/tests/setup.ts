@@ -1,5 +1,6 @@
 // Global test setup for unit tests
 import { jest, expect } from '@jest/globals';
+import 'reflect-metadata';
 
 // Set test timeout
 jest.setTimeout(30000);
