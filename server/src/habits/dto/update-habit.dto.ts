@@ -1,5 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
 
 import { CreateHabitDto } from './create-habit.dto';
 
@@ -11,4 +12,13 @@ export class UpdateHabitDto extends PartialType(CreateHabitDto) {
     required: false,
   })
   logo?: Express.Multer.File | null;
+
+  @ApiProperty({
+    description: 'Set to "true" to remove the current logo',
+    type: 'string',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  removeLogo?: string;
 }

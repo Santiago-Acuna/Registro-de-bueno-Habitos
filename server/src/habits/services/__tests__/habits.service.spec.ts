@@ -547,13 +547,13 @@ describe('HabitsService', () => {
     });
 
     describe('logo update functionality', () => {
-      const mockFile = createMockMulterFile({ originalname: 'new-logo.png' });
+      const updateMockFile = createMockMulterFile({ originalname: 'new-logo.png' });
       const newLogoUrl = 'https://example.com/new-logo.png';
 
       it('should successfully update habit with new logo', async () => {
         // Arrange
         const existingHabit = createMockHabit();
-        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+        const updateDto: UpdateHabitDto = {};
         const updatedHabit = existingHabit.updateLogo(newLogoUrl);
 
         habitsRepository.findById.mockResolvedValue(existingHabit);
@@ -581,11 +581,11 @@ describe('HabitsService', () => {
         habitsRepository.update.mockResolvedValue(updatedHabit);
 
         // Act
-        const result = await service.update(mockHabitId, updateWithLogo);
+        const result = await service.update(mockHabitId, updateDto, updateMockFile);
 
         // Assert
         expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(
-          mockFile,
+          updateMockFile,
           expect.objectContaining({
             public_id: 'new-logo',
             folder: 'habits',
@@ -604,14 +604,14 @@ describe('HabitsService', () => {
       it('should successfully update habit by removing logo (set to null)', async () => {
         // Arrange
         const existingHabit = createMockHabit();
-        const updateWithNullLogo: UpdateHabitDto = { logo: null };
+        const updateWithRemoveLogo: UpdateHabitDto = { removeLogo: 'true' };
         const updatedHabit = existingHabit.updateLogo(''); // Empty string represents removed logo
 
         habitsRepository.findById.mockResolvedValue(existingHabit);
         habitsRepository.update.mockResolvedValue(updatedHabit);
 
         // Act
-        const result = await service.update(mockHabitId, updateWithNullLogo);
+        const result = await service.update(mockHabitId, updateWithRemoveLogo);
 
         // Assert
         expect(cloudinaryService.uploadImage).not.toHaveBeenCalled();
@@ -628,8 +628,7 @@ describe('HabitsService', () => {
         // Arrange
         const existingHabit = createMockHabit();
         const updateDto: UpdateHabitDto = {
-          name: 'Updated Name',
-          logo: mockFile
+          name: 'Updated Name'
         };
         let updatedHabit = existingHabit.updateName(updateDto.name!);
         updatedHabit = updatedHabit.updateLogo(newLogoUrl);
@@ -660,11 +659,11 @@ describe('HabitsService', () => {
         habitsRepository.update.mockResolvedValue(updatedHabit);
 
         // Act
-        const result = await service.update(mockHabitId, updateDto);
+        const result = await service.update(mockHabitId, updateDto, updateMockFile);
 
         // Assert
         expect(habitsRepository.findByName).toHaveBeenCalledWith(updateDto.name);
-        expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(mockFile, expect.any(Object));
+        expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(updateMockFile, expect.any(Object));
         expect(result.name).toBe(updateDto.name);
         expect(result.logo).toBe(newLogoUrl);
       });
@@ -672,7 +671,7 @@ describe('HabitsService', () => {
       it('should throw ValidationException when logo upload fails', async () => {
         // Arrange
         const existingHabit = createMockHabit();
-        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+        const updateWithLogo: UpdateHabitDto = {};
 
         habitsRepository.findById.mockResolvedValue(existingHabit);
         cloudinaryService.uploadImage.mockResolvedValue({
@@ -681,10 +680,10 @@ describe('HabitsService', () => {
         });
 
         // Act & Assert
-        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+        await expect(service.update(mockHabitId, updateWithLogo, updateMockFile)).rejects.toThrow(
           ValidationException
         );
-        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+        await expect(service.update(mockHabitId, updateWithLogo, updateMockFile)).rejects.toThrow(
           'Invalid image format'
         );
 
@@ -694,7 +693,7 @@ describe('HabitsService', () => {
       it('should throw ValidationException when logo upload has no error message', async () => {
         // Arrange
         const existingHabit = createMockHabit();
-        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+        const updateWithLogo: UpdateHabitDto = {};
 
         habitsRepository.findById.mockResolvedValue(existingHabit);
         cloudinaryService.uploadImage.mockResolvedValue({
@@ -702,7 +701,7 @@ describe('HabitsService', () => {
         });
 
         // Act & Assert
-        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+        await expect(service.update(mockHabitId, updateWithLogo, updateMockFile)).rejects.toThrow(
           'Failed to upload image. Uncontrolled error'
         );
       });
@@ -710,7 +709,7 @@ describe('HabitsService', () => {
       it('should throw ValidationException for invalid logo during entity update', async () => {
         // Arrange
         const existingHabit = createMockHabit();
-        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+        const updateWithLogo: UpdateHabitDto = {};
 
         habitsRepository.findById.mockResolvedValue(existingHabit);
         cloudinaryService.uploadImage.mockResolvedValue({
@@ -736,10 +735,10 @@ describe('HabitsService', () => {
         });
 
         // Act & Assert
-        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+        await expect(service.update(mockHabitId, updateWithLogo, updateMockFile)).rejects.toThrow(
           ValidationException
         );
-        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+        await expect(service.update(mockHabitId, updateWithLogo, updateMockFile)).rejects.toThrow(
           'Logo must be a non-empty string'
         );
       });
@@ -748,7 +747,7 @@ describe('HabitsService', () => {
         // Arrange
         const existingHabit = createMockHabit();
         const largeLogo = 'x'.repeat(3 * 1024 * 1024); // 3MB string (exceeds 2MB limit)
-        const updateWithLogo: UpdateHabitDto = { logo: mockFile };
+        const updateWithLogo: UpdateHabitDto = {};
 
         habitsRepository.findById.mockResolvedValue(existingHabit);
         cloudinaryService.uploadImage.mockResolvedValue({
@@ -774,10 +773,10 @@ describe('HabitsService', () => {
         });
 
         // Act & Assert
-        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+        await expect(service.update(mockHabitId, updateWithLogo, updateMockFile)).rejects.toThrow(
           ValidationException
         );
-        await expect(service.update(mockHabitId, updateWithLogo)).rejects.toThrow(
+        await expect(service.update(mockHabitId, updateWithLogo, updateMockFile)).rejects.toThrow(
           'Logo size cannot exceed 2MB'
         );
       });
