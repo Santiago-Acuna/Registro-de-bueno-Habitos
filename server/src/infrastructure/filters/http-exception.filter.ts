@@ -133,7 +133,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
   private handleUnknownException(exception: unknown, request: Request): ErrorResponse {
     return {
       error: 'InternalServerError',
-      message: 'An unexpected error occurred',
+      message: 'Internal server error',
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       timestamp: new Date().toISOString(),
       path: request.url,

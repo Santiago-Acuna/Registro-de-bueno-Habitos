@@ -11,7 +11,7 @@ export class UploadImageDto {
       maxSize: 5 * 1024 * 1024, // 5 MB
     },
     {
-      message: 'El archivo debe ser una imagen JPG, PNG o GIF y no exceder los 5MB.',
+      message: 'Invalid image format',
     }
   )
   image!: Express.Multer.File; // El tipo de Multer.File es importante aquí
