@@ -14,6 +14,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { validate } from 'class-validator';
 
+// Mock class-validator for unit tests
+jest.mock('class-validator', () => ({
+  ...jest.requireActual('class-validator'),
+  validate: jest.fn(),
+}));
+
+const mockValidate = validate as jest.MockedFunction<typeof validate>;
+
 import { HabitComplexity, UUID } from '../../../domain/shared/types/common';
 import { UploadImageDto } from '../../../helpers/cloudinary';
 import { PaginatedResponseDto } from '../../../infrastructure/dto/paginated-response.dto';
@@ -29,12 +37,7 @@ import { UpdateHabitDto } from '../../dto/update-habit.dto';
 import { HabitsService } from '../../services/habits.service';
 import { HabitsController } from '../habits.controller';
 
-// Mock class-validator
-jest.mock('class-validator', () => ({
-  validate: jest.fn(),
-}));
 
-const mockedValidate = validate as jest.MockedFunction<typeof validate>;
 
 // Mock HabitsService
 const mockHabitsService = {
@@ -121,14 +124,14 @@ describe('HabitsController', () => {
     it('should successfully create a new habit', async () => {
       // Arrange
       const expectedResponse = createMockHabitResponse();
-      mockedValidate.mockResolvedValue([]); // No validation errors
+      mockValidate.mockResolvedValue([]); // No validation errors
       habitsService.create.mockResolvedValue(expectedResponse);
 
       // Act
       const result = await controller.create(createHabitDto, mockFile);
 
       // Assert
-      expect(mockedValidate).toHaveBeenCalledWith(expect.any(UploadImageDto));
+      expect(mockValidate).toHaveBeenCalledWith(expect.any(UploadImageDto));
       expect(habitsService.create).toHaveBeenCalledWith(createHabitDto, mockFile);
       expect(result).toEqual(expectedResponse);
     });
@@ -136,15 +139,15 @@ describe('HabitsController', () => {
     it('should validate uploaded image using UploadImageDto', async () => {
       // Arrange
       const expectedResponse = createMockHabitResponse();
-      mockedValidate.mockResolvedValue([]);
+      mockValidate.mockResolvedValue([]);
       habitsService.create.mockResolvedValue(expectedResponse);
 
       // Act
       await controller.create(createHabitDto, mockFile);
 
       // Assert
-      expect(mockedValidate).toHaveBeenCalledTimes(1);
-      const validateCall = mockedValidate.mock.calls[0];
+      expect(mockValidate).toHaveBeenCalledTimes(1);
+      const validateCall = mockValidate.mock.calls[0];
       expect(validateCall).toBeDefined();
       const uploadImageDto = validateCall?.[0] as unknown as UploadImageDto;
       expect(uploadImageDto).toBeInstanceOf(UploadImageDto);
@@ -162,7 +165,7 @@ describe('HabitsController', () => {
           },
         },
       ];
-      mockedValidate.mockResolvedValue(validationErrors as any);
+      mockValidate.mockResolvedValue(validationErrors as any);
 
       // Act & Assert
       await expect(controller.create(createHabitDto, mockFile)).rejects.toThrow(
@@ -183,7 +186,7 @@ describe('HabitsController', () => {
           constraints: undefined,
         },
       ];
-      mockedValidate.mockResolvedValue(validationErrors as any);
+      mockValidate.mockResolvedValue(validationErrors as any);
 
       // Act & Assert
       await expect(controller.create(createHabitDto, mockFile)).rejects.toThrow(
@@ -195,7 +198,7 @@ describe('HabitsController', () => {
 
     it('should handle service throwing ConflictError', async () => {
       // Arrange
-      mockedValidate.mockResolvedValue([]);
+      mockValidate.mockResolvedValue([]);
       habitsService.create.mockRejectedValue(
         new ConflictError(`Habit with name '${createHabitDto.name}' already exists`)
       );
@@ -206,7 +209,7 @@ describe('HabitsController', () => {
 
     it('should handle service throwing ValidationException', async () => {
       // Arrange
-      mockedValidate.mockResolvedValue([]);
+      mockValidate.mockResolvedValue([]);
       habitsService.create.mockRejectedValue(new ValidationException('Invalid habit data'));
 
       // Act & Assert
@@ -245,7 +248,7 @@ describe('HabitsController', () => {
       habitsService.findAll.mockResolvedValue(expectedResponse);
 
       // Act
-      const result = await controller.findAll(paginationQuery, isActive);
+      const result = await controller.findAll({ ...paginationQuery, isActive });
 
       // Assert
       expect(habitsService.findAll).toHaveBeenCalledWith(paginationQuery, { isActive });
@@ -260,7 +263,7 @@ describe('HabitsController', () => {
       habitsService.findAll.mockResolvedValue(expectedResponse);
 
       // Act
-      await controller.findAll(paginationQuery, isActive);
+      await controller.findAll({ ...paginationQuery, isActive });
 
       // Assert
       expect(habitsService.findAll).toHaveBeenCalledWith(paginationQuery, { isActive: false });
@@ -272,7 +275,7 @@ describe('HabitsController', () => {
       habitsService.findAll.mockResolvedValue(expectedResponse);
 
       // Act
-      await controller.findAll(paginationQuery, undefined);
+      await controller.findAll(paginationQuery);
 
       // Assert
       expect(habitsService.findAll).toHaveBeenCalledWith(paginationQuery, undefined);
@@ -459,7 +462,7 @@ describe('HabitsController', () => {
           constraints: {},
         },
       ];
-      mockedValidate.mockResolvedValue(validationErrors as any);
+      mockValidate.mockResolvedValue(validationErrors as any);
 
       // Act & Assert
       await expect(controller.create(createHabitDto, mockFile)).rejects.toThrow(
@@ -484,7 +487,7 @@ describe('HabitsController', () => {
           },
         },
       ];
-      mockedValidate.mockResolvedValue(validationErrors as any);
+      mockValidate.mockResolvedValue(validationErrors as any);
 
       // Act & Assert
       await expect(controller.create(createHabitDto, mockFile)).rejects.toThrow(
@@ -500,7 +503,7 @@ describe('HabitsController', () => {
           constraints: null,
         },
       ];
-      mockedValidate.mockResolvedValue(validationErrors as any);
+      mockValidate.mockResolvedValue(validationErrors as any);
 
       // Act & Assert
       await expect(controller.create(createHabitDto, mockFile)).rejects.toThrow(
@@ -546,8 +549,8 @@ describe('HabitsController', () => {
       habitsService.findAll.mockResolvedValue(expectedResponse);
 
       // Act - Test with boolean true
-      await controller.findAll(paginationQuery, true);
-      await controller.findAll(paginationQuery, false);
+      await controller.findAll({ ...paginationQuery, isActive: true });
+      await controller.findAll({ ...paginationQuery, isActive: false });
 
       // Assert
       expect(habitsService.findAll).toHaveBeenCalledWith(paginationQuery, { isActive: true });
