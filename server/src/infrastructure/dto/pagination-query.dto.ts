@@ -1,4 +1,5 @@
 import { Type } from 'class-transformer';
+import { IsOptional } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class PaginationQueryDto {
@@ -8,6 +9,7 @@ export class PaginationQueryDto {
     minimum: 1,
     default: 1,
   })
+  @IsOptional()
   @Type(() => Number)
   page?: number = 1;
 
@@ -18,6 +20,7 @@ export class PaginationQueryDto {
     maximum: 100,
     default: 10,
   })
+  @IsOptional()
   @Type(() => Number)
   limit?: number = 10;
 }
