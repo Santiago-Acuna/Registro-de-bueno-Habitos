@@ -22,10 +22,10 @@ import { validate } from 'class-validator';
 import { UUID } from '../../domain/shared/types/common';
 import { UploadImageDto } from '../../helpers/cloudinary';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
-import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
 import { ValidationException } from '../../infrastructure/exceptions/app.exceptions';
 import { CreateHabitDto } from '../dto/create-habit.dto';
 import { HabitResponseDto } from '../dto/habit-response.dto';
+import { HabitsQueryDto } from '../dto/habits-query.dto';
 import { UpdateHabitDto } from '../dto/update-habit.dto';
 import { HabitsService } from '../services/habits.service';
 
@@ -126,9 +126,10 @@ export class HabitsController {
     },
   })
   async findAll(
-    @Query() paginationQuery: PaginationQueryDto,
-    @Query('isActive') isActive?: boolean
+    @Query() query: HabitsQueryDto
   ): Promise<PaginatedResponseDto<HabitResponseDto>> {
+    const { page = 1, limit = 10, isActive } = query;
+    const paginationQuery = { page, limit };
     const filters = isActive !== undefined ? { isActive } : undefined;
     return this.habitsService.findAll(paginationQuery, filters);
   }
