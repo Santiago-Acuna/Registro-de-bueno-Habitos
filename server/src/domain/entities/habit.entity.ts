@@ -19,14 +19,67 @@ export class Habit implements HabitProps {
     public readonly updatedAt: Date,
     public readonly isActive: boolean = true,
     public readonly totalActionsCount: number = 0,
-    public readonly lastActionDate: Date | null = null
+    public readonly lastActionDate: Date | null = null,
+    skipValidation: boolean = false
   ) {
-    this.validateLogo(logo);
+    if (!skipValidation) {
+      this.validateLogo(logo);
+    }
     this.validateDate(createdAt, 'createdAt');
     this.validateDate(updatedAt, 'updatedAt');
     if (lastActionDate !== null) {
       this.validateDate(lastActionDate, 'lastActionDate');
     }
+  }
+
+  // Public factory method for creating new habits
+  public static createNew(
+    id: UUID,
+    name: HabitName,
+    habitType: HabitComplexity,
+    logo: string,
+    createdAt: Date,
+    updatedAt: Date,
+    isActive?: boolean,
+    totalActionsCount?: number,
+    lastActionDate?: Date | null
+  ): Habit {
+    return new Habit(
+      id,
+      name,
+      habitType,
+      logo,
+      createdAt,
+      updatedAt,
+      isActive,
+      totalActionsCount,
+      lastActionDate
+    );
+  }
+
+  // Public factory method for updating habits (allows empty logo)
+  public static createUpdated(
+    id: UUID,
+    name: HabitName,
+    habitType: HabitComplexity,
+    logo: string,
+    createdAt: Date,
+    updatedAt: Date,
+    isActive?: boolean,
+    totalActionsCount?: number,
+    lastActionDate?: Date | null
+  ): Habit {
+    return new Habit(
+      id,
+      name,
+      habitType,
+      logo,
+      createdAt,
+      updatedAt,
+      isActive,
+      totalActionsCount,
+      lastActionDate
+    );
   }
 
   public static create(
@@ -39,6 +92,11 @@ export class Habit implements HabitProps {
   ): Habit {
     const habitName = HabitName.create(name);
     const now = new Date();
+
+    // Validate logo for creation (must be non-empty)
+    if (typeof logo !== 'string' || logo === '' || !logo) {
+      throw new Error('Logo must be a non-empty string');
+    }
 
     // Validate provided dates if they are provided (not undefined)
     // null values should be rejected with proper error messages
@@ -83,12 +141,15 @@ export class Habit implements HabitProps {
       new Date(),
       this.isActive,
       this.totalActionsCount,
-      this.lastActionDate
+      this.lastActionDate,
+      true // Skip validation since name and logo are already validated
     );
   }
 
   public updateLogo(newLogo: string): Habit {
-    this.validateLogo(newLogo);
+    // Validate logo for update (allows empty string for removal)
+    this.validateLogoForUpdate(newLogo);
+
     return new Habit(
       this.id,
       this.name,
@@ -98,7 +159,8 @@ export class Habit implements HabitProps {
       new Date(),
       this.isActive,
       this.totalActionsCount,
-      this.lastActionDate
+      this.lastActionDate,
+      true // Skip validation since we already validated above
     );
   }
 
@@ -112,7 +174,8 @@ export class Habit implements HabitProps {
       new Date(),
       false,
       this.totalActionsCount,
-      this.lastActionDate
+      this.lastActionDate,
+      true // Skip validation since current values are already valid
     );
   }
 
@@ -132,6 +195,23 @@ export class Habit implements HabitProps {
   private validateLogo(logo: string): void {
     if (typeof logo !== 'string' || logo === '' || !logo) {
       throw new Error('Logo must be a non-empty string');
+    }
+
+    // Maximum 2MB for base64 encoded images
+    const maxSize = 2 * 1024 * 1024;
+    if (logo.length > maxSize) {
+      throw new Error('Logo size cannot exceed 2MB');
+    }
+  }
+
+  private validateLogoForUpdate(logo: string): void {
+    if (typeof logo !== 'string') {
+      throw new Error('Logo must be a string');
+    }
+
+    // Allow empty string for logo removal
+    if (logo === '') {
+      return;
     }
 
     // Maximum 2MB for base64 encoded images
