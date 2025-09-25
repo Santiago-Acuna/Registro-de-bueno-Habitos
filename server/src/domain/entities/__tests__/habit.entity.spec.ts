@@ -313,9 +313,14 @@ describe('Habit Domain Entity', () => {
       expect(updatedHabit.updatedAt.getTime()).toBeLessThanOrEqual(afterUpdate.getTime());
     });
 
-    it('should throw error for invalid new logo', () => {
-      expect(() => habit.updateLogo('')).toThrow('Logo must be a non-empty string');
-      expect(() => habit.updateLogo(null as any)).toThrow('Logo must be a non-empty string');
+    it('should allow empty logo for removal and throw error for invalid types', () => {
+      // Empty string should be allowed for logo removal
+      const updatedHabit = habit.updateLogo('');
+      expect(updatedHabit.logo).toBe('');
+      expect(updatedHabit).not.toBe(habit); // New instance
+
+      // But null and non-string types should throw error
+      expect(() => habit.updateLogo(null as any)).toThrow('Logo must be a string');
     });
 
     it('should throw error for logo exceeding 2MB size', () => {
