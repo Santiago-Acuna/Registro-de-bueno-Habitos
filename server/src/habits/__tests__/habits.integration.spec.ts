@@ -215,6 +215,7 @@ describe('Habits API Integration Tests', () => {
         .attach('logo', createImageBuffer(), 'test-logo.png')
         .expect(400);
 
+      // Standard NestJS ValidationPipe returns message as array
       expect(response.body).toEqual(
         expect.objectContaining({
           statusCode: 400,
@@ -248,12 +249,19 @@ describe('Habits API Integration Tests', () => {
         .field('habitType', createHabitDto.habitType)
         .expect(400);
 
+      // ValidationException should return proper error structure with string message
       expect(response.body).toEqual(
         expect.objectContaining({
+          error: 'ValidationException',
+          message: expect.any(String),
           statusCode: 400,
-          message: expect.any(Array),
+          path: '/api/v1/habits',
+          timestamp: expect.any(String),
         })
       );
+
+      // Validate the message contains the expected validation error
+      expect(response.body.message).toContain('El archivo de imagen no puede estar vacío');
     });
 
     it('should return 400 when image upload fails', async () => {
