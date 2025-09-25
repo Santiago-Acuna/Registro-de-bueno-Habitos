@@ -13,6 +13,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
@@ -73,9 +74,12 @@ export class HabitsController {
 
     const errors = await validate(uploadImageDto);
     if (errors.length > 0) {
-      const message = errors.map(err => Object.values(err.constraints || {}).join(', ')).join('; ');
-
-      throw new ValidationException(message || 'Uncontrolled error with the image you sent');
+      const errorGroups = errors.map(err => Object.values(err.constraints || {}));
+      const nonEmptyGroups = errorGroups.filter(group => group.length > 0);
+      const message = nonEmptyGroups.length > 0
+        ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
+        : 'Uncontrolled error with the image you sent';
+      throw new ValidationException(message);
     }
 
     return this.habitsService.create(createHabitDto, logo);
@@ -156,11 +160,12 @@ export class HabitsController {
     status: 404,
     description: 'Habit not found',
   })
-  async findOne(@Param('id') id: UUID): Promise<HabitResponseDto> {
+  async findOne(@Param('id', ParseUUIDPipe) id: UUID): Promise<HabitResponseDto> {
     return this.habitsService.findOne(id);
   }
 
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('logo'))
   @Version('1')
   @ApiOperation({
     summary: 'Update habit',
@@ -193,10 +198,27 @@ export class HabitsController {
     description: 'Habit with the same name already exists',
   })
   async update(
-    @Param('id') id: UUID,
-    @Body() updateHabitDto: UpdateHabitDto
+    @Param('id', ParseUUIDPipe) id: UUID,
+    @Body() updateHabitDto: UpdateHabitDto,
+    @UploadedFile() logo?: Express.Multer.File
   ): Promise<HabitResponseDto> {
-    return this.habitsService.update(id, updateHabitDto);
+    // Validate logo if provided
+    if (logo) {
+      const uploadImageDto = new UploadImageDto();
+      uploadImageDto.image = logo;
+
+      const errors = await validate(uploadImageDto);
+      if (errors.length > 0) {
+        const errorGroups = errors.map(err => Object.values(err.constraints || {}));
+        const nonEmptyGroups = errorGroups.filter(group => group.length > 0);
+        const message = nonEmptyGroups.length > 0
+          ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
+          : 'Uncontrolled error with the image you sent';
+        throw new ValidationException(message);
+      }
+    }
+
+    return logo ? this.habitsService.update(id, updateHabitDto, logo) : this.habitsService.update(id, updateHabitDto);
   }
 
   @Delete(':id')
@@ -221,7 +243,7 @@ export class HabitsController {
     status: 404,
     description: 'Habit not found',
   })
-  async remove(@Param('id') id: UUID): Promise<void> {
+  async remove(@Param('id', ParseUUIDPipe) id: UUID): Promise<void> {
     return this.habitsService.remove(id);
   }
 

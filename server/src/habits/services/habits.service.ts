@@ -113,7 +113,7 @@ export class HabitsService {
     return this.mapToResponse(habit);
   }
 
-  async update(id: UUID, updateHabitDto: UpdateHabitDto): Promise<HabitResponseDto> {
+  async update(id: UUID, updateHabitDto: UpdateHabitDto, logo?: Express.Multer.File): Promise<HabitResponseDto> {
     this.logger.log(`Updating habit with id: ${id}`);
 
     // Check if habit exists
@@ -139,32 +139,38 @@ export class HabitsService {
         updatedHabit = updatedHabit.updateName(updateHabitDto.name);
       }
 
-      // Handle logo update
-      if ('logo' in updateHabitDto) {
-        if (updateHabitDto.logo === null) {
-          // Remove logo (set to empty string)
-          updatedHabit = updatedHabit.updateLogo('');
-        } else if (updateHabitDto.logo) {
-          // Upload new logo
-          const result = await this.cloudinaryService.uploadImage(updateHabitDto.logo, {
-            public_id: updateHabitDto.logo.originalname.split('.')[0] as string,
-            folder: 'habits',
-            resourceType: 'auto',
-          });
-
-          if (!result.success) {
-            throw new ValidationException(
-              result.error?.message || 'Failed to upload image. Uncontrolled error'
-            );
-          }
-
-          // Validate that Cloudinary returned a valid URL
-          if (!result.url || result.url.trim() === '') {
-            throw new ValidationException('Logo must be a non-empty string');
-          }
-
-          updatedHabit = updatedHabit.updateLogo(result.url);
+      // Handle logo update from file upload parameter
+      if (logo) {
+        // Check file size limit (2MB for updates)
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        if (logo.size > maxSize) {
+          throw new ValidationException('Logo size cannot exceed 2MB');
         }
+
+        // Upload new logo
+        const result = await this.cloudinaryService.uploadImage(logo, {
+          public_id: logo.originalname.split('.')[0] as string,
+          folder: 'habits',
+          resourceType: 'auto',
+        });
+
+        if (!result.success) {
+          throw new ValidationException(
+            result.error?.message || 'Failed to upload image. Uncontrolled error'
+          );
+        }
+
+        // Validate that Cloudinary returned a valid URL
+        if (!result.url || result.url.trim() === '') {
+          throw new ValidationException('Logo must be a non-empty string');
+        }
+
+        updatedHabit = updatedHabit.updateLogo(result.url);
+      }
+
+      // Handle logo removal via removeLogo field
+      if (updateHabitDto.removeLogo === 'true') {
+        updatedHabit = updatedHabit.updateLogo('');
       }
 
       // Save updated entity
