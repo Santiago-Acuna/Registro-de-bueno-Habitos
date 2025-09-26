@@ -1,0 +1,1 @@
+export { ApiFile } from './api-file.decorator';
