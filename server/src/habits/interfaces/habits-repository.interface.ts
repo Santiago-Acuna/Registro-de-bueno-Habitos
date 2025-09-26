@@ -4,10 +4,17 @@ import {
   PaginationParams,
   FilterOptions,
   UUID,
+  HabitComplexity,
 } from '../../domain/shared/types/common';
 
+export interface CreateHabitData {
+  name: string;
+  habitType: HabitComplexity;
+  logo: string;
+}
+
 export interface IHabitsRepository {
-  create(habit: Habit): Promise<Habit>;
+  create(data: CreateHabitData): Promise<Habit>;
   findById(id: UUID): Promise<Habit | null>;
   findAll(params: PaginationParams, filters?: FilterOptions): Promise<PaginatedResult<Habit>>;
   update(id: UUID, habit: Partial<Habit>): Promise<Habit>;
