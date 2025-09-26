@@ -22,6 +22,7 @@ import { validate } from 'class-validator';
 
 import { UUID } from '../../domain/shared/types/common';
 import { UploadImageDto } from '../../helpers/cloudinary';
+import { ApiFile } from '../../infrastructure/decorators';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
 import { ValidationException } from '../../infrastructure/exceptions/app.exceptions';
 import { CreateHabitDto } from '../dto/create-habit.dto';
@@ -43,6 +44,7 @@ export class HabitsController {
     summary: 'Create a new habit',
     description: 'Creates a new habit with the provided information. Habit names must be unique.',
   })
+  @ApiFile('logo')
   @ApiBody({ type: CreateHabitDto })
   @ApiResponse({
     status: 201,
@@ -179,6 +181,7 @@ export class HabitsController {
     description: 'Unique identifier of the habit',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
+  @ApiFile('logo')
   @ApiBody({ type: UpdateHabitDto })
   @ApiResponse({
     status: 200,
