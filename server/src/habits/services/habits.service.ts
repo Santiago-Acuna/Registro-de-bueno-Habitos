@@ -1,8 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
-
 import { Habit } from '../../domain/entities/habit.entity';
 import { PaginatedResult, FilterOptions, UUID } from '../../domain/shared/types/common';
+import { HabitName } from '../../domain/value-objects/habit-name';
 import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
 import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
@@ -56,16 +55,18 @@ export class HabitsService {
     }
 
     try {
-      // Create domain entity
-      const habit = Habit.create(
-        uuidv4(),
-        createHabitDto.name,
-        createHabitDto.habitType,
-        imageUrl!
-      );
+      // Validate domain rules before saving
+      const habitName = HabitName.create(createHabitDto.name);
+
+      // Create habit data for repository
+      const createHabitData = {
+        name: habitName.getValue(),
+        habitType: createHabitDto.habitType,
+        logo: imageUrl!,
+      };
 
       // Save to repository
-      const savedHabit = await this.habitsRepository.create(habit);
+      const savedHabit = await this.habitsRepository.create(createHabitData);
 
       this.logger.log(`Successfully created habit with id: ${savedHabit.id}`);
 
