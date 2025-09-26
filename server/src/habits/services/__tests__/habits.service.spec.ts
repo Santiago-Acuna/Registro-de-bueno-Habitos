@@ -171,7 +171,7 @@ describe('HabitsService', () => {
       );
       expect(habitsRepository.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          name: expect.objectContaining({ getValue: expect.any(Function) }),
+          name: mockHabitName,
           habitType: HabitComplexity.SIMPLE,
           logo: mockLogo,
         })
