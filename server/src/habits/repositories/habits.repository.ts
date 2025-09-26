@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
 
 import { Habit } from '../../domain/entities/habit.entity';
 import {
@@ -12,26 +11,36 @@ import {
 import { HabitName } from '../../domain/value-objects/habit-name';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { NotFoundError } from '../../infrastructure/exceptions/app.exceptions';
-import { IHabitsRepository } from '../interfaces/habits-repository.interface';
+import { IHabitsRepository, CreateHabitData } from '../interfaces/habits-repository.interface';
 
 @Injectable()
 export class HabitsRepository implements IHabitsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(habit: Habit): Promise<Habit> {
-    const data = await this.prisma.habits.create({
-      data: {
-        id: uuidv4(),
-        name: habit.name.getValue(),
-        habitType: habit.habitType as any, // Prisma enum mapping
-        logo: habit.logo,
-        isActive: habit.isActive,
-        totalActionsCount: habit.totalActionsCount,
-        lastActionDate: habit.lastActionDate,
-      },
-    });
+  async create(data: CreateHabitData): Promise<Habit> {
+    try {
+      const createdHabit = await this.prisma.habits.create({
+        data: {
+          name: data.name,
+          habitType: data.habitType as any, // Prisma enum mapping
+          logo: data.logo,
+          // Database provides defaults for:
+          // - id (auto-generated)
+          // - isActive (default: true)
+          // - totalActionsCount (default: 0)
+          // - lastActionDate (default: null)
+          // - createdAt (auto-generated)
+          // - updatedAt (auto-generated)
+        },
+      });
 
-    return this.mapToDomain(data);
+      return this.mapToDomain(createdHabit);
+    } catch (error: any) {
+      if (error.message) {
+        throw new Error(error.message);
+      }
+      throw error;
+    }
   }
 
   async findById(id: UUID): Promise<Habit | null> {
