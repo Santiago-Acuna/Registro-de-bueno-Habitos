@@ -4,16 +4,15 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = env("DATABASE_SCHEMA")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model actionLogs {
   id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   startTime         DateTime           @map("start_time") @db.Timestamptz(6)
   endTime           DateTime?          @map("end_time") @db.Timestamptz(6)
   durationSeconds   Int?               @map("duration_seconds")
-  actionDate        DateTime?          @map("action_date") @db.Date
+  actionDate        DateTime           @default(dbgenerated("CURRENT_DATE")) @map("action_date") @db.Date
   createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime           @default(now()) @map("updated_at") @db.Timestamptz(6)
   actionTypeId      String             @map("action_type_id") @db.Uuid
@@ -28,12 +27,11 @@ model actionLogs {
   @@map("action_logs")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model actionTypes {
   id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String
   logo              String
-  lastActionDate    DateTime?    @map("last_action_date") @db.Timestamptz(6)
+  lastActionDate    DateTime     @default(dbgenerated("CURRENT_DATE")) @map("last_action_date") @db.Timestamptz(6)
   totalActionsCount Int          @default(0) @map("total_actions_count")
   createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
@@ -50,7 +48,6 @@ model actionTypes {
   @@map("action_types")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model books {
   id                           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                         String        @db.VarChar(100)
@@ -73,11 +70,10 @@ model books {
   @@index([totalReadingSessions(sort: Desc)], map: "idx_books_total_sessions")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model habits {
   id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name              String          @db.VarChar(50)
-  habitType         habitComplexity @map("habit_type")
+  habitType         habitComplexity
   logo              String
   createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime        @default(now()) @map("updated_at") @db.Timestamptz(6)
@@ -89,7 +85,6 @@ model habits {
   @@index([createdAt], map: "idx_habits_created_at")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model pronunciationLogs {
   id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   actionId           String     @unique @map("action_id") @db.Uuid
@@ -106,7 +101,6 @@ model pronunciationLogs {
   @@map("pronunciation_logs")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model readingLogs {
   id                          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   actionId                    String     @unique @map("action_id") @db.Uuid
