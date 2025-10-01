@@ -1,5 +1,5 @@
 import { HabitComplexity } from '../../shared/types/common';
-import { HabitName } from '../../value-objects/habit-name';
+import { IdentifierName } from '../../value-objects/identifier-name';
 import { Habit } from '../habit.entity';
 
 describe('Habit Entity - Date Objects (RED PHASE)', () => {
@@ -38,7 +38,7 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
   describe('Habit Constructor with Date Objects', () => {
     it('should create habit instance with valid Date objects', () => {
       // ARRANGE
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
 
       // ACT
       const habit = new Habit(
@@ -70,7 +70,7 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
 
     it('should accept null lastActionDate as Date | null', () => {
       // ARRANGE
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
 
       // ACT
       const habit = new Habit(
@@ -91,7 +91,7 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
 
     it.each(validDateObjects)('should accept valid Date object: %s', (validDate) => {
       // ARRANGE
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
 
       // ACT & ASSERT
       expect(() => new Habit(
@@ -108,7 +108,7 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should throw error for invalid createdAt (non-Date)', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
 
       expect(() => new Habit(
         validHabitId,
@@ -124,7 +124,7 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should throw error for invalid updatedAt (non-Date)', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
 
       expect(() => new Habit(
         validHabitId,
@@ -140,7 +140,7 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should throw error for invalid lastActionDate (non-Date, not null)', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
 
       expect(() => new Habit(
         validHabitId,
@@ -158,7 +158,7 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     it.each(invalidDateValues.filter(val => val !== null && val !== undefined))(
       'should reject invalid date value: %s',
       (invalidValue) => {
-        const habitName = HabitName.create(validHabitName);
+        const habitName = IdentifierName.create(validHabitName);
 
         expect(() => new Habit(
           validHabitId,
@@ -175,7 +175,7 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     );
 
     it('should throw error for invalid Date object (NaN)', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
       const invalidDate = new Date('invalid-date-string');
 
       expect(() => new Habit(
@@ -445,7 +445,7 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should handle lastActionDate as Date when provided in constructor', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
       const habit = new Habit(
         validHabitId,
         habitName,
