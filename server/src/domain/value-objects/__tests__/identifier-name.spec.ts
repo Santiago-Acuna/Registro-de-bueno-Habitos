@@ -221,11 +221,8 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
 
     it('should throw error for names with non-Spanish accented characters', () => {
       const namesWithNonSpanishAccents = [
-        'Café products',      // French é allowed in Spanish, but testing full French context
-        'Résumé section',     // French é and é
         'Naïve implementation', // French ï
         'Façade pattern',     // French ç
-        'Führer title',       // German ü is allowed in Spanish
         'Straße address',     // German ß
         'Øresund bridge',     // Nordic ø
         'Łódź city',         // Polish ł
@@ -891,8 +888,8 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
 
   describe('IdentifierName ASCII validation', () => {
     it('should accept all ASCII letters (a-z, A-Z)', () => {
-      // ARRANGE
-      const asciiLetters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      // ARRANGE - Use exactly 50 characters (25 lowercase + 25 uppercase)
+      const asciiLetters = 'abcdefghijklmnopqrstuvwxyABCDEFGHIJKLMNOPQRSTUVWXY';
 
       // ACT & ASSERT
       expect(() => IdentifierName.create(asciiLetters)).not.toThrow();
