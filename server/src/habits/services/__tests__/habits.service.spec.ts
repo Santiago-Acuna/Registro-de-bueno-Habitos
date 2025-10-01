@@ -8,7 +8,7 @@ import {
   PaginatedResult,
   FilterOptions,
 } from '../../../domain/shared/types/common';
-import { HabitName } from '../../../domain/value-objects/habit-name';
+import { IdentifierName } from '../../../domain/value-objects/identifier-name';
 import { CloudinaryService } from '../../../helpers/cloudinary/cloudinary.service';
 import { PaginatedResponseDto } from '../../../infrastructure/dto/paginated-response.dto';
 import { PaginationQueryDto } from '../../../infrastructure/dto/pagination-query.dto';
@@ -53,7 +53,7 @@ describe('HabitsService', () => {
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
 
   const createMockHabit = (overrides: Partial<any> = {}): Habit => {
-    const habitName = HabitName.create(mockHabitName);
+    const habitName = IdentifierName.create(mockHabitName);
     const defaults = {
       id: mockHabitId,
       name: habitName,
@@ -815,7 +815,7 @@ describe('HabitsService', () => {
       // Arrange - Create a habit and test through public method
       const mockHabit = new Habit(
         mockHabitId,
-        HabitName.create(mockHabitName),
+        IdentifierName.create(mockHabitName),
         HabitComplexity.COMPLEX,
         mockLogo,
         fixedDate,
