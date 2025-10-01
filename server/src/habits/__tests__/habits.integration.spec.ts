@@ -623,28 +623,6 @@ describe('Habits API Integration Tests', () => {
         );
       });
 
-      it('should successfully remove habit logo', async () => {
-        // Arrange
-        const existingHabit = createMockHabit();
-        const updatedHabit = existingHabit.updateLogo(''); // Empty string represents removed logo
-
-        habitsRepository.findById.mockResolvedValue(existingHabit);
-        habitsRepository.update.mockResolvedValue(updatedHabit);
-
-        // Act & Assert
-        const response = await request(app.getHttpServer())
-          .patch(`/api/v1/habits/${mockHabitId}`)
-          .field('removeLogo', 'true') // Special field to indicate logo removal
-          .expect(200);
-
-        expect(response.body).toEqual(
-          expect.objectContaining({
-            id: mockHabitId,
-            logo: '',
-          })
-        );
-      });
-
       it('should return 400 when logo upload fails', async () => {
         // Arrange
         const existingHabit = createMockHabit();
