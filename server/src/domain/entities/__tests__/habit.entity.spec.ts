@@ -1,5 +1,5 @@
 import { HabitComplexity } from '../../shared/types/common';
-import { HabitName } from '../../value-objects/habit-name';
+import { IdentifierName } from '../../value-objects/identifier-name';
 import { Habit } from '../habit.entity';
 
 describe('Habit Domain Entity', () => {
@@ -130,7 +130,7 @@ describe('Habit Domain Entity', () => {
 
   describe('Habit constructor', () => {
     it('should create habit instance with all parameters including Date objects', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
       const lastActionDate = fixedDate;
       const habit = new Habit(
         validHabitId,
@@ -157,7 +157,7 @@ describe('Habit Domain Entity', () => {
     });
 
     it('should create habit instance with null lastActionDate', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
       const habit = new Habit(
         validHabitId,
         habitName,
@@ -174,7 +174,7 @@ describe('Habit Domain Entity', () => {
     });
 
     it('should validate that all Date parameters are proper Date objects', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
       const createdAt = fixedDate;
       const updatedAt = fixedDate;
       const lastActionDate = fixedDate;
@@ -203,7 +203,7 @@ describe('Habit Domain Entity', () => {
     });
 
     it('should throw error for invalid lastActionDate', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
       const invalidDate = new Date('invalid-date-string');
 
       expect(() => new Habit(
@@ -220,7 +220,7 @@ describe('Habit Domain Entity', () => {
     });
 
     it('should validate logo during construction', () => {
-      const habitName = HabitName.create(validHabitName);
+      const habitName = IdentifierName.create(validHabitName);
       expect(
         () => new Habit(validHabitId, habitName, validHabitType, '', fixedDate, fixedDate)
       ).toThrow('Logo must be a non-empty string');
