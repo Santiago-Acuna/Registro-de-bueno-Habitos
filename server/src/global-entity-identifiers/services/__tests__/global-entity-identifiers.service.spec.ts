@@ -14,6 +14,10 @@ import {
 } from '../../interfaces/global-entity-identifiers-repository.interface';
 import { GlobalEntityIdentifiersService } from '../global-entity-identifiers.service';
 
+// Value objects only pattern - no entities
+// Service layer uses value objects (IdentifierName, IdentifierIcon) for validation
+// Repository operations work with plain data structures
+
 // Mock implementations
 const mockGlobalEntityIdentifiersRepository = {
   create: jest.fn(),
@@ -30,17 +34,19 @@ const mockGlobalEntityIdentifiersRepository = {
   count: jest.fn(),
 };
 
-describe('GlobalEntityIdentifiersService (RED PHASE)', () => {
+describe('GlobalEntityIdentifiersService (RED PHASE) - Value Objects Pattern', () => {
   let service: GlobalEntityIdentifiersService;
   let repository: jest.Mocked<IGlobalEntityIdentifiersRepository>;
 
   // Test data fixtures
+  // Plain data structures - validation will be done via IdentifierName, IdentifierIcon value objects
   const mockIdentifierId: UUID = '123e4567-e89b-12d3-a456-426614174000';
   const mockEntityId: UUID = '987fcdeb-51a2-43d1-9876-543210987654';
   const mockName = 'Morning Exercise';
   const mockIcon = 'https://example.com/icons/exercise.png';
   const mockEntityType = 'habit';
 
+  // Service returns plain objects (not domain entities)
   const createMockGlobalEntityIdentifier = (overrides: Partial<any> = {}) => ({
     id: mockIdentifierId,
     name: mockName,
@@ -124,11 +130,12 @@ describe('GlobalEntityIdentifiersService (RED PHASE)', () => {
       expect(repository.create).not.toHaveBeenCalled();
     });
 
-    it('should throw ValidationException when name is empty', async () => {
+    it('should throw ValidationException when name is empty (validated by IdentifierName value object)', async () => {
       // Arrange
       const invalidData = { ...createData, name: '' };
 
       // Act & Assert
+      // Value object pattern: Service validates using IdentifierName.create() before repository call
       await expect(service.create(invalidData)).rejects.toThrow(ValidationException);
       await expect(service.create(invalidData)).rejects.toThrow('Name cannot be empty');
 
@@ -136,11 +143,12 @@ describe('GlobalEntityIdentifiersService (RED PHASE)', () => {
       expect(repository.create).not.toHaveBeenCalled();
     });
 
-    it('should throw ValidationException when icon is empty', async () => {
+    it('should throw ValidationException when icon is empty (validated by IdentifierIcon value object)', async () => {
       // Arrange
       const invalidData = { ...createData, icon: '' };
 
       // Act & Assert
+      // Value object pattern: Service validates using IdentifierIcon.create() before repository call
       await expect(service.create(invalidData)).rejects.toThrow(ValidationException);
       await expect(service.create(invalidData)).rejects.toThrow('Icon cannot be empty');
 
