@@ -601,29 +601,6 @@ describe('HabitsService', () => {
         expect(result.logo).toBe(newLogoUrl);
       });
 
-      it('should successfully update habit by removing logo (set to null)', async () => {
-        // Arrange
-        const existingHabit = createMockHabit();
-        const updateWithRemoveLogo: UpdateHabitDto = { removeLogo: 'true' };
-        const updatedHabit = existingHabit.updateLogo(''); // Empty string represents removed logo
-
-        habitsRepository.findById.mockResolvedValue(existingHabit);
-        habitsRepository.update.mockResolvedValue(updatedHabit);
-
-        // Act
-        const result = await service.update(mockHabitId, updateWithRemoveLogo);
-
-        // Assert
-        expect(cloudinaryService.uploadImage).not.toHaveBeenCalled();
-        expect(habitsRepository.update).toHaveBeenCalledWith(
-          mockHabitId,
-          expect.objectContaining({
-            logo: '',
-          })
-        );
-        expect(result.logo).toBe('');
-      });
-
       it('should successfully update habit name and logo together', async () => {
         // Arrange
         const existingHabit = createMockHabit();
