@@ -12,6 +12,9 @@ import {
 } from '../../interfaces/global-entity-identifiers-repository.interface';
 import { GlobalEntityIdentifiersRepository } from '../global-entity-identifiers.repository';
 
+// Value objects only pattern - no entities
+// Repository works with plain data structures, validation happens via value objects
+
 // Mock Prisma client
 const mockPrismaClient = {
   globalEntityIdentifiers: {
@@ -29,17 +32,20 @@ const mockDatabaseService = {
   getClient: jest.fn(() => mockPrismaClient),
 };
 
-describe('GlobalEntityIdentifiersRepository (RED PHASE)', () => {
+describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pattern', () => {
   let repository: GlobalEntityIdentifiersRepository;
   let databaseService: jest.Mocked<DatabaseService>;
 
   // Test data fixtures
+  // Note: These are plain strings, not value objects
+  // Value objects (IdentifierName, IdentifierIcon) will be used for validation at service layer
   const mockIdentifierId: UUID = '123e4567-e89b-12d3-a456-426614174000';
   const mockEntityId: UUID = '987fcdeb-51a2-43d1-9876-543210987654';
   const mockName = 'Morning Exercise';
   const mockIcon = 'https://example.com/icons/exercise.png';
   const mockEntityType = 'habit';
 
+  // Repository works with plain data structures from Prisma
   const createMockPrismaIdentifier = (overrides: Partial<any> = {}) => ({
     id: mockIdentifierId,
     name: mockName,
@@ -93,6 +99,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE)', () => {
           entityId: createData.entityId,
         },
       });
+      // Value objects pattern: Repository returns plain object (not entity)
       expect(result).toEqual(mockPrismaResult);
       expect(result.id).toBe(mockIdentifierId);
       expect(result.name).toBe(mockName);
