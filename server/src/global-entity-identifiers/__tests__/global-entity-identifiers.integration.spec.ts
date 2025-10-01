@@ -13,7 +13,9 @@ import { GlobalEntityIdentifiersService } from '../services/global-entity-identi
 import { GlobalEntityIdentifiersRepository } from '../repositories/global-entity-identifiers.repository';
 
 // Value objects only pattern - no entities
-// This module uses value objects for validation and plain data structures for persistence
+// This module uses value objects (IdentifierName, IdentifierIcon) for validation
+// Services and repositories work with plain data structures (not domain entities)
+// Similar to action-types module which uses ActionTypeName value object
 
 // Mock Database service with in-memory data store
 class MockDatabaseService {
@@ -237,13 +239,14 @@ class MockDatabaseService {
   }
 }
 
-describe('GlobalEntityIdentifiers Integration Tests (RED PHASE)', () => {
+describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects Pattern', () => {
   let app: INestApplication;
   let service: GlobalEntityIdentifiersService;
   let repository: GlobalEntityIdentifiersRepository;
   let mockDatabaseService: MockDatabaseService;
 
   // Test data fixtures
+  // Plain strings used for testing - validation happens via value objects at service layer
   const mockEntityId: UUID = '987fcdeb-51a2-43d1-9876-543210987654';
   const mockName = 'Morning Exercise';
   const mockIcon = 'https://example.com/icons/exercise.png';
@@ -279,6 +282,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE)', () => {
   describe('Full CRUD Flow Integration', () => {
     it('should complete full CRUD lifecycle successfully', async () => {
       // 1. CREATE - Should create new global entity identifier
+      // Value objects pattern: Service validates name/icon using IdentifierName/IdentifierIcon value objects
       const createResult = await service.create({
         name: mockName,
         icon: mockIcon,
@@ -287,6 +291,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE)', () => {
       });
 
       const identifierId = createResult.id;
+      // Returns plain object (not domain entity)
       expect(createResult).toMatchObject({
         id: expect.any(String),
         name: mockName,
