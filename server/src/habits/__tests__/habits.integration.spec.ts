@@ -5,7 +5,7 @@ import request from 'supertest';
 
 import { Habit } from '../../domain/entities/habit.entity';
 import { HabitComplexity, UUID, PaginatedResult } from '../../domain/shared/types/common';
-import { HabitName } from '../../domain/value-objects/habit-name';
+import { IdentifierName } from '../../domain/value-objects/identifier-name';
 import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
 import { HttpExceptionFilter } from '../../infrastructure/filters/http-exception.filter';
 import { CreateHabitDto } from '../dto/create-habit.dto';
@@ -44,7 +44,7 @@ describe('Habits API Integration Tests', () => {
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
 
   const createMockHabit = (overrides: Partial<any> = {}): Habit => {
-    const habitName = HabitName.create(mockHabitName);
+    const habitName = IdentifierName.create(mockHabitName);
     const defaults = {
       id: mockHabitId,
       name: habitName,
