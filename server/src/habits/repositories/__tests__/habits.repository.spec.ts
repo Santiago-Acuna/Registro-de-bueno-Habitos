@@ -7,7 +7,7 @@ import {
   PaginationParams,
   FilterOptions,
 } from '../../../domain/shared/types/common';
-import { HabitName } from '../../../domain/value-objects/habit-name';
+import { IdentifierName } from '../../../domain/value-objects/identifier-name';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { NotFoundError } from '../../../infrastructure/exceptions/app.exceptions';
 import { HabitsRepository } from '../habits.repository';
@@ -40,7 +40,7 @@ describe('HabitsRepository', () => {
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
 
   const createMockHabit = (overrides: Partial<any> = {}): Habit => {
-    const habitName = HabitName.create(mockHabitName);
+    const habitName = IdentifierName.create(mockHabitName);
     const defaults = {
       id: mockHabitId,
       name: habitName,
@@ -468,7 +468,7 @@ describe('HabitsRepository', () => {
     it('should successfully update habit with all fields', async () => {
       // Arrange
       const updatedHabit = createMockHabit({
-        name: HabitName.create('Updated Name'),
+        name: IdentifierName.create('Updated Name'),
         logo: 'new-logo.png',
         habitType: HabitComplexity.COMPLEX,
         isActive: false,
@@ -506,7 +506,7 @@ describe('HabitsRepository', () => {
 
     it('should update only provided fields', async () => {
       // Arrange
-      const partialUpdate = { name: HabitName.create('Partial Update') };
+      const partialUpdate = { name: IdentifierName.create('Partial Update') };
       const mockUpdatedData = createMockPrismaData({ name: 'Partial Update' });
       mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
 
@@ -571,7 +571,7 @@ describe('HabitsRepository', () => {
 
     it('should throw NotFoundError when habit does not exist', async () => {
       // Arrange
-      const partialUpdate = { name: HabitName.create('Updated Name') };
+      const partialUpdate = { name: IdentifierName.create('Updated Name') };
       const prismaError = { code: 'P2025', message: 'Record not found' };
       mockPrismaService.habits.update.mockRejectedValue(prismaError);
 
@@ -582,7 +582,7 @@ describe('HabitsRepository', () => {
 
     it('should propagate other database errors', async () => {
       // Arrange
-      const partialUpdate = { name: HabitName.create('Updated Name') };
+      const partialUpdate = { name: IdentifierName.create('Updated Name') };
       const dbError = new Error('Database constraint violation');
       mockPrismaService.habits.update.mockRejectedValue(dbError);
 
@@ -738,7 +738,7 @@ describe('HabitsRepository', () => {
       // Assert
       expect(result).toBeInstanceOf(Habit);
       expect(result!.id).toBe(mockHabitId);
-      expect(result!.name).toBeInstanceOf(HabitName);
+      expect(result!.name).toBeInstanceOf(IdentifierName);
       expect(result!.name.getValue()).toBe('Complex Habit');
       expect(result!.habitType).toBe(HabitComplexity.WITHOUT_INTERVALS);
       expect(result!.logo).toBe('complex-logo.png');
@@ -779,7 +779,7 @@ describe('HabitsRepository', () => {
       }
     });
 
-    it('should create valid HabitName value object during mapping', async () => {
+    it('should create valid IdentifierName value object during mapping', async () => {
       // Arrange
       const prismaData = createMockPrismaData({ name: 'Valid Habit Name' });
       mockPrismaService.habits.findUnique.mockResolvedValue(prismaData);
@@ -788,7 +788,7 @@ describe('HabitsRepository', () => {
       const result = await repository.findById(mockHabitId);
 
       // Assert
-      expect(result!.name).toBeInstanceOf(HabitName);
+      expect(result!.name).toBeInstanceOf(IdentifierName);
       expect(result!.name.getValue()).toBe('Valid Habit Name');
       expect(() => result!.name.getValue()).not.toThrow();
     });
@@ -821,7 +821,7 @@ describe('HabitsRepository', () => {
       const prismaDataWithEmptyName = createMockPrismaData({ name: '' });
       mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithEmptyName);
 
-      // Act & Assert - Should throw during HabitName creation
+      // Act & Assert - Should throw during IdentifierName creation
       await expect(repository.findById(mockHabitId)).rejects.toThrow('Habit name must be a non-empty string');
     });
 
@@ -831,7 +831,7 @@ describe('HabitsRepository', () => {
       const prismaDataWithLongName = createMockPrismaData({ name: veryLongName });
       mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithLongName);
 
-      // Act & Assert - Should throw during HabitName creation
+      // Act & Assert - Should throw during IdentifierName creation
       await expect(repository.findById(mockHabitId)).rejects.toThrow(
         'Habit name cannot exceed 50 characters'
       );
