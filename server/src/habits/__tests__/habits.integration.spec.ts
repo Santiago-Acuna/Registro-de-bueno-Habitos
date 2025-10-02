@@ -3,11 +3,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerModule } from '@nestjs/throttler';
 import request from 'supertest';
 
-import { Habit } from '../../domain/entities/habit.entity';
 import { GlobalEntityIdentifier } from '../../domain/entities/global-entity-identifier.entity';
+import { Habit } from '../../domain/entities/habit.entity';
 import { HabitComplexity, UUID, PaginatedResult } from '../../domain/shared/types/common';
-import { IdentifierName } from '../../domain/value-objects/identifier-name';
 import { IdentifierIcon } from '../../domain/value-objects/identifier-icon';
+import { IdentifierName } from '../../domain/value-objects/identifier-name';
 import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
 import { HttpExceptionFilter } from '../../infrastructure/filters/http-exception.filter';
 import { CreateHabitDto } from '../dto/create-habit.dto';
@@ -47,7 +47,10 @@ describe('Habits API Integration Tests', () => {
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
 
   // Helper to create mock GlobalEntityIdentifier
-  const createMockGlobalIdentifier = (name: string = mockHabitName, icon: string = mockIconUrl): GlobalEntityIdentifier => {
+  const createMockGlobalIdentifier = (
+    name: string = mockHabitName,
+    icon: string = mockIconUrl
+  ): GlobalEntityIdentifier => {
     return new GlobalEntityIdentifier(
       validGlobalIdentifierId,
       IdentifierName.create(name),
@@ -155,18 +158,18 @@ describe('Habits API Integration Tests', () => {
       habitsRepository.findByName.mockResolvedValue(null);
       cloudinaryService.uploadImage.mockResolvedValue({
         success: true,
-        url: mockLogo,
+        url: mockIconUrl,
         data: {
           publicId: 'test-logo',
-          url: mockLogo,
-          secureUrl: mockLogo,
+          url: mockIconUrl,
+          secureUrl: mockIconUrl,
           version: 1,
           signature: 'test-signature',
           width: 100,
           height: 100,
           format: 'png',
           resourceType: 'image',
-          createdAt:'2024-01-01T00:00:00.000Z',
+          createdAt: '2024-01-01T00:00:00.000Z',
           tags: [],
           bytes: 1024,
           type: 'upload',
@@ -189,7 +192,7 @@ describe('Habits API Integration Tests', () => {
           id: mockHabitId,
           name: mockHabitName,
           habitType: HabitComplexity.SIMPLE,
-          logo: mockLogo,
+          logo: mockIconUrl,
           isActive: true,
           totalActionsCount: 0,
           lastActionDate: null,
@@ -315,9 +318,7 @@ describe('Habits API Integration Tests', () => {
       habitsRepository.findAll.mockResolvedValue(mockPaginatedResult);
 
       // Act & Assert
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/habits')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/api/v1/habits').expect(200);
 
       expect(response.body).toEqual(
         expect.objectContaining({
@@ -449,9 +450,7 @@ describe('Habits API Integration Tests', () => {
 
     it('should return 400 for invalid UUID format', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/api/v1/habits/invalid-uuid')
-        .expect(400);
+      await request(app.getHttpServer()).get('/api/v1/habits/invalid-uuid').expect(400);
     });
   });
 
@@ -541,22 +540,22 @@ describe('Habits API Integration Tests', () => {
       );
     });
 
-    describe('logo update functionality', () => {
-      const newLogoUrl = 'https://example.com/new-logo.png';
+    describe('icon update functionality', () => {
+      const newIconUrl = 'https://example.com/new-icon.png';
 
-      it('should successfully update habit with new logo', async () => {
+      it('should successfully update habit with new icon', async () => {
         // Arrange
         const existingHabit = createMockHabit();
-        const updatedHabit = existingHabit.updateLogo(newLogoUrl);
+        const updatedHabit = existingHabit.updateIcon(newIconUrl);
 
         habitsRepository.findById.mockResolvedValue(existingHabit);
         cloudinaryService.uploadImage.mockResolvedValue({
           success: true,
-          url: newLogoUrl,
+          url: newIconUrl,
           data: {
-            publicId: 'new-logo',
-            url: newLogoUrl,
-            secureUrl: newLogoUrl,
+            publicId: 'new-icon',
+            url: newIconUrl,
+            secureUrl: newIconUrl,
             version: 1,
             signature: 'test-signature',
             width: 100,
@@ -576,33 +575,33 @@ describe('Habits API Integration Tests', () => {
         // Act & Assert
         const response = await request(app.getHttpServer())
           .patch(`/api/v1/habits/${mockHabitId}`)
-          .attach('logo', createImageBuffer(), 'new-logo.png')
+          .attach('logo', createImageBuffer(), 'new-icon.png')
           .expect(200);
 
         expect(response.body).toEqual(
           expect.objectContaining({
             id: mockHabitId,
-            logo: newLogoUrl,
+            logo: newIconUrl,
           })
         );
       });
 
-      it('should successfully update habit name and logo together', async () => {
+      it('should successfully update habit name and icon together', async () => {
         // Arrange
         const existingHabit = createMockHabit();
         const newName = 'Updated Exercise Name';
         let updatedHabit = existingHabit.updateName(newName);
-        updatedHabit = updatedHabit.updateLogo(newLogoUrl);
+        updatedHabit = updatedHabit.updateIcon(newIconUrl);
 
         habitsRepository.findById.mockResolvedValue(existingHabit);
         habitsRepository.findByName.mockResolvedValue(null);
         cloudinaryService.uploadImage.mockResolvedValue({
           success: true,
-          url: newLogoUrl,
+          url: newIconUrl,
           data: {
-            publicId: 'new-logo',
-            url: newLogoUrl,
-            secureUrl: newLogoUrl,
+            publicId: 'new-icon',
+            url: newIconUrl,
+            secureUrl: newIconUrl,
             version: 1,
             signature: 'test-signature',
             width: 100,
@@ -623,19 +622,19 @@ describe('Habits API Integration Tests', () => {
         const response = await request(app.getHttpServer())
           .patch(`/api/v1/habits/${mockHabitId}`)
           .field('name', newName)
-          .attach('logo', createImageBuffer(), 'new-logo.png')
+          .attach('logo', createImageBuffer(), 'new-icon.png')
           .expect(200);
 
         expect(response.body).toEqual(
           expect.objectContaining({
             id: mockHabitId,
             name: newName,
-            logo: newLogoUrl,
+            logo: newIconUrl,
           })
         );
       });
 
-      it('should return 400 when logo upload fails', async () => {
+      it('should return 400 when icon upload fails', async () => {
         // Arrange
         const existingHabit = createMockHabit();
         habitsRepository.findById.mockResolvedValue(existingHabit);
@@ -647,7 +646,7 @@ describe('Habits API Integration Tests', () => {
         // Act & Assert
         const response = await request(app.getHttpServer())
           .patch(`/api/v1/habits/${mockHabitId}`)
-          .attach('logo', createImageBuffer(), 'invalid-logo.txt')
+          .attach('logo', createImageBuffer(), 'invalid-icon.txt')
           .expect(400);
 
         expect(response.body).toEqual(
@@ -658,19 +657,19 @@ describe('Habits API Integration Tests', () => {
         );
       });
 
-      it('should return 400 for invalid logo file size', async () => {
+      it('should return 400 for invalid icon file size', async () => {
         // Arrange
         const existingHabit = createMockHabit();
-        const largeLogo = 'x'.repeat(3 * 1024 * 1024); // 3MB string (exceeds 2MB limit)
+        const largeIcon = 'x'.repeat(3 * 1024 * 1024); // 3MB string (exceeds 2MB limit)
 
         habitsRepository.findById.mockResolvedValue(existingHabit);
         cloudinaryService.uploadImage.mockResolvedValue({
           success: true,
-          url: largeLogo,
+          url: largeIcon,
           data: {
-            publicId: 'new-logo',
-            url: largeLogo,
-            secureUrl: largeLogo,
+            publicId: 'new-icon',
+            url: largeIcon,
+            secureUrl: largeIcon,
             version: 1,
             signature: 'test-signature',
             width: 100,
@@ -689,18 +688,18 @@ describe('Habits API Integration Tests', () => {
         // Act & Assert
         const response = await request(app.getHttpServer())
           .patch(`/api/v1/habits/${mockHabitId}`)
-          .attach('logo', createImageBuffer(), 'large-logo.png')
+          .attach('logo', createImageBuffer(), 'large-icon.png')
           .expect(400);
 
         expect(response.body).toEqual(
           expect.objectContaining({
             statusCode: 400,
-            message: 'Logo size cannot exceed 2MB',
+            message: 'Icon size cannot exceed 2MB',
           })
         );
       });
 
-      it('should maintain existing logo when no logo field is provided', async () => {
+      it('should maintain existing icon when no logo field is provided', async () => {
         // Arrange
         const existingHabit = createMockHabit();
         const updatedHabit = existingHabit.updateName('Updated Name');
@@ -719,7 +718,7 @@ describe('Habits API Integration Tests', () => {
           expect.objectContaining({
             id: mockHabitId,
             name: 'Updated Name',
-            logo: mockLogo, // Should keep original logo
+            logo: mockIconUrl, // Should keep original icon
           })
         );
         expect(cloudinaryService.uploadImage).not.toHaveBeenCalled();
@@ -735,9 +734,7 @@ describe('Habits API Integration Tests', () => {
       habitsRepository.delete.mockResolvedValue(undefined);
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .delete(`/api/v1/habits/${mockHabitId}`)
-        .expect(204);
+      await request(app.getHttpServer()).delete(`/api/v1/habits/${mockHabitId}`).expect(204);
     });
 
     it('should return 404 when habit not found', async () => {
@@ -745,19 +742,14 @@ describe('Habits API Integration Tests', () => {
       habitsRepository.findById.mockResolvedValue(null);
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .delete(`/api/v1/habits/${mockHabitId}`)
-        .expect(404);
+      await request(app.getHttpServer()).delete(`/api/v1/habits/${mockHabitId}`).expect(404);
     });
 
     it('should return 400 for invalid UUID format', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .delete('/api/v1/habits/invalid-uuid')
-        .expect(400);
+      await request(app.getHttpServer()).delete('/api/v1/habits/invalid-uuid').expect(400);
     });
   });
-
 
   describe('API versioning', () => {
     it('should require API version in URL', async () => {
@@ -805,9 +797,7 @@ describe('Habits API Integration Tests', () => {
       habitsRepository.findAll.mockRejectedValue(new Error('Database connection failed'));
 
       // Act & Assert
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/habits')
-        .expect(500);
+      const response = await request(app.getHttpServer()).get('/api/v1/habits').expect(500);
 
       expect(response.body).toEqual(
         expect.objectContaining({
