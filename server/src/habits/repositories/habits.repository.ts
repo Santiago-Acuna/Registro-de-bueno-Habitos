@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { Habit } from '../../domain/entities/habit.entity';
+import { GlobalEntityIdentifier } from '../../domain/entities/global-entity-identifier.entity';
 import {
   PaginatedResult,
   PaginationParams,
@@ -9,6 +10,7 @@ import {
   HabitComplexity,
 } from '../../domain/shared/types/common';
 import { IdentifierName } from '../../domain/value-objects/identifier-name';
+import { IdentifierIcon } from '../../domain/value-objects/identifier-icon';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { NotFoundError } from '../../infrastructure/exceptions/app.exceptions';
 import { IHabitsRepository, CreateHabitData } from '../interfaces/habits-repository.interface';
@@ -22,16 +24,9 @@ export class HabitsRepository implements IHabitsRepository {
       const createdHabit = await this.prisma.habits.create({
         data: {
           name: data.name,
-          habitType: data.habitType as any, // Prisma enum mapping
-          logo: data.logo,
-          // Database provides defaults for:
-          // - id (auto-generated)
-          // - isActive (default: true)
-          // - totalActionsCount (default: 0)
-          // - lastActionDate (default: null)
-          // - createdAt (auto-generated)
-          // - updatedAt (auto-generated)
-        },
+          habitType: data.habitType as any,
+          icon: data.icon,
+        } as any,
       });
 
       return this.mapToDomain(createdHabit);
@@ -46,6 +41,9 @@ export class HabitsRepository implements IHabitsRepository {
   async findById(id: UUID): Promise<Habit | null> {
     const data = await this.prisma.habits.findUnique({
       where: { id },
+      include: {
+        globalEntityIdentifiers: true,
+      },
     });
 
     return data ? this.mapToDomain(data) : null;
@@ -68,6 +66,9 @@ export class HabitsRepository implements IHabitsRepository {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include: {
+          globalEntityIdentifiers: true,
+        },
       }),
       this.prisma.habits.count({ where }),
     ]);
@@ -86,12 +87,6 @@ export class HabitsRepository implements IHabitsRepository {
   async update(id: UUID, habitData: Partial<Habit>): Promise<Habit> {
     const updateData: any = {};
 
-    if (habitData.name) {
-      updateData.name = habitData.name.getValue();
-    }
-    if (habitData.logo) {
-      updateData.logo = habitData.logo;
-    }
     if (habitData.habitType) {
       updateData.habitType = habitData.habitType;
     }
@@ -138,8 +133,13 @@ export class HabitsRepository implements IHabitsRepository {
   async findByName(name: string): Promise<Habit | null> {
     const data = await this.prisma.habits.findFirst({
       where: {
-        name,
+        globalEntityIdentifiers: {
+          name,
+        },
         isActive: true,
+      },
+      include: {
+        globalEntityIdentifiers: true,
       },
     });
 
@@ -148,18 +148,23 @@ export class HabitsRepository implements IHabitsRepository {
 
 
   private mapToDomain(data: any): Habit {
-    const habitName = IdentifierName.create(data.name);
+    const globalIdentifier = new GlobalEntityIdentifier(
+      data.globalEntityIdentifiers.id,
+      IdentifierName.create(data.globalEntityIdentifiers.name),
+      IdentifierIcon.create(data.globalEntityIdentifiers.icon),
+      data.globalEntityIdentifiers.entityType,
+      data.globalEntityIdentifiers.entityId
+    );
 
     return new Habit(
       data.id,
-      habitName,
       data.habitType as HabitComplexity,
-      data.logo,
       data.createdAt,
       data.updatedAt,
       data.isActive,
       data.totalActionsCount,
-      data.lastActionDate
+      data.lastActionDate,
+      globalIdentifier
     );
   }
 }
