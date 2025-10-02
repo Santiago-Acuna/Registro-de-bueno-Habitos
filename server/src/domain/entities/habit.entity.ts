@@ -1,8 +1,8 @@
 import { BaseEntity, HabitComplexity, SoftDeletable, UUID } from '../shared/types/common';
-import { HabitName } from '../value-objects/habit-name';
+import { IdentifierName } from '../value-objects/identifier-name';
 
 export interface HabitProps extends BaseEntity, SoftDeletable {
-  name: HabitName;
+  name: IdentifierName;
   habitType: HabitComplexity;
   logo: string;
   totalActionsCount: number;
@@ -12,7 +12,7 @@ export interface HabitProps extends BaseEntity, SoftDeletable {
 export class Habit implements HabitProps {
   constructor(
     public readonly id: UUID,
-    public readonly name: HabitName,
+    public readonly name: IdentifierName,
     public readonly habitType: HabitComplexity,
     public readonly logo: string,
     public readonly createdAt: Date,
@@ -35,7 +35,7 @@ export class Habit implements HabitProps {
   // Public factory method for creating new habits
   public static createNew(
     id: UUID,
-    name: HabitName,
+    name: IdentifierName,
     habitType: HabitComplexity,
     logo: string,
     createdAt: Date,
@@ -60,7 +60,7 @@ export class Habit implements HabitProps {
   // Public factory method for updating habits (allows empty logo)
   public static createUpdated(
     id: UUID,
-    name: HabitName,
+    name: IdentifierName,
     habitType: HabitComplexity,
     logo: string,
     createdAt: Date,
@@ -90,7 +90,7 @@ export class Habit implements HabitProps {
     createdAt?: Date,
     updatedAt?: Date
   ): Habit {
-    const habitName = HabitName.create(name);
+    const habitName = IdentifierName.create(name);
     const now = new Date();
 
     // Validate logo for creation (must be non-empty)
@@ -131,7 +131,7 @@ export class Habit implements HabitProps {
   }
 
   public updateName(newName: string): Habit {
-    const updatedName = HabitName.create(newName);
+    const updatedName = IdentifierName.create(newName);
     return new Habit(
       this.id,
       updatedName,
