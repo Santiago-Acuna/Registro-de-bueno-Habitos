@@ -13,25 +13,6 @@ export class GlobalEntityIdentifier {
     this.validateEntityType(entityType);
   }
 
-  public static create(
-    id: UUID,
-    name: string,
-    icon: string,
-    entityType: string,
-    entityId: UUID
-  ): GlobalEntityIdentifier {
-    const identifierName = IdentifierName.create(name);
-    const identifierIcon = IdentifierIcon.create(icon);
-
-    return new GlobalEntityIdentifier(
-      id,
-      identifierName,
-      identifierIcon,
-      entityType,
-      entityId
-    );
-  }
-
   private validateEntityType(entityType: string): void {
     const validTypes = ['habit', 'action_type'];
     if (!validTypes.includes(entityType.toLowerCase())) {
