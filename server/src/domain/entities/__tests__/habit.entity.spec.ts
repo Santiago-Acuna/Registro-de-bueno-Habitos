@@ -27,44 +27,56 @@ describe('Habit Domain Entity', () => {
     it('should reject invalid Date objects', () => {
       const invalidDate = new Date('invalid-date-string'); // Creates invalid Date
       const globalIdentifier = createMockGlobalIdentifier();
-      expect(() => Habit.create(
+      expect(() => new Habit(
         validHabitId,
         validHabitType,
         invalidDate,
         invalidDate,
+        true,
+        0,
+        null,
         globalIdentifier
       )).toThrow('Invalid date: createdAt must be a valid Date object');
     });
 
     it('should reject null createdAt', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      expect(() => Habit.create(
+      expect(() => new Habit(
         validHabitId,
         validHabitType,
         null as any,
         fixedDate,
+        true,
+        0,
+        null,
         globalIdentifier
       )).toThrow('Invalid date: createdAt must be a Date object');
     });
 
     it('should reject null updatedAt', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      expect(() => Habit.create(
+      expect(() => new Habit(
         validHabitId,
         validHabitType,
         fixedDate,
         null as any,
+        true,
+        0,
+        null,
         globalIdentifier
       )).toThrow('Invalid date: updatedAt must be a Date object');
     });
 
     it('should store Date objects correctly', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      const habit = Habit.create(
+      const habit = new Habit(
         validHabitId,
         validHabitType,
         fixedDate,
         fixedDate,
+        true,
+        0,
+        null,
         globalIdentifier
       );
 
@@ -76,14 +88,17 @@ describe('Habit Domain Entity', () => {
     });
   });
 
-  describe('Habit.create()', () => {
+  describe('Habit constructor', () => {
     it('should create a new habit with valid Date parameters', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      const habit = Habit.create(
+      const habit = new Habit(
         validHabitId,
         validHabitType,
         fixedDate,
         fixedDate,
+        true,
+        0,
+        null,
         globalIdentifier
       );
 
@@ -100,10 +115,20 @@ describe('Habit Domain Entity', () => {
       expect(habit.lastActionDate).toBeNull();
     });
 
-    it('should create a habit with default timestamps when not provided', () => {
+    it('should create a habit with current timestamps', () => {
       const globalIdentifier = createMockGlobalIdentifier();
       const beforeCreation = new Date();
-      const habit = Habit.create(validHabitId, validHabitType, undefined, undefined, globalIdentifier);
+      const currentDate = new Date();
+      const habit = new Habit(
+        validHabitId,
+        validHabitType,
+        currentDate,
+        currentDate,
+        true,
+        0,
+        null,
+        globalIdentifier
+      );
       const afterCreation = new Date();
 
       expect(habit.createdAt instanceof Date).toBe(true);
@@ -173,7 +198,7 @@ describe('Habit Domain Entity', () => {
     });
   });
 
-  describe('Habit constructor', () => {
+  describe('Habit constructor - additional tests', () => {
     it('should create habit instance with all parameters including Date objects', () => {
       const globalIdentifier = createMockGlobalIdentifier();
       const lastActionDate = fixedDate;
@@ -279,11 +304,14 @@ describe('Habit Domain Entity', () => {
 
     beforeEach(() => {
       const globalIdentifier = createMockGlobalIdentifier();
-      habit = Habit.create(
+      habit = new Habit(
         validHabitId,
         validHabitType,
         fixedDate,
         fixedDate,
+        true,
+        0,
+        null,
         globalIdentifier
       );
     });
@@ -333,11 +361,14 @@ describe('Habit Domain Entity', () => {
 
     beforeEach(() => {
       const globalIdentifier = createMockGlobalIdentifier();
-      habit = Habit.create(
+      habit = new Habit(
         validHabitId,
         validHabitType,
         fixedDate,
         fixedDate,
+        true,
+        0,
+        null,
         globalIdentifier
       );
     });
@@ -382,11 +413,14 @@ describe('Habit Domain Entity', () => {
 
     beforeEach(() => {
       const globalIdentifier = createMockGlobalIdentifier();
-      habit = Habit.create(
+      habit = new Habit(
         validHabitId,
         validHabitType,
         fixedDate,
         fixedDate,
+        true,
+        0,
+        null,
         globalIdentifier
       );
     });
@@ -426,11 +460,14 @@ describe('Habit Domain Entity', () => {
   describe('habit type check methods', () => {
     it('should correctly identify complex habits', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      const complexHabit = Habit.create(
+      const complexHabit = new Habit(
         validHabitId,
         HabitComplexity.COMPLEX,
         fixedDate,
         fixedDate,
+        true,
+        0,
+        null,
         globalIdentifier
       );
 
@@ -441,11 +478,14 @@ describe('Habit Domain Entity', () => {
 
     it('should correctly identify simple habits', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      const simpleHabit = Habit.create(
+      const simpleHabit = new Habit(
         validHabitId,
         HabitComplexity.SIMPLE,
         fixedDate,
         fixedDate,
+        true,
+        0,
+        null,
         globalIdentifier
       );
 
@@ -456,11 +496,14 @@ describe('Habit Domain Entity', () => {
 
     it('should correctly identify without intervals habits', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      const withoutIntervalsHabit = Habit.create(
+      const withoutIntervalsHabit = new Habit(
         validHabitId,
         HabitComplexity.WITHOUT_INTERVALS,
         fixedDate,
         fixedDate,
+        true,
+        0,
+        null,
         globalIdentifier
       );
 
@@ -475,8 +518,8 @@ describe('Habit Domain Entity', () => {
       const globalIdentifier1 = createMockGlobalIdentifier();
       const globalIdentifier2 = createMockGlobalIdentifier('Different Name', 'https://example.com/different.png');
 
-      const habit1 = Habit.create(validHabitId, validHabitType, fixedDate, fixedDate, globalIdentifier1);
-      const habit2 = Habit.create(validHabitId, HabitComplexity.COMPLEX, fixedDate, fixedDate, globalIdentifier2);
+      const habit1 = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier1);
+      const habit2 = new Habit(validHabitId, HabitComplexity.COMPLEX, fixedDate, fixedDate, true, 0, null, globalIdentifier2);
 
       expect(habit1.equals(habit2)).toBe(true);
     });
@@ -485,8 +528,8 @@ describe('Habit Domain Entity', () => {
       const globalIdentifier1 = createMockGlobalIdentifier();
       const globalIdentifier2 = createMockGlobalIdentifier();
 
-      const habit1 = Habit.create(validHabitId, validHabitType, fixedDate, fixedDate, globalIdentifier1);
-      const habit2 = Habit.create('987e6543-e21b-34c5-d678-123456789000', validHabitType, fixedDate, fixedDate, globalIdentifier2);
+      const habit1 = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier1);
+      const habit2 = new Habit('987e6543-e21b-34c5-d678-123456789000', validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier2);
 
       expect(habit1.equals(habit2)).toBe(false);
     });
@@ -496,7 +539,7 @@ describe('Habit Domain Entity', () => {
     it('should handle habit name at maximum length boundary', () => {
       const maxLengthName = 'a'.repeat(50);
       const globalIdentifier = createMockGlobalIdentifier(maxLengthName);
-      const habit = Habit.create(validHabitId, validHabitType, fixedDate, fixedDate, globalIdentifier);
+      const habit = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier);
 
       expect(habit.globalEntityIdentifier.name.getValue()).toBe(maxLengthName);
     });
@@ -504,7 +547,7 @@ describe('Habit Domain Entity', () => {
     it('should handle habit name at minimum length boundary', () => {
       const minLengthName = 'a';
       const globalIdentifier = createMockGlobalIdentifier(minLengthName);
-      const habit = Habit.create(validHabitId, validHabitType, fixedDate, fixedDate, globalIdentifier);
+      const habit = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier);
 
       expect(habit.globalEntityIdentifier.name.getValue()).toBe(minLengthName);
     });
@@ -512,14 +555,14 @@ describe('Habit Domain Entity', () => {
     it('should handle icon URL at maximum length boundary', () => {
       const maxLengthUrl = 'https://example.com/' + 'a'.repeat(470) + '.png'; // Exactly 500 chars
       const globalIdentifier = createMockGlobalIdentifier(validHabitName, maxLengthUrl);
-      const habit = Habit.create(validHabitId, validHabitType, fixedDate, fixedDate, globalIdentifier);
+      const habit = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier);
 
       expect(habit.globalEntityIdentifier.icon.getValue()).toBe(maxLengthUrl);
     });
 
     it('should handle multiple method calls in sequence', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      const originalHabit = Habit.create(validHabitId, validHabitType, fixedDate, fixedDate, globalIdentifier);
+      const originalHabit = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier);
 
       const updatedHabit = originalHabit
         .updateName('New Name')
