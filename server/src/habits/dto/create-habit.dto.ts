@@ -1,5 +1,5 @@
-import { IsString, IsEnum, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsEnum, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
 
 import { HabitComplexity } from '../../domain/shared/types/common';
 
