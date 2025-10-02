@@ -1,9 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ActionType } from '../../../domain/entities/action-type.entity';
+import { GlobalEntityIdentifier } from '../../../domain/entities/global-entity-identifier.entity';
 import { UUID, PaginationParams } from '../../../domain/shared/types/common';
-import { ActionTypeName } from '../../../domain/value-objects/action-type-name';
-import { DatabaseService } from '../../../infrastructure/database/database.service';
+import { IdentifierIcon } from '../../../domain/value-objects/identifier-icon';
+import { IdentifierName } from '../../../domain/value-objects/identifier-name';
+import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { NotFoundError, ConflictError } from '../../../infrastructure/exceptions/app.exceptions';
 import {
   CreateActionTypeData,
@@ -29,27 +31,35 @@ const mockPrismaClient = {
   $transaction: jest.fn(),
 };
 
-const mockDatabaseService = {
-  getClient: jest.fn(() => mockPrismaClient),
+const mockPrismaService = {
+  actionTypes: mockPrismaClient.actionTypes,
+  $transaction: mockPrismaClient.$transaction,
 };
 
 describe('ActionTypesRepository (RED PHASE)', () => {
   let repository: ActionTypesRepository;
-  let databaseService: jest.Mocked<DatabaseService>;
 
   // Test data fixtures
   const mockActionTypeId: UUID = '123e4567-e89b-12d3-a456-426614174000';
   const mockHabitId: UUID = '987fcdeb-51a2-43d1-9876-543210987654';
+  const validGlobalIdentifierId = 'global-id-123e4567-e89b-12d3-a456-426614174000';
   const mockActionTypeName = 'Morning Push-ups';
-  const mockLogo = 'https://example.com/pushups-logo.png';
+  const mockIconUrl = 'https://example.com/pushups-logo.png';
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
   const lastActionDate = new Date('2024-01-01T12:00:00.000Z');
 
+  // Prisma data structure with JOIN to globalEntityIdentifiers
   const createMockPrismaActionType = (overrides: Partial<any> = {}) => ({
     id: mockActionTypeId,
-    name: mockActionTypeName,
-    logo: mockLogo,
     habitId: mockHabitId,
+    globalIdentifierId: validGlobalIdentifierId,
+    globalEntityIdentifiers: {
+      id: validGlobalIdentifierId,
+      name: mockActionTypeName,
+      icon: mockIconUrl,
+      entityType: 'action_type',
+      entityId: mockActionTypeId,
+    },
     lastActionDate: null,
     totalActionsCount: 0,
     createdAt: fixedDate,
@@ -57,27 +67,40 @@ describe('ActionTypesRepository (RED PHASE)', () => {
     ...overrides,
   });
 
+  // Helper to create mock GlobalEntityIdentifier
+  const createMockGlobalIdentifier = (
+    name: string = mockActionTypeName,
+    icon: string = mockIconUrl
+  ): GlobalEntityIdentifier => {
+    return new GlobalEntityIdentifier(
+      validGlobalIdentifierId,
+      IdentifierName.create(name),
+      IdentifierIcon.create(icon),
+      'action_type',
+      mockActionTypeId
+    );
+  };
+
   const createMockActionType = (overrides: Partial<any> = {}): ActionType => {
+    const globalIdentifier = overrides.globalEntityIdentifier || createMockGlobalIdentifier();
     const defaults = {
       id: mockActionTypeId,
-      name: ActionTypeName.create(mockActionTypeName),
-      logo: mockLogo,
       habitId: mockHabitId,
       createdAt: fixedDate,
       updatedAt: fixedDate,
       totalActionsCount: 0,
       lastActionDate: null,
+      globalEntityIdentifier: globalIdentifier,
     };
     const merged = { ...defaults, ...overrides };
     return new ActionType(
       merged.id,
-      merged.name,
-      merged.logo,
       merged.habitId,
       merged.createdAt,
       merged.updatedAt,
       merged.totalActionsCount,
-      merged.lastActionDate
+      merged.lastActionDate,
+      merged.globalEntityIdentifier
     );
   };
 
@@ -88,20 +111,19 @@ describe('ActionTypesRepository (RED PHASE)', () => {
       providers: [
         ActionTypesRepository,
         {
-          provide: DatabaseService,
-          useValue: mockDatabaseService,
+          provide: PrismaService,
+          useValue: mockPrismaService,
         },
       ],
     }).compile();
 
     repository = module.get<ActionTypesRepository>(ActionTypesRepository);
-    databaseService = module.get(DatabaseService);
   });
 
   describe('create()', () => {
     const createData: CreateActionTypeData = {
       name: mockActionTypeName,
-      logo: mockLogo,
+      icon: mockIconUrl,
       habitId: mockHabitId,
     };
 
@@ -117,15 +139,16 @@ describe('ActionTypesRepository (RED PHASE)', () => {
       expect(mockPrismaClient.actionTypes.create).toHaveBeenCalledWith({
         data: {
           name: createData.name,
-          logo: createData.logo,
+          icon: createData.icon,
           habitId: createData.habitId,
         },
+        include: { globalEntityIdentifiers: true },
       });
       expect(result).toBeInstanceOf(ActionType);
       // Verify returned entity has database-generated fields populated
       expect(result.id).toBe(mockActionTypeId);
-      expect(result.name.getValue()).toBe(mockActionTypeName);
-      expect(result.logo).toBe(mockLogo);
+      expect(result.globalEntityIdentifier.name.getValue()).toBe(mockActionTypeName);
+      expect(result.globalEntityIdentifier.icon.getValue()).toBe(mockIconUrl);
       expect(result.habitId).toBe(mockHabitId);
       expect(result.createdAt).toEqual(fixedDate);
       expect(result.updatedAt).toEqual(fixedDate);
@@ -177,9 +200,11 @@ describe('ActionTypesRepository (RED PHASE)', () => {
       // Assert
       expect(mockPrismaClient.actionTypes.findUnique).toHaveBeenCalledWith({
         where: { id: mockActionTypeId },
+        include: { globalEntityIdentifiers: true },
       });
       expect(result).toBeInstanceOf(ActionType);
       expect(result!.id).toBe(mockActionTypeId);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe(mockActionTypeName);
     });
 
     it('should return null when action type not found', async () => {
@@ -222,6 +247,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         skip: 0,
         take: 10,
         orderBy: { createdAt: 'desc' },
+        include: { globalEntityIdentifiers: true },
       });
       expect(mockPrismaClient.actionTypes.count).toHaveBeenCalledWith({});
       expect(result.data).toHaveLength(2);
@@ -246,6 +272,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         take: 10,
         orderBy: { createdAt: 'desc' },
         where: { habitId: mockHabitId },
+        include: { globalEntityIdentifiers: true },
       });
       expect(mockPrismaClient.actionTypes.count).toHaveBeenCalledWith({
         where: { habitId: mockHabitId },
@@ -267,6 +294,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         take: 10,
         orderBy: { createdAt: 'desc' },
         where: { totalActionsCount: { gt: 0 } },
+        include: { globalEntityIdentifiers: true },
       });
     });
 
@@ -292,6 +320,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
             gte: expect.any(Date),
           },
         },
+        include: { globalEntityIdentifiers: true },
       });
     });
 
@@ -316,6 +345,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
           habitId: mockHabitId,
           totalActionsCount: { gt: 0 },
         },
+        include: { globalEntityIdentifiers: true },
       });
     });
 
@@ -333,6 +363,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         skip: 10, // (page - 1) * limit = (3 - 1) * 5 = 10
         take: 5,
         orderBy: { createdAt: 'desc' },
+        include: { globalEntityIdentifiers: true },
       });
       expect(result.page).toBe(3);
       expect(result.limit).toBe(5);
@@ -358,6 +389,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         take: 10,
         orderBy: { createdAt: 'desc' },
         where: { habitId: mockHabitId },
+        include: { globalEntityIdentifiers: true },
       });
       expect(result.data).toHaveLength(1);
       expect(result.data[0].habitId).toBe(mockHabitId);
@@ -381,6 +413,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
           habitId: mockHabitId,
           totalActionsCount: { gt: 0 },
         },
+        include: { globalEntityIdentifiers: true },
       });
     });
   });
@@ -397,12 +430,15 @@ describe('ActionTypesRepository (RED PHASE)', () => {
       // Assert
       expect(mockPrismaClient.actionTypes.findFirst).toHaveBeenCalledWith({
         where: {
-          name: mockActionTypeName,
+          globalEntityIdentifiers: {
+            name: mockActionTypeName,
+          },
           habitId: mockHabitId,
         },
+        include: { globalEntityIdentifiers: true },
       });
       expect(result).toBeInstanceOf(ActionType);
-      expect(result!.name.getValue()).toBe(mockActionTypeName);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe(mockActionTypeName);
       expect(result!.habitId).toBe(mockHabitId);
     });
 
@@ -421,14 +457,19 @@ describe('ActionTypesRepository (RED PHASE)', () => {
   describe('update()', () => {
     const updateData: UpdateActionTypeData = {
       name: 'Updated Push-ups',
-      logo: 'https://example.com/updated-logo.png',
+      icon: 'https://example.com/updated-logo.png',
     };
 
     it('should successfully update action type', async () => {
       // Arrange
       const mockUpdatedResult = createMockPrismaActionType({
-        name: updateData.name,
-        logo: updateData.logo,
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: updateData.name,
+          icon: updateData.icon,
+          entityType: 'action_type',
+          entityId: mockActionTypeId,
+        },
         updatedAt: new Date(),
       });
       mockPrismaClient.actionTypes.update.mockResolvedValue(mockUpdatedResult);
@@ -440,10 +481,11 @@ describe('ActionTypesRepository (RED PHASE)', () => {
       expect(mockPrismaClient.actionTypes.update).toHaveBeenCalledWith({
         where: { id: mockActionTypeId },
         data: updateData,
+        include: { globalEntityIdentifiers: true },
       });
       expect(result).toBeInstanceOf(ActionType);
-      expect(result.name.getValue()).toBe(updateData.name);
-      expect(result.logo).toBe(updateData.logo);
+      expect(result.globalEntityIdentifier.name.getValue()).toBe(updateData.name);
+      expect(result.globalEntityIdentifier.icon.getValue()).toBe(updateData.icon);
     });
 
     it('should throw NotFoundError when action type not found', async () => {
@@ -532,6 +574,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         take: 5,
         orderBy: { totalActionsCount: 'desc' },
         where: { totalActionsCount: { gt: 0 } },
+        include: { globalEntityIdentifiers: true },
       });
       expect(result).toHaveLength(2);
       expect(result[0].totalActionsCount).toBe(50);
@@ -557,6 +600,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
             gte: expect.any(Date),
           },
         },
+        include: { globalEntityIdentifiers: true },
       });
       expect(result).toHaveLength(1);
     });
@@ -676,6 +720,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         where: {
           OR: [{ lastActionDate: null }, { lastActionDate: { lt: expect.any(Date) } }],
         },
+        include: { globalEntityIdentifiers: true },
       });
       expect(result.data).toHaveLength(1);
     });
@@ -708,23 +753,21 @@ describe('ActionTypesRepository (RED PHASE)', () => {
       const result = await repository.getStatsByHabitId(mockHabitId);
 
       // Assert
-      expect(result).toEqual({
-        totalActionTypes: 5,
-        activeActionTypes: 4,
-        totalActions: 100,
-        averageActionsPerType: 20,
-        mostActiveActionType: {
-          id: mockActionTypeId,
-          name: mockActionTypeName,
-          totalActionsCount: 50,
-        },
-        leastActiveActionType: {
-          id: mockActionTypeId,
-          name: mockActionTypeName,
-          totalActionsCount: 0,
-        },
-        recentlyActiveCount: 3,
-      } as ActionTypeStats);
+      expect(result.totalActionTypes).toBe(5);
+      expect(result.activeActionTypes).toBe(4);
+      expect(result.totalActions).toBe(100);
+      expect(result.averageActionsPerType).toBe(20);
+      expect(result.mostActiveActionType).toEqual({
+        id: mockActionTypeId,
+        name: mockActionTypeName,
+        totalActionsCount: 50,
+      });
+      expect(result.leastActiveActionType).toEqual({
+        id: mockActionTypeId,
+        name: mockActionTypeName,
+        totalActionsCount: 0,
+      });
+      expect(result.recentlyActiveCount).toBe(3);
     });
 
     it('should handle empty statistics', async () => {

@@ -8,13 +8,13 @@ import {
 
 export interface CreateActionTypeData {
   name: string;
-  logo: string;
+  icon: string;
   habitId: UUID;
 }
 
 export interface UpdateActionTypeData {
   name?: string;
-  logo?: string;
+  icon?: string;
 }
 
 export interface ActionTypeFilterOptions extends FilterOptions {
