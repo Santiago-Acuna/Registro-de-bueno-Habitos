@@ -11,7 +11,10 @@
       "Bash(npx eslint:*)",
       "Bash(find:*)",
       "Bash(npm run lint)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(node:*)",
+      "Bash(cat:*)",
+      "Bash(npx prettier:*)"
     ],
     "deny": []
   }
