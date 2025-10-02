@@ -1,6 +1,7 @@
-import { IsOptional } from 'class-validator';
-import { Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsOptional } from 'class-validator';
+
 import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
 
 export class HabitsQueryDto extends PaginationQueryDto {
