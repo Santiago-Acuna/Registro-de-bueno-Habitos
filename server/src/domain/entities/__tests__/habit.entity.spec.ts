@@ -13,7 +13,10 @@ describe('Habit Domain Entity', () => {
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
 
   // Helper to create mock GlobalEntityIdentifier
-  const createMockGlobalIdentifier = (name: string = validHabitName, icon: string = validIconUrl): GlobalEntityIdentifier => {
+  const createMockGlobalIdentifier = (
+    name: string = validHabitName,
+    icon: string = validIconUrl
+  ): GlobalEntityIdentifier => {
     return new GlobalEntityIdentifier(
       validGlobalIdentifierId,
       IdentifierName.create(name),
@@ -27,44 +30,53 @@ describe('Habit Domain Entity', () => {
     it('should reject invalid Date objects', () => {
       const invalidDate = new Date('invalid-date-string'); // Creates invalid Date
       const globalIdentifier = createMockGlobalIdentifier();
-      expect(() => new Habit(
-        validHabitId,
-        validHabitType,
-        invalidDate,
-        invalidDate,
-        true,
-        0,
-        null,
-        globalIdentifier
-      )).toThrow('Invalid date: createdAt must be a valid Date object');
+      expect(
+        () =>
+          new Habit(
+            validHabitId,
+            validHabitType,
+            invalidDate,
+            invalidDate,
+            true,
+            0,
+            null,
+            globalIdentifier
+          )
+      ).toThrow('Invalid date: createdAt must be a valid Date object');
     });
 
     it('should reject null createdAt', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      expect(() => new Habit(
-        validHabitId,
-        validHabitType,
-        null as any,
-        fixedDate,
-        true,
-        0,
-        null,
-        globalIdentifier
-      )).toThrow('Invalid date: createdAt must be a Date object');
+      expect(
+        () =>
+          new Habit(
+            validHabitId,
+            validHabitType,
+            null as any,
+            fixedDate,
+            true,
+            0,
+            null,
+            globalIdentifier
+          )
+      ).toThrow('Invalid date: createdAt must be a Date object');
     });
 
     it('should reject null updatedAt', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      expect(() => new Habit(
-        validHabitId,
-        validHabitType,
-        fixedDate,
-        null as any,
-        true,
-        0,
-        null,
-        globalIdentifier
-      )).toThrow('Invalid date: updatedAt must be a Date object');
+      expect(
+        () =>
+          new Habit(
+            validHabitId,
+            validHabitType,
+            fixedDate,
+            null as any,
+            true,
+            0,
+            null,
+            globalIdentifier
+          )
+      ).toThrow('Invalid date: updatedAt must be a Date object');
     });
 
     it('should store Date objects correctly', () => {
@@ -142,7 +154,7 @@ describe('Habit Domain Entity', () => {
 
     it('should throw error for invalid habit name in globalEntityIdentifier', () => {
       expect(() => {
-        const invalidIdentifier = new GlobalEntityIdentifier(
+        new GlobalEntityIdentifier(
           validGlobalIdentifierId,
           IdentifierName.create(''), // Empty name - will throw
           IdentifierIcon.create(validIconUrl),
@@ -152,7 +164,7 @@ describe('Habit Domain Entity', () => {
       }).toThrow('Identifier name cannot be empty');
 
       expect(() => {
-        const invalidIdentifier = new GlobalEntityIdentifier(
+        new GlobalEntityIdentifier(
           validGlobalIdentifierId,
           IdentifierName.create('a'.repeat(51)), // Too long - will throw
           IdentifierIcon.create(validIconUrl),
@@ -164,7 +176,7 @@ describe('Habit Domain Entity', () => {
 
     it('should throw error for invalid icon in globalEntityIdentifier', () => {
       expect(() => {
-        const invalidIdentifier = new GlobalEntityIdentifier(
+        new GlobalEntityIdentifier(
           validGlobalIdentifierId,
           IdentifierName.create(validHabitName),
           IdentifierIcon.create(''), // Empty icon - will throw
@@ -174,7 +186,7 @@ describe('Habit Domain Entity', () => {
       }).toThrow('Identifier icon cannot be empty');
 
       expect(() => {
-        const invalidIdentifier = new GlobalEntityIdentifier(
+        new GlobalEntityIdentifier(
           validGlobalIdentifierId,
           IdentifierName.create(validHabitName),
           IdentifierIcon.create('invalid-url'), // Invalid URL format
@@ -187,7 +199,7 @@ describe('Habit Domain Entity', () => {
     it('should throw error for icon URL exceeding max length', () => {
       const longUrl = 'https://example.com/' + 'a'.repeat(500); // Exceeds 500 char limit
       expect(() => {
-        const invalidIdentifier = new GlobalEntityIdentifier(
+        new GlobalEntityIdentifier(
           validGlobalIdentifierId,
           IdentifierName.create(validHabitName),
           IdentifierIcon.create(longUrl),
@@ -273,29 +285,35 @@ describe('Habit Domain Entity', () => {
       const globalIdentifier = createMockGlobalIdentifier();
       const invalidDate = new Date('invalid-date-string');
 
-      expect(() => new Habit(
-        validHabitId,
-        validHabitType,
-        fixedDate,
-        fixedDate,
-        true,
-        5,
-        invalidDate,
-        globalIdentifier
-      )).toThrow('Invalid date: lastActionDate must be a valid Date object');
+      expect(
+        () =>
+          new Habit(
+            validHabitId,
+            validHabitType,
+            fixedDate,
+            fixedDate,
+            true,
+            5,
+            invalidDate,
+            globalIdentifier
+          )
+      ).toThrow('Invalid date: lastActionDate must be a valid Date object');
     });
 
     it('should validate globalEntityIdentifier is provided', () => {
-      expect(() => new Habit(
-        validHabitId,
-        validHabitType,
-        fixedDate,
-        fixedDate,
-        true,
-        0,
-        null,
-        null as any // Invalid null globalEntityIdentifier
-      )).toThrow();
+      expect(
+        () =>
+          new Habit(
+            validHabitId,
+            validHabitType,
+            fixedDate,
+            fixedDate,
+            true,
+            0,
+            null,
+            null as any // Invalid null globalEntityIdentifier
+          )
+      ).toThrow();
     });
   });
 
@@ -404,7 +422,9 @@ describe('Habit Domain Entity', () => {
 
     it('should throw error for icon URL exceeding max length', () => {
       const longUrl = 'https://example.com/' + 'a'.repeat(500);
-      expect(() => habit.updateIcon(longUrl)).toThrow('Identifier icon URL cannot exceed 500 characters');
+      expect(() => habit.updateIcon(longUrl)).toThrow(
+        'Identifier icon URL cannot exceed 500 characters'
+      );
     });
   });
 
@@ -438,7 +458,9 @@ describe('Habit Domain Entity', () => {
       expect(deactivatedHabit.createdAt).toBe(habit.createdAt);
 
       expect(deactivatedHabit.updatedAt instanceof Date).toBe(true);
-      expect(deactivatedHabit.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeDeactivation.getTime());
+      expect(deactivatedHabit.updatedAt.getTime()).toBeGreaterThanOrEqual(
+        beforeDeactivation.getTime()
+      );
       expect(deactivatedHabit.updatedAt.getTime()).toBeLessThanOrEqual(afterDeactivation.getTime());
 
       expect(deactivatedHabit.totalActionsCount).toBe(habit.totalActionsCount);
@@ -455,7 +477,6 @@ describe('Habit Domain Entity', () => {
       expect(habit.updatedAt).toBe(originalUpdatedAt);
     });
   });
-
 
   describe('habit type check methods', () => {
     it('should correctly identify complex habits', () => {
@@ -516,10 +537,31 @@ describe('Habit Domain Entity', () => {
   describe('equals()', () => {
     it('should return true for habits with same id', () => {
       const globalIdentifier1 = createMockGlobalIdentifier();
-      const globalIdentifier2 = createMockGlobalIdentifier('Different Name', 'https://example.com/different.png');
+      const globalIdentifier2 = createMockGlobalIdentifier(
+        'Different Name',
+        'https://example.com/different.png'
+      );
 
-      const habit1 = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier1);
-      const habit2 = new Habit(validHabitId, HabitComplexity.COMPLEX, fixedDate, fixedDate, true, 0, null, globalIdentifier2);
+      const habit1 = new Habit(
+        validHabitId,
+        validHabitType,
+        fixedDate,
+        fixedDate,
+        true,
+        0,
+        null,
+        globalIdentifier1
+      );
+      const habit2 = new Habit(
+        validHabitId,
+        HabitComplexity.COMPLEX,
+        fixedDate,
+        fixedDate,
+        true,
+        0,
+        null,
+        globalIdentifier2
+      );
 
       expect(habit1.equals(habit2)).toBe(true);
     });
@@ -528,8 +570,26 @@ describe('Habit Domain Entity', () => {
       const globalIdentifier1 = createMockGlobalIdentifier();
       const globalIdentifier2 = createMockGlobalIdentifier();
 
-      const habit1 = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier1);
-      const habit2 = new Habit('987e6543-e21b-34c5-d678-123456789000', validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier2);
+      const habit1 = new Habit(
+        validHabitId,
+        validHabitType,
+        fixedDate,
+        fixedDate,
+        true,
+        0,
+        null,
+        globalIdentifier1
+      );
+      const habit2 = new Habit(
+        '987e6543-e21b-34c5-d678-123456789000',
+        validHabitType,
+        fixedDate,
+        fixedDate,
+        true,
+        0,
+        null,
+        globalIdentifier2
+      );
 
       expect(habit1.equals(habit2)).toBe(false);
     });
@@ -539,7 +599,16 @@ describe('Habit Domain Entity', () => {
     it('should handle habit name at maximum length boundary', () => {
       const maxLengthName = 'a'.repeat(50);
       const globalIdentifier = createMockGlobalIdentifier(maxLengthName);
-      const habit = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier);
+      const habit = new Habit(
+        validHabitId,
+        validHabitType,
+        fixedDate,
+        fixedDate,
+        true,
+        0,
+        null,
+        globalIdentifier
+      );
 
       expect(habit.globalEntityIdentifier.name.getValue()).toBe(maxLengthName);
     });
@@ -547,7 +616,16 @@ describe('Habit Domain Entity', () => {
     it('should handle habit name at minimum length boundary', () => {
       const minLengthName = 'a';
       const globalIdentifier = createMockGlobalIdentifier(minLengthName);
-      const habit = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier);
+      const habit = new Habit(
+        validHabitId,
+        validHabitType,
+        fixedDate,
+        fixedDate,
+        true,
+        0,
+        null,
+        globalIdentifier
+      );
 
       expect(habit.globalEntityIdentifier.name.getValue()).toBe(minLengthName);
     });
@@ -555,18 +633,34 @@ describe('Habit Domain Entity', () => {
     it('should handle icon URL at maximum length boundary', () => {
       const maxLengthUrl = 'https://example.com/' + 'a'.repeat(470) + '.png'; // Exactly 500 chars
       const globalIdentifier = createMockGlobalIdentifier(validHabitName, maxLengthUrl);
-      const habit = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier);
+      const habit = new Habit(
+        validHabitId,
+        validHabitType,
+        fixedDate,
+        fixedDate,
+        true,
+        0,
+        null,
+        globalIdentifier
+      );
 
       expect(habit.globalEntityIdentifier.icon.getValue()).toBe(maxLengthUrl);
     });
 
     it('should handle multiple method calls in sequence', () => {
       const globalIdentifier = createMockGlobalIdentifier();
-      const originalHabit = new Habit(validHabitId, validHabitType, fixedDate, fixedDate, true, 0, null, globalIdentifier);
+      const originalHabit = new Habit(
+        validHabitId,
+        validHabitType,
+        fixedDate,
+        fixedDate,
+        true,
+        0,
+        null,
+        globalIdentifier
+      );
 
-      const updatedHabit = originalHabit
-        .updateName('New Name')
-        .deactivate();
+      const updatedHabit = originalHabit.updateName('New Name').deactivate();
 
       expect(updatedHabit.globalEntityIdentifier.name.getValue()).toBe('New Name');
       expect(updatedHabit.isActive).toBe(false);
