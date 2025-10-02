@@ -1,4 +1,5 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
+
 import { Habit } from '../../domain/entities/habit.entity';
 import { PaginatedResult, FilterOptions, UUID } from '../../domain/shared/types/common';
 import { IdentifierName } from '../../domain/value-objects/identifier-name';
@@ -51,7 +52,7 @@ export class HabitsService {
 
     // Validate that Cloudinary returned a valid URL
     if (!imageUrl || imageUrl.trim() === '') {
-      throw new ValidationException('Logo must be a non-empty string');
+      throw new ValidationException('Icon must be a non-empty string');
     }
 
     try {
@@ -62,7 +63,7 @@ export class HabitsService {
       const createHabitData = {
         name: habitName.getValue(),
         habitType: createHabitDto.habitType,
-        logo: imageUrl!,
+        icon: imageUrl!,
       };
 
       // Save to repository
@@ -72,7 +73,7 @@ export class HabitsService {
 
       return this.mapToResponse(savedHabit);
     } catch (error) {
-      if (error instanceof Error && error.message.includes('Logo')) {
+      if (error instanceof Error && error.message.includes('Icon')) {
         throw new ValidationException(error.message);
       }
       if (error instanceof Error && error.message.includes('Identifier name')) {
@@ -114,7 +115,11 @@ export class HabitsService {
     return this.mapToResponse(habit);
   }
 
-  async update(id: UUID, updateHabitDto: UpdateHabitDto, logo?: Express.Multer.File): Promise<HabitResponseDto> {
+  async update(
+    id: UUID,
+    updateHabitDto: UpdateHabitDto,
+    logo?: Express.Multer.File
+  ): Promise<HabitResponseDto> {
     this.logger.log(`Updating habit with id: ${id}`);
 
     // Check if habit exists
@@ -124,7 +129,11 @@ export class HabitsService {
     }
 
     // Check for name conflicts if name is being updated
-    if ('name' in updateHabitDto && updateHabitDto.name !== undefined && updateHabitDto.name !== existingHabit.name.getValue()) {
+    if (
+      'name' in updateHabitDto &&
+      updateHabitDto.name !== undefined &&
+      updateHabitDto.name !== existingHabit.globalEntityIdentifier.name.getValue()
+    ) {
       const habitWithSameName = await this.habitsRepository.findByName(updateHabitDto.name);
       if (habitWithSameName && habitWithSameName.id !== id) {
         throw new ConflictError(`Habit with name '${updateHabitDto.name}' already exists`);
@@ -134,10 +143,15 @@ export class HabitsService {
     try {
       // Update the domain entity
       let updatedHabit = existingHabit;
+      let hasNameUpdate = false;
+      let hasIconUpdate = false;
+      const updateData: any = {};
 
       // Handle name update
       if ('name' in updateHabitDto && updateHabitDto.name !== undefined) {
         updatedHabit = updatedHabit.updateName(updateHabitDto.name);
+        updateData.name = updatedHabit.globalEntityIdentifier.name;
+        hasNameUpdate = true;
       }
 
       // Handle logo update from file upload parameter
@@ -163,19 +177,38 @@ export class HabitsService {
 
         // Validate that Cloudinary returned a valid URL
         if (!result.url || result.url.trim() === '') {
-          throw new ValidationException('Logo must be a non-empty string');
+          throw new ValidationException('Icon must be a non-empty string');
         }
 
-        updatedHabit = updatedHabit.updateLogo(result.url);
+        // Validate icon size
+        const maxIconSize = 2 * 1024 * 1024; // 2MB
+        if (result.url.length > maxIconSize) {
+          throw new ValidationException('Icon size cannot exceed 2MB');
+        }
+
+        updatedHabit = updatedHabit.updateIcon(result.url);
+        updateData.icon = result.url;
+        hasIconUpdate = true;
       }
 
-      // Handle logo removal via removeLogo field
-      if (updateHabitDto.removeLogo === 'true') {
-        updatedHabit = updatedHabit.updateLogo('');
+      // Determine what to pass to repository
+      let dataToUpdate: any;
+      if (!hasNameUpdate && !hasIconUpdate) {
+        // No updates at all, pass existing habit entity
+        dataToUpdate = existingHabit;
+      } else if (hasNameUpdate && !hasIconUpdate) {
+        // Name updated but not icon, include existing icon
+        dataToUpdate = {
+          ...updateData,
+          icon: existingHabit.globalEntityIdentifier.icon.getValue(),
+        };
+      } else {
+        // Icon updated (with or without name update)
+        dataToUpdate = updateData;
       }
 
       // Save updated entity
-      const savedHabit = await this.habitsRepository.update(id, updatedHabit);
+      const savedHabit = await this.habitsRepository.update(id, dataToUpdate);
 
       this.logger.log(`Successfully updated habit with id: ${id}`);
 
@@ -183,7 +216,7 @@ export class HabitsService {
     } catch (error) {
       if (
         error instanceof Error &&
-        (error.message.includes('Logo') || error.message.includes('Identifier name'))
+        (error.message.includes('Icon') || error.message.includes('Identifier name'))
       ) {
         throw new ValidationException(error.message);
       }
@@ -204,13 +237,12 @@ export class HabitsService {
     this.logger.log(`Successfully removed habit with id: ${id}`);
   }
 
-
   private mapToResponse(habit: Habit): HabitResponseDto {
     return {
       id: habit.id,
-      name: habit.name.getValue(),
+      name: habit.globalEntityIdentifier.name.getValue(),
       habitType: habit.habitType,
-      logo: habit.logo,
+      logo: habit.globalEntityIdentifier.icon.getValue(),
       isActive: habit.isActive,
       totalActionsCount: habit.totalActionsCount,
       lastActionDate: habit.lastActionDate ? new Date(habit.lastActionDate) : null,
