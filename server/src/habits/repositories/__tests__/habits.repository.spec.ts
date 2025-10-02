@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { Habit } from '../../../domain/entities/habit.entity';
+import { GlobalEntityIdentifier } from '../../../domain/entities/global-entity-identifier.entity';
 import {
   HabitComplexity,
   UUID,
@@ -8,6 +9,7 @@ import {
   FilterOptions,
 } from '../../../domain/shared/types/common';
 import { IdentifierName } from '../../../domain/value-objects/identifier-name';
+import { IdentifierIcon } from '../../../domain/value-objects/identifier-icon';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { NotFoundError } from '../../../infrastructure/exceptions/app.exceptions';
 import { HabitsRepository } from '../habits.repository';
@@ -35,49 +37,66 @@ describe('HabitsRepository', () => {
 
   // Test data fixtures
   const mockHabitId: UUID = '123e4567-e89b-12d3-a456-426614174000';
+  const validGlobalIdentifierId = 'global-id-123e4567-e89b-12d3-a456-426614174000';
   const mockHabitName = 'Morning Exercise';
-  const mockLogo = 'https://example.com/logo.png';
+  const mockIconUrl = 'https://example.com/logo.png';
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
 
+  // Helper to create mock GlobalEntityIdentifier
+  const createMockGlobalIdentifier = (name: string = mockHabitName, icon: string = mockIconUrl): GlobalEntityIdentifier => {
+    return new GlobalEntityIdentifier(
+      validGlobalIdentifierId,
+      IdentifierName.create(name),
+      IdentifierIcon.create(icon),
+      'habit',
+      mockHabitId
+    );
+  };
+
   const createMockHabit = (overrides: Partial<any> = {}): Habit => {
-    const habitName = IdentifierName.create(mockHabitName);
+    const globalIdentifier = createMockGlobalIdentifier();
     const defaults = {
       id: mockHabitId,
-      name: habitName,
       habitType: HabitComplexity.SIMPLE,
-      logo: mockLogo,
       createdAt: fixedDate,
       updatedAt: fixedDate,
       isActive: true,
       totalActionsCount: 0,
       lastActionDate: null,
+      globalEntityIdentifier: globalIdentifier,
     };
     const merged = { ...defaults, ...overrides };
     return new Habit(
       merged.id,
-      merged.name,
       merged.habitType,
-      merged.logo,
       merged.createdAt,
       merged.updatedAt,
       merged.isActive,
       merged.totalActionsCount,
-      merged.lastActionDate
+      merged.lastActionDate,
+      merged.globalEntityIdentifier
     );
   };
 
   const createMockCreateHabitData = (overrides: Partial<CreateHabitData> = {}): CreateHabitData => ({
     name: mockHabitName,
     habitType: HabitComplexity.SIMPLE,
-    logo: mockLogo,
+    icon: mockIconUrl,
     ...overrides,
   });
 
+  // Prisma data structure with JOIN to globalEntityIdentifiers
   const createMockPrismaData = (overrides: Partial<any> = {}): any => ({
     id: mockHabitId,
-    name: mockHabitName,
     habitType: HabitComplexity.SIMPLE,
-    logo: mockLogo,
+    globalIdentifierId: validGlobalIdentifierId,
+    globalEntityIdentifiers: {
+      id: validGlobalIdentifierId,
+      name: mockHabitName,
+      icon: mockIconUrl,
+      entityType: 'habit',
+      entityId: mockHabitId,
+    },
     isActive: true,
     totalActionsCount: 0,
     lastActionDate: null,
@@ -131,9 +150,9 @@ describe('HabitsRepository', () => {
       // Verify the returned Habit entity has database-generated defaults
       expect(result).toBeInstanceOf(Habit);
       expect(result.id).toBe(mockHabitId);
-      expect(result.name.getValue()).toBe(mockHabitName);
+      expect(result.globalEntityIdentifier.name.getValue()).toBe(mockHabitName);
       expect(result.habitType).toBe(HabitComplexity.SIMPLE);
-      expect(result.logo).toBe(mockLogo);
+      expect(result.globalEntityIdentifier.icon.getValue()).toBe(mockIconUrl);
       expect(result.isActive).toBe(true); // Database default
       expect(result.totalActionsCount).toBe(0); // Database default
       expect(result.lastActionDate).toBeNull(); // Database default
@@ -236,8 +255,8 @@ describe('HabitsRepository', () => {
           // Database generates ID automatically
         },
       });
-      expect(result.name.getValue()).toBe(customName);
-      expect(result.logo).toBe(customLogo);
+      expect(result.globalEntityIdentifier.name.getValue()).toBe(customName);
+      expect(result.globalEntityIdentifier.icon.getValue()).toBe(customLogo);
     });
 
     it('should not pass database-generated fields in create data', async () => {
@@ -301,7 +320,7 @@ describe('HabitsRepository', () => {
       });
       expect(result).toBeInstanceOf(Habit);
       expect(result!.id).toBe(mockHabitId);
-      expect(result!.name.getValue()).toBe(mockHabitName);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe(mockHabitName);
     });
 
     it('should return null when habit not found', async () => {
@@ -501,7 +520,7 @@ describe('HabitsRepository', () => {
         },
       });
       expect(result).toBeInstanceOf(Habit);
-      expect(result.name.getValue()).toBe('Updated Name');
+      expect(result.globalEntityIdentifier.name.getValue()).toBe('Updated Name');
     });
 
     it('should update only provided fields', async () => {
@@ -518,7 +537,7 @@ describe('HabitsRepository', () => {
         where: { id: mockHabitId },
         data: { name: 'Partial Update' },
       });
-      expect(result.name.getValue()).toBe('Partial Update');
+      expect(result.globalEntityIdentifier.name.getValue()).toBe('Partial Update');
     });
 
     it('should handle updating isActive to false', async () => {
@@ -661,7 +680,7 @@ describe('HabitsRepository', () => {
         },
       });
       expect(result).toBeInstanceOf(Habit);
-      expect(result!.name.getValue()).toBe(mockHabitName);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe(mockHabitName);
     });
 
     it('should return null when habit not found', async () => {
@@ -738,10 +757,10 @@ describe('HabitsRepository', () => {
       // Assert
       expect(result).toBeInstanceOf(Habit);
       expect(result!.id).toBe(mockHabitId);
-      expect(result!.name).toBeInstanceOf(IdentifierName);
-      expect(result!.name.getValue()).toBe('Complex Habit');
+      expect(result!.globalEntityIdentifier.name).toBeInstanceOf(IdentifierName);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe('Complex Habit');
       expect(result!.habitType).toBe(HabitComplexity.WITHOUT_INTERVALS);
-      expect(result!.logo).toBe('complex-logo.png');
+      expect(result!.globalEntityIdentifier.icon.getValue()).toBe('complex-logo.png');
       expect(result!.isActive).toBe(false);
       expect(result!.totalActionsCount).toBe(10);
       expect(result!.lastActionDate).toEqual(new Date('2024-01-01T12:00:00.000Z'));
@@ -788,9 +807,9 @@ describe('HabitsRepository', () => {
       const result = await repository.findById(mockHabitId);
 
       // Assert
-      expect(result!.name).toBeInstanceOf(IdentifierName);
-      expect(result!.name.getValue()).toBe('Valid Habit Name');
-      expect(() => result!.name.getValue()).not.toThrow();
+      expect(result!.globalEntityIdentifier.name).toBeInstanceOf(IdentifierName);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe('Valid Habit Name');
+      expect(() => result!.globalEntityIdentifier.name.getValue()).not.toThrow();
     });
   });
 
@@ -822,7 +841,7 @@ describe('HabitsRepository', () => {
       mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithEmptyName);
 
       // Act & Assert - Should throw during IdentifierName creation
-      await expect(repository.findById(mockHabitId)).rejects.toThrow('Habit name must be a non-empty string');
+      await expect(repository.findById(mockHabitId)).rejects.toThrow('Identifier name cannot be empty');
     });
 
     it('should handle very long habit names during domain mapping', async () => {
@@ -833,7 +852,7 @@ describe('HabitsRepository', () => {
 
       // Act & Assert - Should throw during IdentifierName creation
       await expect(repository.findById(mockHabitId)).rejects.toThrow(
-        'Habit name cannot exceed 50 characters'
+        'Identifier name cannot exceed 50 characters'
       );
     });
 
