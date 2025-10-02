@@ -8,7 +8,7 @@ import {
   UUID,
   HabitComplexity,
 } from '../../domain/shared/types/common';
-import { HabitName } from '../../domain/value-objects/habit-name';
+import { IdentifierName } from '../../domain/value-objects/identifier-name';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { NotFoundError } from '../../infrastructure/exceptions/app.exceptions';
 import { IHabitsRepository, CreateHabitData } from '../interfaces/habits-repository.interface';
@@ -148,7 +148,7 @@ export class HabitsRepository implements IHabitsRepository {
 
 
   private mapToDomain(data: any): Habit {
-    const habitName = HabitName.create(data.name);
+    const habitName = IdentifierName.create(data.name);
 
     return new Habit(
       data.id,
