@@ -10,7 +10,7 @@ import {
 export interface CreateHabitData {
   name: string;
   habitType: HabitComplexity;
-  logo: string;
+  icon: string;
 }
 
 export interface IHabitsRepository {
