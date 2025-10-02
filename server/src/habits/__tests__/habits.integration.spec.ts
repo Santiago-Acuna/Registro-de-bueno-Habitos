@@ -4,8 +4,10 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import request from 'supertest';
 
 import { Habit } from '../../domain/entities/habit.entity';
+import { GlobalEntityIdentifier } from '../../domain/entities/global-entity-identifier.entity';
 import { HabitComplexity, UUID, PaginatedResult } from '../../domain/shared/types/common';
 import { IdentifierName } from '../../domain/value-objects/identifier-name';
+import { IdentifierIcon } from '../../domain/value-objects/identifier-icon';
 import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
 import { HttpExceptionFilter } from '../../infrastructure/filters/http-exception.filter';
 import { CreateHabitDto } from '../dto/create-habit.dto';
@@ -39,34 +41,44 @@ describe('Habits API Integration Tests', () => {
 
   // Test data fixtures
   const mockHabitId: UUID = '123e4567-e89b-12d3-a456-426614174000';
+  const validGlobalIdentifierId = 'global-id-123e4567-e89b-12d3-a456-426614174000';
   const mockHabitName = 'Morning Exercise';
-  const mockLogo = 'https://example.com/logo.png';
+  const mockIconUrl = 'https://example.com/logo.png';
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
 
+  // Helper to create mock GlobalEntityIdentifier
+  const createMockGlobalIdentifier = (name: string = mockHabitName, icon: string = mockIconUrl): GlobalEntityIdentifier => {
+    return new GlobalEntityIdentifier(
+      validGlobalIdentifierId,
+      IdentifierName.create(name),
+      IdentifierIcon.create(icon),
+      'habit',
+      mockHabitId
+    );
+  };
+
   const createMockHabit = (overrides: Partial<any> = {}): Habit => {
-    const habitName = IdentifierName.create(mockHabitName);
+    const globalIdentifier = createMockGlobalIdentifier();
     const defaults = {
       id: mockHabitId,
-      name: habitName,
       habitType: HabitComplexity.SIMPLE,
-      logo: mockLogo,
       createdAt: fixedDate,
       updatedAt: fixedDate,
       isActive: true,
       totalActionsCount: 0,
       lastActionDate: null,
+      globalEntityIdentifier: globalIdentifier,
     };
     const merged = { ...defaults, ...overrides };
     return new Habit(
       merged.id,
-      merged.name,
       merged.habitType,
-      merged.logo,
       merged.createdAt,
       merged.updatedAt,
       merged.isActive,
       merged.totalActionsCount,
-      merged.lastActionDate
+      merged.lastActionDate,
+      merged.globalEntityIdentifier
     );
   };
 
