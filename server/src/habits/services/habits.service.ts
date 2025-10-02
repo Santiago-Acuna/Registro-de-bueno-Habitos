@@ -1,7 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { Habit } from '../../domain/entities/habit.entity';
 import { PaginatedResult, FilterOptions, UUID } from '../../domain/shared/types/common';
-import { HabitName } from '../../domain/value-objects/habit-name';
+import { IdentifierName } from '../../domain/value-objects/identifier-name';
 import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
 import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
@@ -56,7 +56,7 @@ export class HabitsService {
 
     try {
       // Validate domain rules before saving
-      const habitName = HabitName.create(createHabitDto.name);
+      const habitName = IdentifierName.create(createHabitDto.name);
 
       // Create habit data for repository
       const createHabitData = {
@@ -75,7 +75,7 @@ export class HabitsService {
       if (error instanceof Error && error.message.includes('Logo')) {
         throw new ValidationException(error.message);
       }
-      if (error instanceof Error && error.message.includes('Habit name')) {
+      if (error instanceof Error && error.message.includes('Identifier name')) {
         throw new ValidationException(error.message);
       }
       throw error;
@@ -183,7 +183,7 @@ export class HabitsService {
     } catch (error) {
       if (
         error instanceof Error &&
-        (error.message.includes('Logo') || error.message.includes('Habit name'))
+        (error.message.includes('Logo') || error.message.includes('Identifier name'))
       ) {
         throw new ValidationException(error.message);
       }
