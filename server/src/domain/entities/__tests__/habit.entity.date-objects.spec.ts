@@ -1,12 +1,15 @@
 import { HabitComplexity } from '../../shared/types/common';
+import { IdentifierIcon } from '../../value-objects/identifier-icon';
 import { IdentifierName } from '../../value-objects/identifier-name';
+import { GlobalEntityIdentifier } from '../global-entity-identifier.entity';
 import { Habit } from '../habit.entity';
 
 describe('Habit Entity - Date Objects (RED PHASE)', () => {
   const validHabitId = '123e4567-e89b-12d3-a456-426614174000';
+  const validGlobalIdentifierId = 'global-id-123e4567-e89b-12d3-a456-426614174000';
   const validHabitName = 'Morning Exercise';
   const validHabitType = HabitComplexity.SIMPLE;
-  const validLogo = 'https://example.com/logo.png';
+  const validIconUrl = 'https://example.com/logo.png';
 
   // Date objects that should be used throughout
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
@@ -35,17 +38,27 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     [],
   ];
 
+  // Helper to create mock GlobalEntityIdentifier
+  const createMockGlobalIdentifier = (name: string = validHabitName, icon: string = validIconUrl): GlobalEntityIdentifier => {
+    return new GlobalEntityIdentifier(
+      validGlobalIdentifierId,
+      IdentifierName.create(name),
+      IdentifierIcon.create(icon),
+      'habit',
+      validHabitId
+    );
+  };
+
   describe('Habit Constructor with Date Objects', () => {
     it('should create habit instance with valid Date objects', () => {
       // ARRANGE
-      const habitName = IdentifierName.create(validHabitName);
+      const globalIdentifier = createMockGlobalIdentifier();
 
       // ACT
       const habit = new Habit(
         validHabitId,
-        habitName,
         validHabitType,
-        validLogo,
+        globalIdentifier,
         fixedDate,
         fixedDate,
         true,
@@ -55,9 +68,9 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
 
       // ASSERT
       expect(habit.id).toBe(validHabitId);
-      expect(habit.name).toBe(habitName);
+      expect(habit.globalEntityIdentifier.name.getValue()).toBe(validHabitName);
       expect(habit.habitType).toBe(validHabitType);
-      expect(habit.logo).toBe(validLogo);
+      expect(habit.globalEntityIdentifier.icon.getValue()).toBe(validIconUrl);
       expect(habit.createdAt).toBeInstanceOf(Date);
       expect(habit.updatedAt).toBeInstanceOf(Date);
       expect(habit.lastActionDate).toBeInstanceOf(Date);
@@ -70,14 +83,13 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
 
     it('should accept null lastActionDate as Date | null', () => {
       // ARRANGE
-      const habitName = IdentifierName.create(validHabitName);
+      const globalIdentifier = createMockGlobalIdentifier();
 
       // ACT
       const habit = new Habit(
         validHabitId,
-        habitName,
         validHabitType,
-        validLogo,
+        globalIdentifier,
         fixedDate,
         fixedDate,
         true,
@@ -91,14 +103,13 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
 
     it.each(validDateObjects)('should accept valid Date object: %s', (validDate) => {
       // ARRANGE
-      const habitName = IdentifierName.create(validHabitName);
+      const globalIdentifier = createMockGlobalIdentifier();
 
       // ACT & ASSERT
       expect(() => new Habit(
         validHabitId,
-        habitName,
         validHabitType,
-        validLogo,
+        globalIdentifier,
         validDate,
         validDate,
         true,
@@ -108,13 +119,12 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should throw error for invalid createdAt (non-Date)', () => {
-      const habitName = IdentifierName.create(validHabitName);
+      const globalIdentifier = createMockGlobalIdentifier();
 
       expect(() => new Habit(
         validHabitId,
-        habitName,
         validHabitType,
-        validLogo,
+        globalIdentifier,
         '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
         fixedDate,
         true,
@@ -124,13 +134,12 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should throw error for invalid updatedAt (non-Date)', () => {
-      const habitName = IdentifierName.create(validHabitName);
+      const globalIdentifier = createMockGlobalIdentifier();
 
       expect(() => new Habit(
         validHabitId,
-        habitName,
         validHabitType,
-        validLogo,
+        globalIdentifier,
         fixedDate,
         '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
         true,
@@ -140,13 +149,12 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should throw error for invalid lastActionDate (non-Date, not null)', () => {
-      const habitName = IdentifierName.create(validHabitName);
+      const globalIdentifier = createMockGlobalIdentifier();
 
       expect(() => new Habit(
         validHabitId,
-        habitName,
         validHabitType,
-        validLogo,
+        globalIdentifier,
         fixedDate,
         fixedDate,
         true,
@@ -158,13 +166,12 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     it.each(invalidDateValues.filter(val => val !== null && val !== undefined))(
       'should reject invalid date value: %s',
       (invalidValue) => {
-        const habitName = IdentifierName.create(validHabitName);
+        const globalIdentifier = createMockGlobalIdentifier();
 
         expect(() => new Habit(
           validHabitId,
-          habitName,
           validHabitType,
-          validLogo,
+          globalIdentifier,
           invalidValue as any,
           fixedDate,
           true,
@@ -175,14 +182,13 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     );
 
     it('should throw error for invalid Date object (NaN)', () => {
-      const habitName = IdentifierName.create(validHabitName);
+      const globalIdentifier = createMockGlobalIdentifier();
       const invalidDate = new Date('invalid-date-string');
 
       expect(() => new Habit(
         validHabitId,
-        habitName,
         validHabitType,
-        validLogo,
+        globalIdentifier,
         invalidDate,
         fixedDate,
         true,
@@ -194,21 +200,23 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
 
   describe('Habit.create() with Date Objects', () => {
     it('should create habit with provided Date objects', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+
       // ACT
       const habit = Habit.create(
         validHabitId,
-        validHabitName,
         validHabitType,
-        validLogo,
         fixedDate,
-        updatedDate
+        updatedDate,
+        globalIdentifier
       );
 
       // ASSERT
       expect(habit.id).toBe(validHabitId);
-      expect(habit.name.getValue()).toBe(validHabitName);
+      expect(habit.globalEntityIdentifier.name.getValue()).toBe(validHabitName);
       expect(habit.habitType).toBe(validHabitType);
-      expect(habit.logo).toBe(validLogo);
+      expect(habit.globalEntityIdentifier.icon.getValue()).toBe(validIconUrl);
       expect(habit.createdAt).toBeInstanceOf(Date);
       expect(habit.updatedAt).toBeInstanceOf(Date);
       expect(habit.createdAt).toEqual(fixedDate);
@@ -221,13 +229,15 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     it('should create habit with current Date when dates not provided', () => {
       // ARRANGE
       const beforeCreation = new Date();
+      const globalIdentifier = createMockGlobalIdentifier();
 
       // ACT
       const habit = Habit.create(
         validHabitId,
-        validHabitName,
         validHabitType,
-        validLogo
+        undefined,
+        undefined,
+        globalIdentifier
       );
 
       // ASSERT
@@ -242,13 +252,16 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should accept optional Date parameter for createdAt', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+
       // ACT
       const habit = Habit.create(
         validHabitId,
-        validHabitName,
         validHabitType,
-        validLogo,
-        fixedDate
+        fixedDate,
+        undefined,
+        globalIdentifier
       );
 
       // ASSERT
@@ -257,14 +270,16 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should accept optional Date parameter for updatedAt', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+
       // ACT
       const habit = Habit.create(
         validHabitId,
-        validHabitName,
         validHabitType,
-        validLogo,
         undefined,
-        updatedDate
+        updatedDate,
+        globalIdentifier
       );
 
       // ASSERT
@@ -273,56 +288,59 @@ describe('Habit Entity - Date Objects (RED PHASE)', () => {
     });
 
     it('should throw error when createdAt is not a Date object', () => {
+      const globalIdentifier = createMockGlobalIdentifier();
       expect(() => Habit.create(
         validHabitId,
-        validHabitName,
         validHabitType,
-        validLogo,
-        '2024-01-01T00:00:00.000Z' as any // ISO string should fail
+        '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
+        undefined,
+        globalIdentifier
       )).toThrow('Invalid date: createdAt must be a Date object');
     });
 
     it('should throw error when updatedAt is not a Date object', () => {
+      const globalIdentifier = createMockGlobalIdentifier();
       expect(() => Habit.create(
         validHabitId,
-        validHabitName,
         validHabitType,
-        validLogo,
         fixedDate,
-        '2024-01-01T00:00:00.000Z' as any // ISO string should fail
+        '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
+        globalIdentifier
       )).toThrow('Invalid date: updatedAt must be a Date object');
     });
 
     it('should throw error for null createdAt', () => {
+      const globalIdentifier = createMockGlobalIdentifier();
       expect(() => Habit.create(
         validHabitId,
-        validHabitName,
         validHabitType,
-        validLogo,
-        null as any
+        null as any,
+        undefined,
+        globalIdentifier
       )).toThrow('Invalid date: createdAt must be a Date object');
     });
 
     it('should throw error for null updatedAt', () => {
+      const globalIdentifier = createMockGlobalIdentifier();
       expect(() => Habit.create(
         validHabitId,
-        validHabitName,
         validHabitType,
-        validLogo,
         fixedDate,
-        null as any
+        null as any,
+        globalIdentifier
       )).toThrow('Invalid date: updatedAt must be a Date object');
     });
 
     it('should throw error for invalid Date object (NaN)', () => {
       const invalidDate = new Date('invalid-date-string');
+      const globalIdentifier = createMockGlobalIdentifier();
 
       expect(() => Habit.create(
         validHabitId,
-        validHabitName,
         validHabitType,
-        validLogo,
-        invalidDate
+        invalidDate,
+        undefined,
+        globalIdentifier
       )).toThrow('Invalid date: createdAt must be a valid Date object');
     });
   });
