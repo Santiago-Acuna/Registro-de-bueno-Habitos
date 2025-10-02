@@ -16,7 +16,9 @@ export class GlobalEntityIdentifier {
   private validateEntityType(entityType: string): void {
     const validTypes = ['habit', 'action_type'];
     if (!validTypes.includes(entityType.toLowerCase())) {
-      throw new Error(`Invalid entity type: ${entityType}. Must be one of: ${validTypes.join(', ')}`);
+      throw new Error(
+        `Invalid entity type: ${entityType}. Must be one of: ${validTypes.join(', ')}`
+      );
     }
   }
 

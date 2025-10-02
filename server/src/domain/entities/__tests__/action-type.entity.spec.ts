@@ -1,6 +1,6 @@
-import { ActionType } from '../action-type.entity';
-import { ActionTypeName } from '../../value-objects/action-type-name';
 import { UUID } from '../../shared/types/common';
+import { ActionTypeName } from '../../value-objects/action-type-name';
+import { ActionType } from '../action-type.entity';
 
 describe('ActionType Entity (RED PHASE)', () => {
   const validActionTypeId: UUID = '123e4567-e89b-12d3-a456-426614174000';
@@ -65,147 +65,170 @@ describe('ActionType Entity (RED PHASE)', () => {
     it('should throw error for invalid createdAt (non-Date)', () => {
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
-        fixedDate,
-        0,
-        null
-      )).toThrow('Invalid date: createdAt must be a valid Date object');
+      expect(
+        () =>
+          new ActionType(
+            validActionTypeId,
+            actionTypeName,
+            validLogo,
+            validHabitId,
+            '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
+            fixedDate,
+            0,
+            null
+          )
+      ).toThrow('Invalid date: createdAt must be a valid Date object');
     });
 
     it('should throw error for invalid updatedAt (non-Date)', () => {
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
-        0,
-        null
-      )).toThrow('Invalid date: updatedAt must be a valid Date object');
+      expect(
+        () =>
+          new ActionType(
+            validActionTypeId,
+            actionTypeName,
+            validLogo,
+            validHabitId,
+            fixedDate,
+            '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
+            0,
+            null
+          )
+      ).toThrow('Invalid date: updatedAt must be a valid Date object');
     });
 
     it('should throw error for invalid lastActionDate (non-Date, not null)', () => {
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        '2024-01-01T00:00:00.000Z' as any // ISO string should fail
-      )).toThrow('Invalid date: lastActionDate must be a valid Date object or null');
+      expect(
+        () =>
+          new ActionType(
+            validActionTypeId,
+            actionTypeName,
+            validLogo,
+            validHabitId,
+            fixedDate,
+            fixedDate,
+            0,
+            '2024-01-01T00:00:00.000Z' as any // ISO string should fail
+          )
+      ).toThrow('Invalid date: lastActionDate must be a valid Date object or null');
     });
 
     it('should throw error for empty logo', () => {
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        '', // Empty logo should fail
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      )).toThrow('Logo must be a non-empty string');
+      expect(
+        () =>
+          new ActionType(
+            validActionTypeId,
+            actionTypeName,
+            '', // Empty logo should fail
+            validHabitId,
+            fixedDate,
+            fixedDate,
+            0,
+            null
+          )
+      ).toThrow('Logo must be a non-empty string');
     });
 
     it('should throw error for invalid logo type', () => {
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        null as any, // null logo should fail
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      )).toThrow('Logo must be a non-empty string');
+      expect(
+        () =>
+          new ActionType(
+            validActionTypeId,
+            actionTypeName,
+            null as any, // null logo should fail
+            validHabitId,
+            fixedDate,
+            fixedDate,
+            0,
+            null
+          )
+      ).toThrow('Logo must be a non-empty string');
     });
 
     it('should throw error for negative totalActionsCount', () => {
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        -1, // Negative count should fail
-        null
-      )).toThrow('Total actions count must be a non-negative integer');
+      expect(
+        () =>
+          new ActionType(
+            validActionTypeId,
+            actionTypeName,
+            validLogo,
+            validHabitId,
+            fixedDate,
+            fixedDate,
+            -1, // Negative count should fail
+            null
+          )
+      ).toThrow('Total actions count must be a non-negative integer');
     });
 
     it('should throw error for non-integer totalActionsCount', () => {
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        3.5 as any, // Float should fail
-        null
-      )).toThrow('Total actions count must be a non-negative integer');
+      expect(
+        () =>
+          new ActionType(
+            validActionTypeId,
+            actionTypeName,
+            validLogo,
+            validHabitId,
+            fixedDate,
+            fixedDate,
+            3.5 as any, // Float should fail
+            null
+          )
+      ).toThrow('Total actions count must be a non-negative integer');
     });
 
     it('should throw error for invalid UUID format in id', () => {
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        'invalid-uuid' as UUID,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      )).toThrow('Invalid UUID format for id');
+      expect(
+        () =>
+          new ActionType(
+            'invalid-uuid' as UUID,
+            actionTypeName,
+            validLogo,
+            validHabitId,
+            fixedDate,
+            fixedDate,
+            0,
+            null
+          )
+      ).toThrow('Invalid UUID format for id');
     });
 
     it('should throw error for invalid UUID format in habitId', () => {
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        'invalid-habit-uuid' as UUID,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      )).toThrow('Invalid UUID format for habitId');
+      expect(
+        () =>
+          new ActionType(
+            validActionTypeId,
+            actionTypeName,
+            validLogo,
+            'invalid-habit-uuid' as UUID,
+            fixedDate,
+            fixedDate,
+            0,
+            null
+          )
+      ).toThrow('Invalid UUID format for habitId');
     });
   });
 
   describe('ActionType.create() factory method', () => {
     it('should create ActionType without database-generated fields', () => {
       // ACT
-      const actionType = ActionType.create(
-        validActionTypeName,
-        validLogo,
-        validHabitId
-      );
+      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
 
       // ASSERT
       // Domain fields should be set
@@ -223,27 +246,29 @@ describe('ActionType Entity (RED PHASE)', () => {
     });
 
     it('should throw error for invalid ActionType name', () => {
-      expect(() => ActionType.create(
-        '', // Empty name should fail
-        validLogo,
-        validHabitId
-      )).toThrow('ActionType name cannot be empty');
+      expect(() =>
+        ActionType.create(
+          '', // Empty name should fail
+          validLogo,
+          validHabitId
+        )
+      ).toThrow('ActionType name cannot be empty');
     });
 
     it('should throw error for invalid logo during creation', () => {
-      expect(() => ActionType.create(
-        validActionTypeName,
-        '', // Empty logo should fail
-        validHabitId
-      )).toThrow('Logo must be a non-empty string');
+      expect(() =>
+        ActionType.create(
+          validActionTypeName,
+          '', // Empty logo should fail
+          validHabitId
+        )
+      ).toThrow('Logo must be a non-empty string');
     });
 
     it('should throw error for invalid habitId', () => {
-      expect(() => ActionType.create(
-        validActionTypeName,
-        validLogo,
-        'invalid-uuid' as UUID
-      )).toThrow('Invalid UUID format for habitId');
+      expect(() =>
+        ActionType.create(validActionTypeName, validLogo, 'invalid-uuid' as UUID)
+      ).toThrow('Invalid UUID format for habitId');
     });
   });
 
@@ -285,7 +310,9 @@ describe('ActionType Entity (RED PHASE)', () => {
 
         // updatedAt should be current Date
         expect(updatedActionType.updatedAt).toBeInstanceOf(Date);
-        expect(updatedActionType.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+        expect(updatedActionType.updatedAt.getTime()).toBeGreaterThanOrEqual(
+          beforeUpdate.getTime()
+        );
         expect(updatedActionType.updatedAt.getTime()).toBeLessThanOrEqual(afterUpdate.getTime());
 
         expect(updatedActionType.totalActionsCount).toBe(baseActionType.totalActionsCount);
@@ -317,7 +344,9 @@ describe('ActionType Entity (RED PHASE)', () => {
 
         // updatedAt should be current Date
         expect(updatedActionType.updatedAt).toBeInstanceOf(Date);
-        expect(updatedActionType.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeUpdate.getTime());
+        expect(updatedActionType.updatedAt.getTime()).toBeGreaterThanOrEqual(
+          beforeUpdate.getTime()
+        );
         expect(updatedActionType.updatedAt.getTime()).toBeLessThanOrEqual(afterUpdate.getTime());
       });
 
@@ -329,7 +358,6 @@ describe('ActionType Entity (RED PHASE)', () => {
         expect(() => baseActionType.updateLogo(null as any)).toThrow('Logo must be a string');
       });
     });
-
   });
 
   describe('ActionType business logic methods', () => {
@@ -426,10 +454,8 @@ describe('ActionType Entity (RED PHASE)', () => {
       });
 
       it('should throw error for invalid days parameter', () => {
-        expect(() => actionType.hasRecentAction(-1))
-          .toThrow('Days must be a positive number');
-        expect(() => actionType.hasRecentAction(0))
-          .toThrow('Days must be a positive number');
+        expect(() => actionType.hasRecentAction(-1)).toThrow('Days must be a positive number');
+        expect(() => actionType.hasRecentAction(0)).toThrow('Days must be a positive number');
       });
     });
 
@@ -584,11 +610,7 @@ describe('ActionType Entity (RED PHASE)', () => {
   describe('Database-generated fields behavior', () => {
     it('should NOT accept id parameter in create() method', () => {
       // ACT
-      const actionType = ActionType.create(
-        validActionTypeName,
-        validLogo,
-        validHabitId
-      );
+      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
 
       // ASSERT
       expect(actionType.id).toBeUndefined();
@@ -596,11 +618,7 @@ describe('ActionType Entity (RED PHASE)', () => {
 
     it('should NOT accept createdAt parameter in create() method', () => {
       // ACT
-      const actionType = ActionType.create(
-        validActionTypeName,
-        validLogo,
-        validHabitId
-      );
+      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
 
       // ASSERT
       expect(actionType.createdAt).toBeUndefined();
@@ -608,11 +626,7 @@ describe('ActionType Entity (RED PHASE)', () => {
 
     it('should NOT accept updatedAt parameter in create() method', () => {
       // ACT
-      const actionType = ActionType.create(
-        validActionTypeName,
-        validLogo,
-        validHabitId
-      );
+      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
 
       // ASSERT
       expect(actionType.updatedAt).toBeUndefined();
@@ -620,11 +634,7 @@ describe('ActionType Entity (RED PHASE)', () => {
 
     it('should NOT accept totalActionsCount parameter in create() method', () => {
       // ACT
-      const actionType = ActionType.create(
-        validActionTypeName,
-        validLogo,
-        validHabitId
-      );
+      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
 
       // ASSERT
       expect(actionType.totalActionsCount).toBeUndefined();
@@ -632,11 +642,7 @@ describe('ActionType Entity (RED PHASE)', () => {
 
     it('should NOT accept lastActionDate parameter in create() method', () => {
       // ACT
-      const actionType = ActionType.create(
-        validActionTypeName,
-        validLogo,
-        validHabitId
-      );
+      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
 
       // ASSERT
       expect(actionType.lastActionDate).toBeUndefined();
@@ -644,11 +650,7 @@ describe('ActionType Entity (RED PHASE)', () => {
 
     it('should create valid ActionType for database insertion with only domain fields', () => {
       // ACT
-      const actionType = ActionType.create(
-        validActionTypeName,
-        validLogo,
-        validHabitId
-      );
+      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
 
       // ASSERT - only domain-specific fields should be populated
       expect(actionType.name).toBeInstanceOf(ActionTypeName);
@@ -704,19 +706,22 @@ describe('ActionType Entity (RED PHASE)', () => {
 
     it('should validate logo size constraints', () => {
       // Test for extremely large logo (simulating base64 image > 2MB)
-      const largeLogo = 'data:image/png;base64,' + 'a'.repeat(3 * 1024 * 1024); // 3MB
+      const largeLogo = `data:image/png;base64,${'a'.repeat(3 * 1024 * 1024)}`; // 3MB
       const actionTypeName = ActionTypeName.create(validActionTypeName);
 
-      expect(() => new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        largeLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      )).toThrow('Logo size cannot exceed 2MB');
+      expect(
+        () =>
+          new ActionType(
+            validActionTypeId,
+            actionTypeName,
+            largeLogo,
+            validHabitId,
+            fixedDate,
+            fixedDate,
+            0,
+            null
+          )
+      ).toThrow('Logo size cannot exceed 2MB');
     });
   });
 });

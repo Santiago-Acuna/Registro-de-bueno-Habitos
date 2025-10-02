@@ -35,12 +35,12 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
     'example.com/icon.png', // Missing protocol
     'www.example.com/icon.png', // Missing protocol
     'A'.repeat(501), // Too long (over 500 characters)
-    'http://' + 'A'.repeat(500) + '.com', // Too long
+    `http://${'A'.repeat(500)}.com`, // Too long
   ];
 
   const validEdgeCaseUrls = [
     'http://a.co/i', // Minimum valid URL (short domain)
-    'https://example.com/' + 'A'.repeat(450) + '.png', // Long path but valid
+    `https://example.com/${'A'.repeat(450)}.png`, // Long path but valid
     'https://example.com/icon-with-dashes.png',
     'https://example.com/icon_with_underscores.png',
     'https://example.com/ICON-UPPERCASE.PNG',
@@ -49,7 +49,7 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
   ];
 
   describe('IdentifierIcon.create()', () => {
-    it.each(validUrls)('should create IdentifierIcon with valid URL: "%s"', (validUrl) => {
+    it.each(validUrls)('should create IdentifierIcon with valid URL: "%s"', validUrl => {
       // ACT
       const identifierIcon = IdentifierIcon.create(validUrl);
 
@@ -60,7 +60,7 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
 
     it.each(validUrlsWithQueryAndFragment)(
       'should create IdentifierIcon with URL containing query/fragment: "%s"',
-      (validUrl) => {
+      validUrl => {
         // ACT
         const identifierIcon = IdentifierIcon.create(validUrl);
 
@@ -82,25 +82,21 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
       expect(identifierIcon.getValue()).toBe(expectedUrl);
     });
 
-    it.each(invalidUrls)('should throw error for invalid URL: "%s"', (invalidUrl) => {
+    it.each(invalidUrls)('should throw error for invalid URL: "%s"', invalidUrl => {
       // ACT & ASSERT
       expect(() => IdentifierIcon.create(invalidUrl)).toThrow();
     });
 
     it('should throw specific error for empty string', () => {
-      expect(() => IdentifierIcon.create('')).toThrow(
-        'Identifier icon cannot be empty'
-      );
+      expect(() => IdentifierIcon.create('')).toThrow('Identifier icon cannot be empty');
     });
 
     it('should throw specific error for whitespace-only string', () => {
-      expect(() => IdentifierIcon.create('   ')).toThrow(
-        'Identifier icon cannot be empty'
-      );
+      expect(() => IdentifierIcon.create('   ')).toThrow('Identifier icon cannot be empty');
     });
 
     it('should throw specific error for too long URL', () => {
-      const longUrl = 'https://example.com/' + 'A'.repeat(500);
+      const longUrl = `https://example.com/${'A'.repeat(500)}`;
       expect(() => IdentifierIcon.create(longUrl)).toThrow(
         'Identifier icon URL cannot exceed 500 characters'
       );
@@ -127,9 +123,7 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
     });
 
     it('should throw error for null input', () => {
-      expect(() => IdentifierIcon.create(null as any)).toThrow(
-        'Identifier icon must be a string'
-      );
+      expect(() => IdentifierIcon.create(null as any)).toThrow('Identifier icon must be a string');
     });
 
     it('should throw error for undefined input', () => {
@@ -139,18 +133,12 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
     });
 
     it('should throw error for non-string input', () => {
-      expect(() => IdentifierIcon.create(123 as any)).toThrow(
-        'Identifier icon must be a string'
-      );
-      expect(() => IdentifierIcon.create({} as any)).toThrow(
-        'Identifier icon must be a string'
-      );
-      expect(() => IdentifierIcon.create([] as any)).toThrow(
-        'Identifier icon must be a string'
-      );
+      expect(() => IdentifierIcon.create(123 as any)).toThrow('Identifier icon must be a string');
+      expect(() => IdentifierIcon.create({} as any)).toThrow('Identifier icon must be a string');
+      expect(() => IdentifierIcon.create([] as any)).toThrow('Identifier icon must be a string');
     });
 
-    it.each(validEdgeCaseUrls)('should handle valid edge case URL: "%s"', (edgeCaseUrl) => {
+    it.each(validEdgeCaseUrls)('should handle valid edge case URL: "%s"', edgeCaseUrl => {
       // ACT & ASSERT
       expect(() => IdentifierIcon.create(edgeCaseUrl)).not.toThrow();
       const identifierIcon = IdentifierIcon.create(edgeCaseUrl);
@@ -190,7 +178,8 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
     });
 
     it('should reject data URLs', () => {
-      const dataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      const dataUrl =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
       expect(() => IdentifierIcon.create(dataUrl)).toThrow(
         'Identifier icon URL must use http or https protocol'
       );
@@ -437,7 +426,7 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
       // ARRANGE
       const baseUrl = 'https://example.com/';
       const padding = 'A'.repeat(500 - baseUrl.length - 4); // -4 for ".png"
-      const exactly500 = baseUrl + padding + '.png';
+      const exactly500 = `${baseUrl + padding}.png`;
 
       // ACT & ASSERT
       expect(exactly500).toHaveLength(500);
@@ -451,7 +440,7 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
       // ARRANGE
       const baseUrl = 'https://example.com/';
       const padding = 'A'.repeat(501 - baseUrl.length - 4); // -4 for ".png"
-      const exactly501 = baseUrl + padding + '.png';
+      const exactly501 = `${baseUrl + padding}.png`;
 
       // ACT & ASSERT
       expect(exactly501).toHaveLength(501);
@@ -474,7 +463,7 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
       // ARRANGE
       const baseUrl = 'https://example.com/';
       const padding = 'A'.repeat(500 - baseUrl.length - 4);
-      const url500 = baseUrl + padding + '.png';
+      const url500 = `${baseUrl + padding}.png`;
       const urlWithWhitespace = `  ${url500}  `;
 
       // ACT & ASSERT
@@ -487,7 +476,7 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
       // ARRANGE
       const baseUrl = 'https://example.com/';
       const padding = 'A'.repeat(501 - baseUrl.length - 4);
-      const url501 = baseUrl + padding + '.png';
+      const url501 = `${baseUrl + padding}.png`;
       const urlWithWhitespace = `  ${url501}  `;
 
       // ACT & ASSERT
@@ -497,9 +486,7 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
     });
 
     it('should reject string that becomes empty after trimming', () => {
-      expect(() => IdentifierIcon.create('     ')).toThrow(
-        'Identifier icon cannot be empty'
-      );
+      expect(() => IdentifierIcon.create('     ')).toThrow('Identifier icon cannot be empty');
     });
   });
 
@@ -529,7 +516,7 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
       const identifierIcon = IdentifierIcon.create(url);
 
       // ACT
-      const concatenated = 'Icon URL: ' + identifierIcon;
+      const concatenated = `Icon URL: ${identifierIcon}`;
 
       // ASSERT
       expect(concatenated).toBe('Icon URL: https://example.com/icon.png');
@@ -596,10 +583,9 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
       const serialized = JSON.stringify(arr);
 
       // ASSERT
-      expect(serialized).toBe(JSON.stringify([
-        'https://example.com/icon1.png',
-        'https://example.com/icon2.png'
-      ]));
+      expect(serialized).toBe(
+        JSON.stringify(['https://example.com/icon1.png', 'https://example.com/icon2.png'])
+      );
     });
 
     it('should work in nested object serialization', () => {
@@ -608,20 +594,22 @@ describe('IdentifierIcon Value Object (RED PHASE)', () => {
       const obj = {
         meta: {
           icon: identifierIcon,
-          description: 'Test icon'
-        }
+          description: 'Test icon',
+        },
       };
 
       // ACT
       const serialized = JSON.stringify(obj);
 
       // ASSERT
-      expect(serialized).toBe(JSON.stringify({
-        meta: {
-          icon: 'https://example.com/icon.png',
-          description: 'Test icon'
-        }
-      }));
+      expect(serialized).toBe(
+        JSON.stringify({
+          meta: {
+            icon: 'https://example.com/icon.png',
+            description: 'Test icon',
+          },
+        })
+      );
     });
   });
 

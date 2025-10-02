@@ -1,5 +1,5 @@
-import { IsOptional, IsString, Length } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString, Length } from 'class-validator';
 
 export class UpdateActionTypeDto {
   @ApiPropertyOptional({

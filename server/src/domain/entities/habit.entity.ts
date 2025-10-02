@@ -1,6 +1,7 @@
 import { BaseEntity, HabitComplexity, SoftDeletable, UUID } from '../shared/types/common';
 import { IdentifierIcon } from '../value-objects/identifier-icon';
 import { IdentifierName } from '../value-objects/identifier-name';
+
 import { GlobalEntityIdentifier } from './global-entity-identifier.entity';
 
 export interface HabitProps extends BaseEntity, SoftDeletable {

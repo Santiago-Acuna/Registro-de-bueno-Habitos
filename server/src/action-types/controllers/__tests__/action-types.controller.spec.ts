@@ -1,17 +1,17 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 
 import { ActionType } from '../../../domain/entities/action-type.entity';
-import { ActionTypeName } from '../../../domain/value-objects/action-type-name';
 import { UUID, PaginatedResult } from '../../../domain/shared/types/common';
-import { GlobalExceptionFilter } from '../../../infrastructure/filters/global-exception.filter';
+import { ActionTypeName } from '../../../domain/value-objects/action-type-name';
+import { PaginatedResponseDto } from '../../../infrastructure/dto/paginated-response.dto';
 import {
   NotFoundError,
   ConflictError,
   ValidationException,
 } from '../../../infrastructure/exceptions/app.exceptions';
-import { PaginatedResponseDto } from '../../../infrastructure/dto/paginated-response.dto';
+import { GlobalExceptionFilter } from '../../../infrastructure/filters/global-exception.filter';
 import {
   CreateActionTypeData,
   UpdateActionTypeData,
@@ -19,8 +19,8 @@ import {
   ActionTypeStats,
   IActionTypesRepository,
 } from '../../interfaces/action-types-repository.interface';
-import { ActionTypesController } from '../action-types.controller';
 import { ActionTypesService } from '../../services/action-types.service';
+import { ActionTypesController } from '../action-types.controller';
 
 // Mock service
 const mockActionTypesService = {
@@ -332,19 +332,11 @@ describe('ActionTypesController (RED PHASE)', () => {
   describe('GET /action-types', () => {
     it('should return paginated action types without filters', async () => {
       // Arrange
-      const mockResponse = new PaginatedResponseDto(
-        [createMockActionTypeResponse()],
-        1,
-        1,
-        10,
-        1
-      );
+      const mockResponse = new PaginatedResponseDto([createMockActionTypeResponse()], 1, 1, 10, 1);
       mockActionTypesService.findAll.mockResolvedValue(mockResponse);
 
       // Act & Assert
-      const response = await request(app.getHttpServer())
-        .get('/action-types')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/action-types').expect(200);
 
       expect(response.body).toEqual({
         data: [createMockActionTypeResponse()],
@@ -370,10 +362,7 @@ describe('ActionTypesController (RED PHASE)', () => {
         .query({ page: '2', limit: '5' })
         .expect(200);
 
-      expect(mockActionTypesService.findAll).toHaveBeenCalledWith(
-        { page: 2, limit: 5 },
-        undefined
-      );
+      expect(mockActionTypesService.findAll).toHaveBeenCalledWith({ page: 2, limit: 5 }, undefined);
     });
 
     it('should handle filter query parameters', async () => {
@@ -420,13 +409,7 @@ describe('ActionTypesController (RED PHASE)', () => {
   describe('GET /action-types/habit/:habitId', () => {
     it('should return action types for specific habit', async () => {
       // Arrange
-      const mockResponse = new PaginatedResponseDto(
-        [createMockActionTypeResponse()],
-        1,
-        1,
-        10,
-        1
-      );
+      const mockResponse = new PaginatedResponseDto([createMockActionTypeResponse()], 1, 1, 10, 1);
       mockActionTypesService.findByHabitId.mockResolvedValue(mockResponse);
 
       // Act & Assert
@@ -445,9 +428,7 @@ describe('ActionTypesController (RED PHASE)', () => {
 
     it('should validate habitId parameter', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/action-types/habit/invalid-uuid')
-        .expect(400);
+      await request(app.getHttpServer()).get('/action-types/habit/invalid-uuid').expect(400);
     });
 
     it('should handle pagination and filters for habit-specific query', async () => {
@@ -490,16 +471,12 @@ describe('ActionTypesController (RED PHASE)', () => {
       mockActionTypesService.findOne.mockRejectedValue(notFoundError);
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .get(`/action-types/${mockActionTypeId}`)
-        .expect(404);
+      await request(app.getHttpServer()).get(`/action-types/${mockActionTypeId}`).expect(404);
     });
 
     it('should validate UUID parameter', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/action-types/invalid-uuid')
-        .expect(400);
+      await request(app.getHttpServer()).get('/action-types/invalid-uuid').expect(400);
     });
   });
 
@@ -638,11 +615,7 @@ describe('ActionTypesController (RED PHASE)', () => {
         .send({}) // Empty update
         .expect(200);
 
-      expect(mockActionTypesService.update).toHaveBeenCalledWith(
-        mockActionTypeId,
-        {},
-        undefined
-      );
+      expect(mockActionTypesService.update).toHaveBeenCalledWith(mockActionTypeId, {}, undefined);
     });
   });
 
@@ -652,9 +625,7 @@ describe('ActionTypesController (RED PHASE)', () => {
       mockActionTypesService.remove.mockResolvedValue(undefined);
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .delete(`/action-types/${mockActionTypeId}`)
-        .expect(204);
+      await request(app.getHttpServer()).delete(`/action-types/${mockActionTypeId}`).expect(204);
 
       expect(mockActionTypesService.remove).toHaveBeenCalledWith(mockActionTypeId);
     });
@@ -665,16 +636,12 @@ describe('ActionTypesController (RED PHASE)', () => {
       mockActionTypesService.remove.mockRejectedValue(notFoundError);
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .delete(`/action-types/${mockActionTypeId}`)
-        .expect(404);
+      await request(app.getHttpServer()).delete(`/action-types/${mockActionTypeId}`).expect(404);
     });
 
     it('should validate UUID parameter', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .delete('/action-types/invalid-uuid')
-        .expect(400);
+      await request(app.getHttpServer()).delete('/action-types/invalid-uuid').expect(400);
     });
   });
 
@@ -703,9 +670,7 @@ describe('ActionTypesController (RED PHASE)', () => {
       mockActionTypesService.findMostActive.mockResolvedValue([]);
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/action-types/most-active')
-        .expect(200);
+      await request(app.getHttpServer()).get('/action-types/most-active').expect(200);
 
       expect(mockActionTypesService.findMostActive).toHaveBeenCalledWith(10);
     });
@@ -727,9 +692,7 @@ describe('ActionTypesController (RED PHASE)', () => {
   describe('GET /action-types/recently-active', () => {
     it('should return recently active action types', async () => {
       // Arrange
-      const mockRecentTypes = [
-        createMockActionTypeResponse({ lastActionDate: new Date() }),
-      ];
+      const mockRecentTypes = [createMockActionTypeResponse({ lastActionDate: new Date() })];
       mockActionTypesService.findRecentlyActive.mockResolvedValue(mockRecentTypes);
 
       // Act & Assert
@@ -747,9 +710,7 @@ describe('ActionTypesController (RED PHASE)', () => {
       mockActionTypesService.findRecentlyActive.mockResolvedValue([]);
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/action-types/recently-active')
-        .expect(200);
+      await request(app.getHttpServer()).get('/action-types/recently-active').expect(200);
 
       expect(mockActionTypesService.findRecentlyActive).toHaveBeenCalledWith(7, 10);
     });
@@ -801,9 +762,7 @@ describe('ActionTypesController (RED PHASE)', () => {
 
     it('should validate habitId parameter', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/action-types/stats/habit/invalid-uuid')
-        .expect(400);
+      await request(app.getHttpServer()).get('/action-types/stats/habit/invalid-uuid').expect(400);
     });
   });
 
@@ -814,9 +773,7 @@ describe('ActionTypesController (RED PHASE)', () => {
       mockActionTypesService.findAll.mockRejectedValue(internalError);
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/action-types')
-        .expect(500);
+      await request(app.getHttpServer()).get('/action-types').expect(500);
     });
 
     it('should handle malformed JSON in request body', async () => {
@@ -839,9 +796,7 @@ describe('ActionTypesController (RED PHASE)', () => {
 
     it('should handle CORS preflight requests', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .options('/action-types')
-        .expect(200);
+      await request(app.getHttpServer()).options('/action-types').expect(200);
     });
 
     it('should validate Content-Type for file uploads', async () => {
@@ -899,9 +854,7 @@ describe('ActionTypesController (RED PHASE)', () => {
       // Currently testing the controller logic without authentication
 
       // Act & Assert - All endpoints should be accessible for testing
-      await request(app.getHttpServer())
-        .get('/action-types')
-        .expect(200);
+      await request(app.getHttpServer()).get('/action-types').expect(200);
     });
 
     it('should sanitize file uploads to prevent malicious files', async () => {
@@ -927,9 +880,9 @@ describe('ActionTypesController (RED PHASE)', () => {
       // Note: This would test rate limiting middleware when implemented
       // Currently just verifying basic request handling
 
-      const requests = Array(5).fill(null).map(() =>
-        request(app.getHttpServer()).get('/action-types')
-      );
+      const requests = Array(5)
+        .fill(null)
+        .map(() => request(app.getHttpServer()).get('/action-types'));
 
       const responses = await Promise.all(requests);
       responses.forEach(response => {

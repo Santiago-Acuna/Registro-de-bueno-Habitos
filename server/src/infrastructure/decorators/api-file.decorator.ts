@@ -14,6 +14,6 @@ export const ApiFile = (fileName: string = 'file'): MethodDecorator => {
           },
         },
       },
-    }),
+    })
   );
 };

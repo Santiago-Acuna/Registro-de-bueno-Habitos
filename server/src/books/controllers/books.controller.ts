@@ -10,7 +10,7 @@ export class BooksController {
 
   @Get()
   @Version('1')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get all books',
     description: 'Retrieves a list of all books (placeholder implementation).',
   })

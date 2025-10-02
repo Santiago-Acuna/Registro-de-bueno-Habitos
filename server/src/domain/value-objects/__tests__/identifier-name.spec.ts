@@ -31,7 +31,7 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
   ];
 
   describe('IdentifierName.create()', () => {
-    it.each(validNames)('should create IdentifierName with valid name: "%s"', (validName) => {
+    it.each(validNames)('should create IdentifierName with valid name: "%s"', validName => {
       // ACT
       const identifierName = IdentifierName.create(validName);
 
@@ -52,21 +52,17 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
       expect(identifierName.getValue()).toBe(expectedName);
     });
 
-    it.each(invalidNames)('should throw error for invalid name: "%s"', (invalidName) => {
+    it.each(invalidNames)('should throw error for invalid name: "%s"', invalidName => {
       // ACT & ASSERT
       expect(() => IdentifierName.create(invalidName)).toThrow();
     });
 
     it('should throw specific error for empty string', () => {
-      expect(() => IdentifierName.create('')).toThrow(
-        'Identifier name cannot be empty'
-      );
+      expect(() => IdentifierName.create('')).toThrow('Identifier name cannot be empty');
     });
 
     it('should throw specific error for whitespace-only string', () => {
-      expect(() => IdentifierName.create('   ')).toThrow(
-        'Identifier name cannot be empty'
-      );
+      expect(() => IdentifierName.create('   ')).toThrow('Identifier name cannot be empty');
     });
 
     it('should throw specific error for too long name', () => {
@@ -77,9 +73,7 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
     });
 
     it('should throw error for null input', () => {
-      expect(() => IdentifierName.create(null as any)).toThrow(
-        'Identifier name must be a string'
-      );
+      expect(() => IdentifierName.create(null as any)).toThrow('Identifier name must be a string');
     });
 
     it('should throw error for undefined input', () => {
@@ -89,18 +83,12 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
     });
 
     it('should throw error for non-string input', () => {
-      expect(() => IdentifierName.create(123 as any)).toThrow(
-        'Identifier name must be a string'
-      );
-      expect(() => IdentifierName.create({} as any)).toThrow(
-        'Identifier name must be a string'
-      );
-      expect(() => IdentifierName.create([] as any)).toThrow(
-        'Identifier name must be a string'
-      );
+      expect(() => IdentifierName.create(123 as any)).toThrow('Identifier name must be a string');
+      expect(() => IdentifierName.create({} as any)).toThrow('Identifier name must be a string');
+      expect(() => IdentifierName.create([] as any)).toThrow('Identifier name must be a string');
     });
 
-    it.each(validEdgeCaseNames)('should handle valid edge case name: "%s"', (edgeCaseName) => {
+    it.each(validEdgeCaseNames)('should handle valid edge case name: "%s"', edgeCaseName => {
       // ACT & ASSERT
       expect(() => IdentifierName.create(edgeCaseName)).not.toThrow();
       const identifierName = IdentifierName.create(edgeCaseName);
@@ -222,10 +210,10 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
     it('should throw error for names with non-Spanish accented characters', () => {
       const namesWithNonSpanishAccents = [
         'Naïve implementation', // French ï
-        'Façade pattern',     // French ç
-        'Straße address',     // German ß
-        'Øresund bridge',     // Nordic ø
-        'Łódź city',         // Polish ł
+        'Façade pattern', // French ç
+        'Straße address', // German ß
+        'Øresund bridge', // Nordic ø
+        'Łódź city', // Polish ł
       ];
 
       namesWithNonSpanishAccents.forEach(name => {
@@ -497,7 +485,22 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
     });
 
     it('should accept single Spanish characters', () => {
-      const singleSpanishChars = ['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ', 'Ñ', 'ü', 'Ü'];
+      const singleSpanishChars = [
+        'á',
+        'é',
+        'í',
+        'ó',
+        'ú',
+        'Á',
+        'É',
+        'Í',
+        'Ó',
+        'Ú',
+        'ñ',
+        'Ñ',
+        'ü',
+        'Ü',
+      ];
 
       singleSpanishChars.forEach(char => {
         expect(() => IdentifierName.create(char)).not.toThrow();
@@ -590,9 +593,7 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
     });
 
     it('should reject string that becomes empty after trimming', () => {
-      expect(() => IdentifierName.create('     ')).toThrow(
-        'Identifier name cannot be empty'
-      );
+      expect(() => IdentifierName.create('     ')).toThrow('Identifier name cannot be empty');
     });
 
     it('should reject names with 100 characters', () => {
@@ -636,7 +637,7 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
       const identifierName = IdentifierName.create(name);
 
       // ACT
-      const concatenated = 'Identifier: ' + identifierName;
+      const concatenated = `Identifier: ${identifierName}`;
 
       // ASSERT
       expect(concatenated).toBe('Identifier: Product Category');
@@ -741,20 +742,22 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
       const obj = {
         meta: {
           identifier: identifierName,
-          description: 'Test'
-        }
+          description: 'Test',
+        },
       };
 
       // ACT
       const serialized = JSON.stringify(obj);
 
       // ASSERT
-      expect(serialized).toBe(JSON.stringify({
-        meta: {
-          identifier: 'Product',
-          description: 'Test'
-        }
-      }));
+      expect(serialized).toBe(
+        JSON.stringify({
+          meta: {
+            identifier: 'Product',
+            description: 'Test',
+          },
+        })
+      );
     });
   });
 
@@ -790,13 +793,7 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
     });
 
     it('should handle Spanish characters with numbers', () => {
-      const names = [
-        'Categoría123',
-        '2024Año',
-        'Módulo-01',
-        'Versión 2.0 Información',
-        '99 Niños',
-      ];
+      const names = ['Categoría123', '2024Año', 'Módulo-01', 'Versión 2.0 Información', '99 Niños'];
 
       names.forEach(name => {
         expect(() => IdentifierName.create(name)).not.toThrow();
@@ -806,12 +803,7 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
     });
 
     it('should handle Spanish characters with hyphens', () => {
-      const names = [
-        'Categoría-Principal',
-        'Módulo-Gestión',
-        'Diseño-Avanzado',
-        'Año-Nuevo',
-      ];
+      const names = ['Categoría-Principal', 'Módulo-Gestión', 'Diseño-Avanzado', 'Año-Nuevo'];
 
       names.forEach(name => {
         expect(() => IdentifierName.create(name)).not.toThrow();
@@ -821,12 +813,7 @@ describe('IdentifierName Value Object (RED PHASE)', () => {
     });
 
     it('should handle Spanish characters with underscores', () => {
-      const names = [
-        'Categoría_Principal',
-        'Módulo_Gestión',
-        'Información_Básica',
-        'Año_Fiscal',
-      ];
+      const names = ['Categoría_Principal', 'Módulo_Gestión', 'Información_Básica', 'Año_Fiscal'];
 
       names.forEach(name => {
         expect(() => IdentifierName.create(name)).not.toThrow();

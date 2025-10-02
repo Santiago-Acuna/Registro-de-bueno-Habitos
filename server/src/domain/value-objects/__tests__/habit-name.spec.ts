@@ -54,7 +54,6 @@ describe('HabitName Value Object', () => {
 
         expect(habitName.getValue()).toBe(name);
       });
-
     });
 
     describe('invalid inputs', () => {

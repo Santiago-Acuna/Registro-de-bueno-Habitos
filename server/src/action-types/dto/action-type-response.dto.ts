@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
 import { UUID } from '../../domain/shared/types/common';
 
 export class ActionTypeResponseDto {

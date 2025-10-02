@@ -28,11 +28,11 @@ export class ValidationException extends AppException {
       Object.defineProperty(this, 'getResponse', {
         value: () => ({
           error: this.name,
-          message: message,
+          message,
           statusCode: HttpStatus.BAD_REQUEST,
           ...(details ? { details } : {}),
         }),
-        writable: false
+        writable: false,
       });
     }
   }

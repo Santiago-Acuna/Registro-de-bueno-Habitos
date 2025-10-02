@@ -31,7 +31,7 @@ describe('ActionTypeName Value Object (RED PHASE)', () => {
   ];
 
   describe('ActionTypeName.create()', () => {
-    it.each(validNames)('should create ActionTypeName with valid name: "%s"', (validName) => {
+    it.each(validNames)('should create ActionTypeName with valid name: "%s"', validName => {
       // ACT
       const actionTypeName = ActionTypeName.create(validName);
 
@@ -52,21 +52,17 @@ describe('ActionTypeName Value Object (RED PHASE)', () => {
       expect(actionTypeName.getValue()).toBe(expectedName);
     });
 
-    it.each(invalidNames)('should throw error for invalid name: "%s"', (invalidName) => {
+    it.each(invalidNames)('should throw error for invalid name: "%s"', invalidName => {
       // ACT & ASSERT
       expect(() => ActionTypeName.create(invalidName)).toThrow();
     });
 
     it('should throw specific error for empty string', () => {
-      expect(() => ActionTypeName.create('')).toThrow(
-        'ActionType name cannot be empty'
-      );
+      expect(() => ActionTypeName.create('')).toThrow('ActionType name cannot be empty');
     });
 
     it('should throw specific error for whitespace-only string', () => {
-      expect(() => ActionTypeName.create('   ')).toThrow(
-        'ActionType name cannot be empty'
-      );
+      expect(() => ActionTypeName.create('   ')).toThrow('ActionType name cannot be empty');
     });
 
     it('should throw specific error for too long name', () => {
@@ -77,9 +73,7 @@ describe('ActionTypeName Value Object (RED PHASE)', () => {
     });
 
     it('should throw error for null input', () => {
-      expect(() => ActionTypeName.create(null as any)).toThrow(
-        'ActionType name must be a string'
-      );
+      expect(() => ActionTypeName.create(null as any)).toThrow('ActionType name must be a string');
     });
 
     it('should throw error for undefined input', () => {
@@ -89,18 +83,12 @@ describe('ActionTypeName Value Object (RED PHASE)', () => {
     });
 
     it('should throw error for non-string input', () => {
-      expect(() => ActionTypeName.create(123 as any)).toThrow(
-        'ActionType name must be a string'
-      );
-      expect(() => ActionTypeName.create({} as any)).toThrow(
-        'ActionType name must be a string'
-      );
-      expect(() => ActionTypeName.create([] as any)).toThrow(
-        'ActionType name must be a string'
-      );
+      expect(() => ActionTypeName.create(123 as any)).toThrow('ActionType name must be a string');
+      expect(() => ActionTypeName.create({} as any)).toThrow('ActionType name must be a string');
+      expect(() => ActionTypeName.create([] as any)).toThrow('ActionType name must be a string');
     });
 
-    it.each(validEdgeCaseNames)('should handle valid edge case name: "%s"', (edgeCaseName) => {
+    it.each(validEdgeCaseNames)('should handle valid edge case name: "%s"', edgeCaseName => {
       // ACT & ASSERT
       expect(() => ActionTypeName.create(edgeCaseName)).not.toThrow();
       const actionTypeName = ActionTypeName.create(edgeCaseName);
@@ -352,9 +340,7 @@ describe('ActionTypeName Value Object (RED PHASE)', () => {
     });
 
     it('should reject string that becomes empty after trimming', () => {
-      expect(() => ActionTypeName.create('     ')).toThrow(
-        'ActionType name cannot be empty'
-      );
+      expect(() => ActionTypeName.create('     ')).toThrow('ActionType name cannot be empty');
     });
   });
 
@@ -384,7 +370,7 @@ describe('ActionTypeName Value Object (RED PHASE)', () => {
       const actionTypeName = ActionTypeName.create(name);
 
       // ACT
-      const concatenated = 'Action: ' + actionTypeName;
+      const concatenated = `Action: ${actionTypeName}`;
 
       // ASSERT
       expect(concatenated).toBe('Action: Morning Exercise');

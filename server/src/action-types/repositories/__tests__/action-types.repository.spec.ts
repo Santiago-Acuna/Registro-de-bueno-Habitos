@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DatabaseService } from '../../../infrastructure/database/database.service';
+
 import { ActionType } from '../../../domain/entities/action-type.entity';
-import { ActionTypeName } from '../../../domain/value-objects/action-type-name';
 import { UUID, PaginationParams } from '../../../domain/shared/types/common';
-import {
-  NotFoundError,
-  ConflictError,
-} from '../../../infrastructure/exceptions/app.exceptions';
+import { ActionTypeName } from '../../../domain/value-objects/action-type-name';
+import { DatabaseService } from '../../../infrastructure/database/database.service';
+import { NotFoundError, ConflictError } from '../../../infrastructure/exceptions/app.exceptions';
 import {
   CreateActionTypeData,
   UpdateActionTypeData,
@@ -271,8 +269,6 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         where: { totalActionsCount: { gt: 0 } },
       });
     });
-
-
 
     it('should apply recentActivityDays filter correctly', async () => {
       // Arrange
@@ -647,7 +643,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         createMockPrismaActionType({ id: 'another-id', totalActionsCount: 1 }),
       ];
 
-      mockPrismaClient.$transaction.mockImplementation(async (operations) => {
+      mockPrismaClient.$transaction.mockImplementation(async operations => {
         return Promise.all(operations.map(() => mockUpdatedTypes[0]));
       });
 
@@ -678,10 +674,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         take: 10,
         orderBy: { createdAt: 'desc' },
         where: {
-          OR: [
-            { lastActionDate: null },
-            { lastActionDate: { lt: expect.any(Date) } },
-          ],
+          OR: [{ lastActionDate: null }, { lastActionDate: { lt: expect.any(Date) } }],
         },
       });
       expect(result.data).toHaveLength(1);

@@ -1,5 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { Logger } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 
 import { UUID } from '../../../domain/shared/types/common';
 import {
@@ -291,10 +291,7 @@ describe('GlobalEntityIdentifiersService (RED PHASE) - Value Objects Pattern', (
       const result = await service.findByEntityTypeAndId(mockEntityType, mockEntityId);
 
       // Assert
-      expect(repository.findByEntityTypeAndId).toHaveBeenCalledWith(
-        mockEntityType,
-        mockEntityId
-      );
+      expect(repository.findByEntityTypeAndId).toHaveBeenCalledWith(mockEntityType, mockEntityId);
       expect(result).toEqual(mockIdentifier);
     });
 
@@ -390,9 +387,7 @@ describe('GlobalEntityIdentifiersService (RED PHASE) - Value Objects Pattern', (
       repository.findById.mockResolvedValue(null);
 
       // Act & Assert
-      await expect(service.update(mockIdentifierId, updateData)).rejects.toThrow(
-        NotFoundError
-      );
+      await expect(service.update(mockIdentifierId, updateData)).rejects.toThrow(NotFoundError);
 
       expect(repository.existsByName).not.toHaveBeenCalled();
       expect(repository.update).not.toHaveBeenCalled();
@@ -405,9 +400,7 @@ describe('GlobalEntityIdentifiersService (RED PHASE) - Value Objects Pattern', (
       repository.existsByName.mockResolvedValue(true);
 
       // Act & Assert
-      await expect(service.update(mockIdentifierId, updateData)).rejects.toThrow(
-        ConflictError
-      );
+      await expect(service.update(mockIdentifierId, updateData)).rejects.toThrow(ConflictError);
       await expect(service.update(mockIdentifierId, updateData)).rejects.toThrow(
         `Global entity identifier with name '${updateData.name}' already exists`
       );
@@ -423,9 +416,7 @@ describe('GlobalEntityIdentifiersService (RED PHASE) - Value Objects Pattern', (
       repository.existsByIcon.mockResolvedValue(true);
 
       // Act & Assert
-      await expect(service.update(mockIdentifierId, updateData)).rejects.toThrow(
-        ConflictError
-      );
+      await expect(service.update(mockIdentifierId, updateData)).rejects.toThrow(ConflictError);
       await expect(service.update(mockIdentifierId, updateData)).rejects.toThrow(
         `Global entity identifier with icon '${updateData.icon}' already exists`
       );
@@ -710,9 +701,7 @@ describe('GlobalEntityIdentifiersService (RED PHASE) - Value Objects Pattern', (
       const longName = 'A'.repeat(255); // Maximum length
       repository.existsByName.mockResolvedValue(false);
       repository.existsByIcon.mockResolvedValue(false);
-      repository.create.mockResolvedValue(
-        createMockGlobalEntityIdentifier({ name: longName })
-      );
+      repository.create.mockResolvedValue(createMockGlobalEntityIdentifier({ name: longName }));
 
       // Act
       const result = await service.create({
@@ -760,9 +749,7 @@ describe('GlobalEntityIdentifiersService (RED PHASE) - Value Objects Pattern', (
 
       repository.existsByName.mockResolvedValue(false);
       repository.existsByIcon.mockResolvedValue(false);
-      repository.create.mockResolvedValue(
-        createMockGlobalEntityIdentifier({ name: trimmedName })
-      );
+      repository.create.mockResolvedValue(createMockGlobalEntityIdentifier({ name: trimmedName }));
 
       // Act
       const result = await service.create({

@@ -116,10 +116,7 @@ export interface IActionTypesRepository {
    * @param filters - Optional filtering criteria
    * @returns Promise<number> - Count of action types for the habit
    */
-  countByHabitId(
-    habitId: UUID,
-    filters?: ActionTypeFilterOptions
-  ): Promise<number>;
+  countByHabitId(habitId: UUID, filters?: ActionTypeFilterOptions): Promise<number>;
 
   /**
    * Check if action type exists by name and habit ID
@@ -144,10 +141,7 @@ export interface IActionTypesRepository {
    * @param params - Pagination parameters
    * @returns Promise<PaginatedResult<ActionType>> - Inactive action types
    */
-  findInactive(
-    days: number,
-    params: PaginationParams
-  ): Promise<PaginatedResult<ActionType>>;
+  findInactive(days: number, params: PaginationParams): Promise<PaginatedResult<ActionType>>;
 
   /**
    * Get action type statistics for a habit

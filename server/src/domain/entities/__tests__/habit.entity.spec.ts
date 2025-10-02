@@ -197,7 +197,7 @@ describe('Habit Domain Entity', () => {
     });
 
     it('should throw error for icon URL exceeding max length', () => {
-      const longUrl = 'https://example.com/' + 'a'.repeat(500); // Exceeds 500 char limit
+      const longUrl = `https://example.com/${'a'.repeat(500)}`; // Exceeds 500 char limit
       expect(() => {
         new GlobalEntityIdentifier(
           validGlobalIdentifierId,
@@ -421,7 +421,7 @@ describe('Habit Domain Entity', () => {
     });
 
     it('should throw error for icon URL exceeding max length', () => {
-      const longUrl = 'https://example.com/' + 'a'.repeat(500);
+      const longUrl = `https://example.com/${'a'.repeat(500)}`;
       expect(() => habit.updateIcon(longUrl)).toThrow(
         'Identifier icon URL cannot exceed 500 characters'
       );
@@ -631,7 +631,7 @@ describe('Habit Domain Entity', () => {
     });
 
     it('should handle icon URL at maximum length boundary', () => {
-      const maxLengthUrl = 'https://example.com/' + 'a'.repeat(470) + '.png'; // Exactly 500 chars
+      const maxLengthUrl = `https://example.com/${'a'.repeat(470)}.png`; // Exactly 500 chars
       const globalIdentifier = createMockGlobalIdentifier(validHabitName, maxLengthUrl);
       const habit = new Habit(
         validHabitId,

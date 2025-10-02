@@ -1,6 +1,7 @@
-import { IsOptional, IsBoolean, IsInt, IsUUID, Min, Max } from 'class-validator';
-import { Transform, Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
+import { IsOptional, IsBoolean, IsInt, IsUUID, Min, Max } from 'class-validator';
+
 import { UUID } from '../../domain/shared/types/common';
 
 export class ActionTypeQueryDto {

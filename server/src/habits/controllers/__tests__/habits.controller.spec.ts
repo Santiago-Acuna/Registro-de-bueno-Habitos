@@ -37,8 +37,6 @@ import { UpdateHabitDto } from '../../dto/update-habit.dto';
 import { HabitsService } from '../../services/habits.service';
 import { HabitsController } from '../habits.controller';
 
-
-
 // Mock HabitsService
 const mockHabitsService = {
   create: jest.fn(),
@@ -420,7 +418,6 @@ describe('HabitsController', () => {
       await expect(controller.remove(mockHabitId)).rejects.toThrow('Database deletion failed');
     });
   });
-
 
   describe('controller decorators and middleware integration', () => {
     it('should be decorated with ApiTags', () => {

@@ -1,5 +1,6 @@
-import { IsNotEmpty, IsString, IsUUID, Length } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, IsUUID, Length } from 'class-validator';
+
 import { UUID } from '../../domain/shared/types/common';
 
 export class CreateActionTypeDto {

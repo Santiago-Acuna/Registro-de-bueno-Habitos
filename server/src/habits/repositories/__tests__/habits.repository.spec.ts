@@ -1,19 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { Habit } from '../../../domain/entities/habit.entity';
 import { GlobalEntityIdentifier } from '../../../domain/entities/global-entity-identifier.entity';
+import { Habit } from '../../../domain/entities/habit.entity';
 import {
   HabitComplexity,
   UUID,
   PaginationParams,
   FilterOptions,
 } from '../../../domain/shared/types/common';
-import { IdentifierName } from '../../../domain/value-objects/identifier-name';
 import { IdentifierIcon } from '../../../domain/value-objects/identifier-icon';
+import { IdentifierName } from '../../../domain/value-objects/identifier-name';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { NotFoundError } from '../../../infrastructure/exceptions/app.exceptions';
-import { HabitsRepository } from '../habits.repository';
 import { CreateHabitData } from '../../interfaces/habits-repository.interface';
+import { HabitsRepository } from '../habits.repository';
 
 // Mock uuid generation
 jest.mock('uuid', () => ({
@@ -43,7 +43,9 @@ describe('HabitsRepository', () => {
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
 
   // Helper to create mock GlobalEntityIdentifier
-  const createMockCreateHabitData = (overrides: Partial<CreateHabitData> = {}): CreateHabitData => ({
+  const createMockCreateHabitData = (
+    overrides: Partial<CreateHabitData> = {}
+  ): CreateHabitData => ({
     name: mockHabitName,
     habitType: HabitComplexity.SIMPLE,
     icon: mockIconUrl,
@@ -151,10 +153,10 @@ describe('HabitsRepository', () => {
     it('should handle COMPLEX habit type creation', async () => {
       // Arrange
       const createData = createMockCreateHabitData({
-        habitType: HabitComplexity.COMPLEX
+        habitType: HabitComplexity.COMPLEX,
       });
       const mockPrismaResponse = createMockPrismaData({
-        habitType: HabitComplexity.COMPLEX
+        habitType: HabitComplexity.COMPLEX,
       });
       mockPrismaService.habits.create.mockResolvedValue(mockPrismaResponse);
 
@@ -177,10 +179,10 @@ describe('HabitsRepository', () => {
     it('should handle WITHOUT_INTERVALS habit type creation', async () => {
       // Arrange
       const createData = createMockCreateHabitData({
-        habitType: HabitComplexity.WITHOUT_INTERVALS
+        habitType: HabitComplexity.WITHOUT_INTERVALS,
       });
       const mockPrismaResponse = createMockPrismaData({
-        habitType: HabitComplexity.WITHOUT_INTERVALS
+        habitType: HabitComplexity.WITHOUT_INTERVALS,
       });
       mockPrismaService.habits.create.mockResolvedValue(mockPrismaResponse);
 
@@ -200,7 +202,7 @@ describe('HabitsRepository', () => {
       const customIcon = 'https://example.com/custom-icon.png';
       const createData = createMockCreateHabitData({
         name: customName,
-        icon: customIcon
+        icon: customIcon,
       });
       const mockPrismaResponse = createMockPrismaData({
         globalEntityIdentifiers: {
@@ -209,7 +211,7 @@ describe('HabitsRepository', () => {
           icon: customIcon,
           entityType: 'habit',
           entityId: mockHabitId,
-        }
+        },
       });
       mockPrismaService.habits.create.mockResolvedValue(mockPrismaResponse);
 
@@ -508,10 +510,10 @@ describe('HabitsRepository', () => {
     it('should update only provided fields', async () => {
       // Arrange - Only update habitType
       const partialUpdate: Partial<Habit> = {
-        habitType: HabitComplexity.COMPLEX
+        habitType: HabitComplexity.COMPLEX,
       };
       const mockUpdatedData = createMockPrismaData({
-        habitType: HabitComplexity.COMPLEX
+        habitType: HabitComplexity.COMPLEX,
       });
       mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
 
@@ -577,7 +579,7 @@ describe('HabitsRepository', () => {
     it('should throw NotFoundError when habit does not exist', async () => {
       // Arrange
       const partialUpdate: Partial<Habit> = {
-        isActive: false
+        isActive: false,
       };
       const prismaError = { code: 'P2025', message: 'Record not found' };
       mockPrismaService.habits.update.mockRejectedValue(prismaError);
@@ -590,7 +592,7 @@ describe('HabitsRepository', () => {
     it('should propagate other database errors', async () => {
       // Arrange
       const partialUpdate: Partial<Habit> = {
-        totalActionsCount: 10
+        totalActionsCount: 10,
       };
       const dbError = new Error('Database constraint violation');
       mockPrismaService.habits.update.mockRejectedValue(dbError);
@@ -740,7 +742,6 @@ describe('HabitsRepository', () => {
     });
   });
 
-
   describe('mapToDomain() - domain mapping verification', () => {
     it('should correctly map all Prisma data with JOIN to domain entity', async () => {
       // Arrange - Prisma data with globalEntityIdentifiers JOIN
@@ -757,7 +758,7 @@ describe('HabitsRepository', () => {
           icon: 'https://example.com/complex-icon.png',
           entityType: 'habit',
           entityId: mockHabitId,
-        }
+        },
       });
       mockPrismaService.habits.findUnique.mockResolvedValue(complexPrismaData);
 
@@ -771,7 +772,9 @@ describe('HabitsRepository', () => {
       expect(result!.globalEntityIdentifier.name).toBeInstanceOf(IdentifierName);
       expect(result!.globalEntityIdentifier.name.getValue()).toBe('Complex Habit');
       expect(result!.globalEntityIdentifier.icon).toBeInstanceOf(IdentifierIcon);
-      expect(result!.globalEntityIdentifier.icon.getValue()).toBe('https://example.com/complex-icon.png');
+      expect(result!.globalEntityIdentifier.icon.getValue()).toBe(
+        'https://example.com/complex-icon.png'
+      );
       expect(result!.habitType).toBe(HabitComplexity.WITHOUT_INTERVALS);
       expect(result!.isActive).toBe(false);
       expect(result!.totalActionsCount).toBe(10);
@@ -819,7 +822,7 @@ describe('HabitsRepository', () => {
           icon: mockIconUrl,
           entityType: 'habit',
           entityId: mockHabitId,
-        }
+        },
       });
       mockPrismaService.habits.findUnique.mockResolvedValue(prismaData);
 
@@ -843,10 +846,7 @@ describe('HabitsRepository', () => {
       mockPrismaService.habits.update.mockResolvedValue(mockPrismaData);
 
       // Act - Simulate concurrent operations
-      const promises = [
-        repository.findById(mockHabitId),
-        repository.findById(mockHabitId),
-      ];
+      const promises = [repository.findById(mockHabitId), repository.findById(mockHabitId)];
 
       const results = await Promise.all(promises);
 
@@ -866,12 +866,14 @@ describe('HabitsRepository', () => {
           icon: mockIconUrl,
           entityType: 'habit',
           entityId: mockHabitId,
-        }
+        },
       });
       mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithEmptyName);
 
       // Act & Assert - Should throw during IdentifierName creation from JOIN data
-      await expect(repository.findById(mockHabitId)).rejects.toThrow('Identifier name cannot be empty');
+      await expect(repository.findById(mockHabitId)).rejects.toThrow(
+        'Identifier name cannot be empty'
+      );
     });
 
     it('should handle very long habit names from JOIN during domain mapping', async () => {
@@ -884,7 +886,7 @@ describe('HabitsRepository', () => {
           icon: mockIconUrl,
           entityType: 'habit',
           entityId: mockHabitId,
-        }
+        },
       });
       mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithLongName);
 

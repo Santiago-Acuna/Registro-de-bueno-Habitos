@@ -2,11 +2,8 @@ import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ActionType } from '../../../domain/entities/action-type.entity';
+import { UUID, PaginatedResult } from '../../../domain/shared/types/common';
 import { ActionTypeName } from '../../../domain/value-objects/action-type-name';
-import {
-  UUID,
-  PaginatedResult,
-} from '../../../domain/shared/types/common';
 import { CloudinaryService } from '../../../helpers/cloudinary/cloudinary.service';
 import { PaginatedResponseDto } from '../../../infrastructure/dto/paginated-response.dto';
 import { PaginationQueryDto } from '../../../infrastructure/dto/pagination-query.dto';
@@ -15,14 +12,14 @@ import {
   ConflictError,
   ValidationException,
 } from '../../../infrastructure/exceptions/app.exceptions';
+import { CreateActionTypeDto } from '../../dto/create-action-type.dto';
+import { UpdateActionTypeDto } from '../../dto/update-action-type.dto';
 import {
   CreateActionTypeData,
   UpdateActionTypeData,
   ActionTypeFilterOptions,
   IActionTypesRepository,
 } from '../../interfaces/action-types-repository.interface';
-import { CreateActionTypeDto } from '../../dto/create-action-type.dto';
-import { UpdateActionTypeDto } from '../../dto/update-action-type.dto';
 import { ActionTypesService } from '../action-types.service';
 
 // Mock implementations
@@ -224,7 +221,9 @@ describe('ActionTypesService (RED PHASE)', () => {
       });
 
       // Act & Assert
-      await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(ValidationException);
+      await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(
+        ValidationException
+      );
       await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(
         'Invalid image format'
       );
@@ -304,7 +303,9 @@ describe('ActionTypesService (RED PHASE)', () => {
       });
 
       // Act & Assert
-      await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(ValidationException);
+      await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(
+        ValidationException
+      );
       await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(
         'Logo must be a non-empty string'
       );
@@ -706,7 +707,10 @@ describe('ActionTypesService (RED PHASE)', () => {
           updateDto.name,
           mockHabitId
         );
-        expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(updateMockFile, expect.any(Object));
+        expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(
+          updateMockFile,
+          expect.any(Object)
+        );
         expect(result.name).toBe(updateDto.name);
         expect(result.logo).toBe(newLogoUrl);
       });
@@ -867,7 +871,7 @@ describe('ActionTypesService (RED PHASE)', () => {
         logo: mockLogo,
         habitId: mockHabitId,
         totalActionsCount: 5,
-        lastActionDate: lastActionDate,
+        lastActionDate,
         createdAt: fixedDate,
         updatedAt: new Date('2024-01-02T00:00:00.000Z'),
       });

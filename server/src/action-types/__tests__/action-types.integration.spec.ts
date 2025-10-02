@@ -1,21 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 
 import { ActionType } from '../../domain/entities/action-type.entity';
-import { ActionTypeName } from '../../domain/value-objects/action-type-name';
 import { UUID } from '../../domain/shared/types/common';
-import { DatabaseService } from '../../infrastructure/database/database.service';
+import { ActionTypeName } from '../../domain/value-objects/action-type-name';
 import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
-import { GlobalExceptionFilter } from '../../infrastructure/filters/global-exception.filter';
+import { DatabaseService } from '../../infrastructure/database/database.service';
 import {
   NotFoundError,
   ConflictError,
   ValidationException,
 } from '../../infrastructure/exceptions/app.exceptions';
+import { GlobalExceptionFilter } from '../../infrastructure/filters/global-exception.filter';
 import { ActionTypesModule } from '../action-types.module';
-import { ActionTypesService } from '../services/action-types.service';
 import { ActionTypesRepository } from '../repositories/action-types.repository';
+import { ActionTypesService } from '../services/action-types.service';
 
 // Mock Cloudinary service
 const mockCloudinaryService = {
@@ -48,10 +48,13 @@ class MockDatabaseService {
           };
 
           // Check for global name uniqueness constraint violation (enforced by global_entity_identifiers table)
-          const existingWithName = Array.from(this.actionTypes.values())
-            .find(at => at.name === data.name);
+          const existingWithName = Array.from(this.actionTypes.values()).find(
+            at => at.name === data.name
+          );
           if (existingWithName) {
-            const error = new Error('Unique constraint failed on the constraint: `global_entity_identifiers_name_unique`');
+            const error = new Error(
+              'Unique constraint failed on the constraint: `global_entity_identifiers_name_unique`'
+            );
             (error as any).code = 'P2002';
             (error as any).meta = { target: ['name'] };
             throw error;
@@ -66,11 +69,13 @@ class MockDatabaseService {
         }),
 
         findFirst: jest.fn(async ({ where }) => {
-          return Array.from(this.actionTypes.values())
-            .find(at =>
-              (!where.name || at.name === where.name) &&
-              (!where.habitId || at.habitId === where.habitId)
-            ) || null;
+          return (
+            Array.from(this.actionTypes.values()).find(
+              at =>
+                (!where.name || at.name === where.name) &&
+                (!where.habitId || at.habitId === where.habitId)
+            ) || null
+          );
         }),
 
         findMany: jest.fn(async ({ where, skip, take, orderBy }) => {
@@ -91,8 +96,10 @@ class MockDatabaseService {
               results = results.filter(at => at.totalActionsCount <= where.totalActionsCount.lte);
             }
             if (where.lastActionDate?.gte) {
-              results = results.filter(at =>
-                at.lastActionDate && new Date(at.lastActionDate) >= new Date(where.lastActionDate.gte)
+              results = results.filter(
+                at =>
+                  at.lastActionDate &&
+                  new Date(at.lastActionDate) >= new Date(where.lastActionDate.gte)
               );
             }
           }
@@ -154,10 +161,13 @@ class MockDatabaseService {
 
           // Check for global name uniqueness constraint if name is being updated (enforced by global_entity_identifiers table)
           if (data.name) {
-            const existing = Array.from(this.actionTypes.values())
-              .find(at => at.id !== where.id && at.name === data.name);
+            const existing = Array.from(this.actionTypes.values()).find(
+              at => at.id !== where.id && at.name === data.name
+            );
             if (existing) {
-              const error = new Error('Unique constraint failed on the constraint: `global_entity_identifiers_name_unique`');
+              const error = new Error(
+                'Unique constraint failed on the constraint: `global_entity_identifiers_name_unique`'
+              );
               (error as any).code = 'P2002';
               (error as any).meta = { target: ['name'] };
               throw error;
@@ -172,7 +182,8 @@ class MockDatabaseService {
 
           // Handle increment operation
           if (data.totalActionsCount?.increment) {
-            updated.totalActionsCount = actionType.totalActionsCount + data.totalActionsCount.increment;
+            updated.totalActionsCount =
+              actionType.totalActionsCount + data.totalActionsCount.increment;
           }
 
           this.actionTypes.set(where.id, updated);
@@ -235,7 +246,7 @@ class MockDatabaseService {
         }),
       },
 
-      $transaction: jest.fn(async (operations) => {
+      $transaction: jest.fn(async operations => {
         return Promise.all(operations.map((op: any) => op()));
       }),
     };
@@ -285,11 +296,13 @@ describe('ActionTypes Integration Tests (RED PHASE)', () => {
     app = moduleFixture.createNestApplication();
 
     // Add validation pipe and global exception filter
-    app.useGlobalPipes(new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      })
+    );
     app.useGlobalFilters(new GlobalExceptionFilter());
 
     service = app.get(ActionTypesService);
@@ -380,14 +393,10 @@ describe('ActionTypes Integration Tests (RED PHASE)', () => {
       expect(updateResponse.body.name).toBe(updateDto.name);
 
       // 4. DELETE - Should remove action type
-      await request(app.getHttpServer())
-        .delete(`/action-types/${actionTypeId}`)
-        .expect(204);
+      await request(app.getHttpServer()).delete(`/action-types/${actionTypeId}`).expect(204);
 
       // 5. VERIFY DELETION - Should return 404
-      await request(app.getHttpServer())
-        .get(`/action-types/${actionTypeId}`)
-        .expect(404);
+      await request(app.getHttpServer()).get(`/action-types/${actionTypeId}`).expect(404);
     });
   });
 
@@ -413,7 +422,9 @@ describe('ActionTypes Integration Tests (RED PHASE)', () => {
         .expect(409);
 
       // Verify error indicates global uniqueness constraint violation
-      expect(response2.body.message).toMatch(/already exists|duplicate|unique|global_entity_identifiers_name_unique/i);
+      expect(response2.body.message).toMatch(
+        /already exists|duplicate|unique|global_entity_identifiers_name_unique/i
+      );
     });
 
     it('should NOT allow duplicate action type names globally (enforced by database)', async () => {
@@ -443,9 +454,10 @@ describe('ActionTypes Integration Tests (RED PHASE)', () => {
         .expect(409);
 
       // Verify error response indicates duplicate name (global uniqueness violation)
-      expect(response2.body.message).toMatch(/already exists|duplicate|unique|global_entity_identifiers_name_unique/i);
+      expect(response2.body.message).toMatch(
+        /already exists|duplicate|unique|global_entity_identifiers_name_unique/i
+      );
     });
-
   });
 
   describe('Filtering and Pagination Integration', () => {
@@ -531,12 +543,9 @@ describe('ActionTypes Integration Tests (RED PHASE)', () => {
       expect(page3Response.body.data).toHaveLength(5);
       expect(page3Response.body.page).toBe(3);
     });
-
   });
 
-  describe('Analytics Endpoints Integration', () => {
-
-  });
+  describe('Analytics Endpoints Integration', () => {});
 
   describe('Error Handling Integration', () => {
     it('should handle validation errors properly', async () => {
@@ -600,32 +609,29 @@ describe('ActionTypes Integration Tests (RED PHASE)', () => {
       const nonExistentId = '999e9999-e99e-99e9-a999-999999999999';
 
       // Test various endpoints with non-existent ID
-      await request(app.getHttpServer())
-        .get(`/action-types/${nonExistentId}`)
-        .expect(404);
+      await request(app.getHttpServer()).get(`/action-types/${nonExistentId}`).expect(404);
 
       await request(app.getHttpServer())
         .patch(`/action-types/${nonExistentId}`)
         .send({ name: 'New Name' })
         .expect(404);
 
-      await request(app.getHttpServer())
-        .delete(`/action-types/${nonExistentId}`)
-        .expect(404);
-
+      await request(app.getHttpServer()).delete(`/action-types/${nonExistentId}`).expect(404);
     });
   });
 
   describe('Performance and Load Integration', () => {
     it('should handle concurrent requests correctly', async () => {
       // Create multiple action types concurrently - requests contain ONLY domain fields
-      const concurrentRequests = Array(10).fill(null).map((_, index) =>
-        request(app.getHttpServer())
-          .post('/action-types')
-          .field('name', `Concurrent Action ${index}`)
-          .field('habitId', mockHabitId)
-          .attach('logo', createMockFile().buffer, `concurrent-${index}.png`)
-      );
+      const concurrentRequests = Array(10)
+        .fill(null)
+        .map((_, index) =>
+          request(app.getHttpServer())
+            .post('/action-types')
+            .field('name', `Concurrent Action ${index}`)
+            .field('habitId', mockHabitId)
+            .attach('logo', createMockFile().buffer, `concurrent-${index}.png`)
+        );
 
       const responses = await Promise.all(concurrentRequests);
 
@@ -646,13 +652,15 @@ describe('ActionTypes Integration Tests (RED PHASE)', () => {
 
     it('should handle large pagination requests efficiently', async () => {
       // Create many action types - requests contain ONLY domain fields
-      const createPromises = Array(50).fill(null).map((_, index) =>
-        request(app.getHttpServer())
-          .post('/action-types')
-          .field('name', `Large Dataset Action ${index}`)
-          .field('habitId', mockHabitId)
-          .attach('logo', createMockFile().buffer, `large-${index}.png`)
-      );
+      const createPromises = Array(50)
+        .fill(null)
+        .map((_, index) =>
+          request(app.getHttpServer())
+            .post('/action-types')
+            .field('name', `Large Dataset Action ${index}`)
+            .field('habitId', mockHabitId)
+            .attach('logo', createMockFile().buffer, `large-${index}.png`)
+        );
 
       await Promise.all(createPromises);
 
@@ -667,5 +675,4 @@ describe('ActionTypes Integration Tests (RED PHASE)', () => {
       expect(response.body.totalPages).toBe(1);
     });
   });
-
 });

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import { Habit } from '../../domain/entities/habit.entity';
 import { GlobalEntityIdentifier } from '../../domain/entities/global-entity-identifier.entity';
+import { Habit } from '../../domain/entities/habit.entity';
 import {
   PaginatedResult,
   PaginationParams,
@@ -9,8 +9,8 @@ import {
   UUID,
   HabitComplexity,
 } from '../../domain/shared/types/common';
-import { IdentifierName } from '../../domain/value-objects/identifier-name';
 import { IdentifierIcon } from '../../domain/value-objects/identifier-icon';
+import { IdentifierName } from '../../domain/value-objects/identifier-name';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { NotFoundError } from '../../infrastructure/exceptions/app.exceptions';
 import { IHabitsRepository, CreateHabitData } from '../interfaces/habits-repository.interface';
@@ -145,7 +145,6 @@ export class HabitsRepository implements IHabitsRepository {
 
     return data ? this.mapToDomain(data) : null;
   }
-
 
   private mapToDomain(data: any): Habit {
     const globalIdentifier = new GlobalEntityIdentifier(

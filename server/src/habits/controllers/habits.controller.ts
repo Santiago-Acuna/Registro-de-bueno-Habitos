@@ -78,9 +78,10 @@ export class HabitsController {
     if (errors.length > 0) {
       const errorGroups = errors.map(err => Object.values(err.constraints || {}));
       const nonEmptyGroups = errorGroups.filter(group => group.length > 0);
-      const message = nonEmptyGroups.length > 0
-        ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
-        : 'Uncontrolled error with the image you sent';
+      const message =
+        nonEmptyGroups.length > 0
+          ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
+          : 'Uncontrolled error with the image you sent';
       throw new ValidationException(message);
     }
 
@@ -131,9 +132,7 @@ export class HabitsController {
       },
     },
   })
-  async findAll(
-    @Query() query: HabitsQueryDto
-  ): Promise<PaginatedResponseDto<HabitResponseDto>> {
+  async findAll(@Query() query: HabitsQueryDto): Promise<PaginatedResponseDto<HabitResponseDto>> {
     const { page = 1, limit = 10, isActive } = query;
     const paginationQuery = { page, limit };
     const filters = isActive !== undefined ? { isActive } : undefined;
@@ -214,14 +213,17 @@ export class HabitsController {
       if (errors.length > 0) {
         const errorGroups = errors.map(err => Object.values(err.constraints || {}));
         const nonEmptyGroups = errorGroups.filter(group => group.length > 0);
-        const message = nonEmptyGroups.length > 0
-          ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
-          : 'Uncontrolled error with the image you sent';
+        const message =
+          nonEmptyGroups.length > 0
+            ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
+            : 'Uncontrolled error with the image you sent';
         throw new ValidationException(message);
       }
     }
 
-    return logo ? this.habitsService.update(id, updateHabitDto, logo) : this.habitsService.update(id, updateHabitDto);
+    return logo
+      ? this.habitsService.update(id, updateHabitDto, logo)
+      : this.habitsService.update(id, updateHabitDto);
   }
 
   @Delete(':id')
@@ -249,5 +251,4 @@ export class HabitsController {
   async remove(@Param('id', ParseUUIDPipe) id: UUID): Promise<void> {
     return this.habitsService.remove(id);
   }
-
 }

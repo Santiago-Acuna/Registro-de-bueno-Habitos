@@ -1,5 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 
 import { UUID } from '../../domain/shared/types/common';
 import { DatabaseService } from '../../infrastructure/database/database.service';
@@ -9,8 +9,8 @@ import {
   ValidationException,
 } from '../../infrastructure/exceptions/app.exceptions';
 import { GlobalEntityIdentifiersModule } from '../global-entity-identifiers.module';
-import { GlobalEntityIdentifiersService } from '../services/global-entity-identifiers.service';
 import { GlobalEntityIdentifiersRepository } from '../repositories/global-entity-identifiers.repository';
+import { GlobalEntityIdentifiersService } from '../services/global-entity-identifiers.service';
 
 // Value objects only pattern - no entities
 // This module uses value objects (IdentifierName, IdentifierIcon) for validation
@@ -34,7 +34,7 @@ class MockDatabaseService {
 
           // Check for name uniqueness constraint
           const existingWithName = Array.from(this.identifiers.values()).find(
-            (identifier) => identifier.name === data.name
+            identifier => identifier.name === data.name
           );
           if (existingWithName) {
             const error = new Error(
@@ -47,7 +47,7 @@ class MockDatabaseService {
 
           // Check for icon uniqueness constraint
           const existingWithIcon = Array.from(this.identifiers.values()).find(
-            (identifier) => identifier.icon === data.icon
+            identifier => identifier.icon === data.icon
           );
           if (existingWithIcon) {
             const error = new Error(
@@ -60,7 +60,7 @@ class MockDatabaseService {
 
           // Check for name+icon combination uniqueness
           const existingWithBoth = Array.from(this.identifiers.values()).find(
-            (identifier) => identifier.name === data.name && identifier.icon === data.icon
+            identifier => identifier.name === data.name && identifier.icon === data.icon
           );
           if (existingWithBoth) {
             const error = new Error(
@@ -73,9 +73,8 @@ class MockDatabaseService {
 
           // Check for entityType+entityId combination uniqueness
           const existingEntity = Array.from(this.identifiers.values()).find(
-            (identifier) =>
-              identifier.entityType === data.entityType &&
-              identifier.entityId === data.entityId
+            identifier =>
+              identifier.entityType === data.entityType && identifier.entityId === data.entityId
           );
           if (existingEntity) {
             const error = new Error(
@@ -105,14 +104,14 @@ class MockDatabaseService {
           if (where.name) {
             return (
               Array.from(this.identifiers.values()).find(
-                (identifier) => identifier.name === where.name
+                identifier => identifier.name === where.name
               ) || null
             );
           }
           if (where.icon) {
             return (
               Array.from(this.identifiers.values()).find(
-                (identifier) => identifier.icon === where.icon
+                identifier => identifier.icon === where.icon
               ) || null
             );
           }
@@ -122,7 +121,7 @@ class MockDatabaseService {
         findFirst: jest.fn(async ({ where }) => {
           return (
             Array.from(this.identifiers.values()).find(
-              (identifier) =>
+              identifier =>
                 (!where.name || identifier.name === where.name) &&
                 (!where.icon || identifier.icon === where.icon) &&
                 (!where.entityType || identifier.entityType === where.entityType) &&
@@ -137,9 +136,7 @@ class MockDatabaseService {
           // Apply filters
           if (where) {
             if (where.entityType) {
-              results = results.filter(
-                (identifier) => identifier.entityType === where.entityType
-              );
+              results = results.filter(identifier => identifier.entityType === where.entityType);
             }
           }
 
@@ -163,9 +160,7 @@ class MockDatabaseService {
           let results = Array.from(this.identifiers.values());
 
           if (where?.entityType) {
-            results = results.filter(
-              (identifier) => identifier.entityType === where.entityType
-            );
+            results = results.filter(identifier => identifier.entityType === where.entityType);
           }
 
           return results.length;
@@ -182,7 +177,7 @@ class MockDatabaseService {
           // Check for name uniqueness constraint if name is being updated
           if (data.name && data.name !== identifier.name) {
             const existing = Array.from(this.identifiers.values()).find(
-              (i) => i.id !== where.id && i.name === data.name
+              i => i.id !== where.id && i.name === data.name
             );
             if (existing) {
               const error = new Error(
@@ -197,7 +192,7 @@ class MockDatabaseService {
           // Check for icon uniqueness constraint if icon is being updated
           if (data.icon && data.icon !== identifier.icon) {
             const existing = Array.from(this.identifiers.values()).find(
-              (i) => i.id !== where.id && i.icon === data.icon
+              i => i.id !== where.id && i.icon === data.icon
             );
             if (existing) {
               const error = new Error(
@@ -323,10 +318,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       });
 
       // 5. READ BY ENTITY - Should find by entity type and id
-      const getByEntityResult = await service.findByEntityTypeAndId(
-        mockEntityType,
-        mockEntityId
-      );
+      const getByEntityResult = await service.findByEntityTypeAndId(mockEntityType, mockEntityId);
       expect(getByEntityResult).toMatchObject({
         id: identifierId,
         entityType: mockEntityType,
@@ -509,9 +501,9 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       });
 
       // Attempt to update first to have the same name as second
-      await expect(
-        service.update(result1.id, { name: 'Second Name' })
-      ).rejects.toThrow(ConflictError);
+      await expect(service.update(result1.id, { name: 'Second Name' })).rejects.toThrow(
+        ConflictError
+      );
     });
 
     it('should prevent updating to an existing icon', async () => {
@@ -689,7 +681,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       // Filter by habit entity type
       const habits = await repository.findAll({ entityType: 'habit' });
       expect(habits).toHaveLength(2);
-      expect(habits.every((h) => h.entityType === 'habit')).toBe(true);
+      expect(habits.every(h => h.entityType === 'habit')).toBe(true);
 
       // Filter by action-type entity type
       const actionTypes = await repository.findAll({ entityType: 'action-type' });
@@ -746,11 +738,11 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
 
       // One should succeed, one should fail
       const results = await Promise.allSettled(concurrentCreations);
-      const succeeded = results.filter((r) => r.status === 'fulfilled');
-      const failed = results.filter((r) => r.status === 'rejected');
+      const succeeded = results.filter(r => r.status === 'fulfilled');
+      const failed = results.filter(r => r.status === 'rejected');
 
-      expect(succeeded.length).toBe(1);
-      expect(failed.length).toBe(1);
+      expect(succeeded).toHaveLength(1);
+      expect(failed).toHaveLength(1);
     });
 
     it('should handle concurrent updates correctly', async () => {
@@ -822,7 +814,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       });
 
       expect(result.name).toBe(maxLengthName);
-      expect(result.name.length).toBe(255);
+      expect(result.name).toHaveLength(255);
     });
 
     it('should trim whitespace from names', async () => {
