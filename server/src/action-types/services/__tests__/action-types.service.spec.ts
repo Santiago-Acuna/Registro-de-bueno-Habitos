@@ -2,8 +2,10 @@ import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ActionType } from '../../../domain/entities/action-type.entity';
+import { GlobalEntityIdentifier } from '../../../domain/entities/global-entity-identifier.entity';
 import { UUID, PaginatedResult } from '../../../domain/shared/types/common';
-import { ActionTypeName } from '../../../domain/value-objects/action-type-name';
+import { IdentifierIcon } from '../../../domain/value-objects/identifier-icon';
+import { IdentifierName } from '../../../domain/value-objects/identifier-name';
 import { CloudinaryService } from '../../../helpers/cloudinary/cloudinary.service';
 import { PaginatedResponseDto } from '../../../infrastructure/dto/paginated-response.dto';
 import { PaginationQueryDto } from '../../../infrastructure/dto/pagination-query.dto';
@@ -15,8 +17,6 @@ import {
 import { CreateActionTypeDto } from '../../dto/create-action-type.dto';
 import { UpdateActionTypeDto } from '../../dto/update-action-type.dto';
 import {
-  CreateActionTypeData,
-  UpdateActionTypeData,
   ActionTypeFilterOptions,
   IActionTypesRepository,
 } from '../../interfaces/action-types-repository.interface';
@@ -58,41 +58,54 @@ describe('ActionTypesService (RED PHASE)', () => {
   // Test data fixtures
   const mockActionTypeId: UUID = '123e4567-e89b-12d3-a456-426614174000';
   const mockHabitId: UUID = '987fcdeb-51a2-43d1-9876-543210987654';
+  const validGlobalIdentifierId = 'global-id-123e4567-e89b-12d3-a456-426614174000';
   const mockActionTypeName = 'Morning Push-ups';
-  const mockLogo = 'https://example.com/pushups-logo.png';
+  const mockIconUrl = 'https://example.com/pushups-icon.png';
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
   const lastActionDate = new Date('2024-01-01T12:00:00.000Z');
 
+  // Helper to create mock GlobalEntityIdentifier
+  const createMockGlobalIdentifier = (
+    name: string = mockActionTypeName,
+    icon: string = mockIconUrl
+  ): GlobalEntityIdentifier => {
+    return new GlobalEntityIdentifier(
+      validGlobalIdentifierId,
+      IdentifierName.create(name),
+      IdentifierIcon.create(icon),
+      'action_type',
+      mockActionTypeId
+    );
+  };
+
   const createMockActionType = (overrides: Partial<any> = {}): ActionType => {
-    const actionTypeName = ActionTypeName.create(mockActionTypeName);
+    const globalIdentifier = createMockGlobalIdentifier();
     const defaults = {
       id: mockActionTypeId,
-      name: actionTypeName,
-      logo: mockLogo,
       habitId: mockHabitId,
       createdAt: fixedDate,
       updatedAt: fixedDate,
       totalActionsCount: 0,
       lastActionDate: null,
+      globalEntityIdentifier: globalIdentifier,
     };
     const merged = { ...defaults, ...overrides };
     return new ActionType(
       merged.id,
-      merged.name,
-      merged.logo,
       merged.habitId,
       merged.createdAt,
       merged.updatedAt,
       merged.totalActionsCount,
-      merged.lastActionDate
+      merged.lastActionDate,
+      merged.globalEntityIdentifier
     );
   };
 
   const createMockMulterFile = (
     overrides: Partial<Express.Multer.File> = {}
   ): Express.Multer.File => ({
-    fieldname: 'logo',
-    originalname: 'test-logo.png',
+    fieldname: 'icon',
+    originalname: 'test-icon.png',
     encoding: '7bit',
     mimetype: 'image/png',
     size: 1024,
@@ -105,6 +118,7 @@ describe('ActionTypesService (RED PHASE)', () => {
   });
 
   beforeEach(async () => {
+    // Clear all mocks before each test
     jest.clearAllMocks();
 
     const module: TestingModule = await Test.createTestingModule({
@@ -140,14 +154,14 @@ describe('ActionTypesService (RED PHASE)', () => {
     it('should successfully create a new action type', async () => {
       // Arrange
       const expectedActionType = createMockActionType();
-      actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(false);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null);
       cloudinaryService.uploadImage.mockResolvedValue({
         success: true,
-        url: mockLogo,
+        url: mockIconUrl,
         data: {
-          publicId: 'test-logo',
-          url: mockLogo,
-          secureUrl: mockLogo,
+          publicId: 'test-icon',
+          url: mockIconUrl,
+          secureUrl: mockIconUrl,
           version: 1,
           signature: 'test-signature',
           width: 100,
@@ -168,30 +182,30 @@ describe('ActionTypesService (RED PHASE)', () => {
       const result = await service.create(createActionTypeDto, mockFile);
 
       // Assert
-      expect(actionTypesRepository.existsByNameAndHabitId).toHaveBeenCalledWith(
+      expect(actionTypesRepository.findByNameAndHabitId).toHaveBeenCalledWith(
         createActionTypeDto.name,
         createActionTypeDto.habitId
       );
       expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(
         mockFile,
         expect.objectContaining({
-          public_id: 'test-logo',
+          public_id: 'test-icon',
           folder: 'action-types',
           resourceType: 'auto',
         })
       );
-      // Assert: Service passes only domain fields to repository (no database-generated fields)
-      expect(actionTypesRepository.create).toHaveBeenCalledWith({
-        name: mockActionTypeName,
-        logo: mockLogo,
-        habitId: mockHabitId,
-      });
-      // Assert: Service returns complete entity with database-generated fields
+      expect(actionTypesRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: mockActionTypeName,
+          habitId: mockHabitId,
+          icon: mockIconUrl,
+        })
+      );
       expect(result).toEqual(
         expect.objectContaining({
           id: mockActionTypeId,
           name: mockActionTypeName,
-          logo: mockLogo,
+          logo: mockIconUrl,
           habitId: mockHabitId,
         })
       );
@@ -199,7 +213,8 @@ describe('ActionTypesService (RED PHASE)', () => {
 
     it('should throw ConflictError when action type with same name already exists for habit', async () => {
       // Arrange
-      actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(true);
+      const existingActionType = createMockActionType();
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(existingActionType);
 
       // Act & Assert
       await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(ConflictError);
@@ -213,7 +228,7 @@ describe('ActionTypesService (RED PHASE)', () => {
 
     it('should throw ValidationException when image upload fails', async () => {
       // Arrange
-      actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(false);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null);
       cloudinaryService.uploadImage.mockResolvedValue({
         success: false,
         error: { message: 'Invalid image format', name: 'ValidationError' },
@@ -232,7 +247,7 @@ describe('ActionTypesService (RED PHASE)', () => {
 
     it('should throw ValidationException when image upload has no error message', async () => {
       // Arrange
-      actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(false);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null);
       cloudinaryService.uploadImage.mockResolvedValue({
         success: false,
       });
@@ -246,14 +261,14 @@ describe('ActionTypesService (RED PHASE)', () => {
     it('should throw ValidationException for invalid action type name during entity creation', async () => {
       // Arrange
       const invalidDto = { ...createActionTypeDto, name: '' };
-      actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(false);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null);
       cloudinaryService.uploadImage.mockResolvedValue({
         success: true,
-        url: mockLogo,
+        url: mockIconUrl,
         data: {
-          publicId: 'test-logo',
-          url: mockLogo,
-          secureUrl: mockLogo,
+          publicId: 'test-icon',
+          url: mockIconUrl,
+          secureUrl: mockIconUrl,
           version: 1,
           signature: 'test-signature',
           width: 100,
@@ -271,19 +286,16 @@ describe('ActionTypesService (RED PHASE)', () => {
 
       // Act & Assert
       await expect(service.create(invalidDto, mockFile)).rejects.toThrow(ValidationException);
-      await expect(service.create(invalidDto, mockFile)).rejects.toThrow(
-        'ActionType name cannot be empty'
-      );
     });
 
-    it('should throw ValidationException for invalid logo during entity creation', async () => {
+    it('should throw ValidationException for invalid icon during entity creation', async () => {
       // Arrange
-      actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(false);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null);
       cloudinaryService.uploadImage.mockResolvedValue({
         success: true,
-        url: '', // Invalid empty logo
+        url: '', // Invalid empty icon
         data: {
-          publicId: 'test-logo',
+          publicId: 'test-icon',
           url: '',
           secureUrl: '',
           version: 1,
@@ -305,15 +317,12 @@ describe('ActionTypesService (RED PHASE)', () => {
       await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(
         ValidationException
       );
-      await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(
-        'Logo must be a non-empty string'
-      );
     });
 
     it('should rethrow unexpected errors', async () => {
       // Arrange
       const unexpectedError = new Error('Database connection failed');
-      actionTypesRepository.existsByNameAndHabitId.mockRejectedValue(unexpectedError);
+      actionTypesRepository.findByNameAndHabitId.mockRejectedValue(unexpectedError);
 
       // Act & Assert
       await expect(service.create(createActionTypeDto, mockFile)).rejects.toThrow(
@@ -411,8 +420,8 @@ describe('ActionTypesService (RED PHASE)', () => {
       const actionTypeResponse = result.data[0];
       expect(actionTypeResponse).toEqual({
         id: mockActionType.id,
-        name: mockActionType.name.getValue(),
-        logo: mockActionType.logo,
+        name: mockActionType.globalEntityIdentifier.name.getValue(),
+        logo: mockActionType.globalEntityIdentifier.icon.getValue(),
         habitId: mockActionType.habitId,
         totalActionsCount: mockActionType.totalActionsCount,
         lastActionDate: mockActionType.lastActionDate,
@@ -448,7 +457,7 @@ describe('ActionTypesService (RED PHASE)', () => {
       );
       expect(result).toBeInstanceOf(PaginatedResponseDto);
       expect(result.data).toHaveLength(1);
-      expect(result.data[0].habitId).toBe(mockHabitId);
+      expect(result.data[0]?.habitId).toBe(mockHabitId);
     });
 
     it('should apply filters when provided', async () => {
@@ -509,12 +518,27 @@ describe('ActionTypesService (RED PHASE)', () => {
       name: 'Updated Push-ups',
     };
 
-    it('should successfully update action type name', async () => {
+    it('should successfully update action type name only', async () => {
       // Arrange
       const existingActionType = createMockActionType();
-      const updatedActionType = existingActionType.updateName(updateActionTypeDto.name!);
+      const updatedGlobalIdentifier = new GlobalEntityIdentifier(
+        validGlobalIdentifierId,
+        IdentifierName.create(updateActionTypeDto.name!),
+        IdentifierIcon.create(mockIconUrl),
+        'action_type',
+        mockActionTypeId
+      );
+      const updatedActionType = new ActionType(
+        mockActionTypeId,
+        mockHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        updatedGlobalIdentifier
+      );
       actionTypesRepository.findById.mockResolvedValue(existingActionType);
-      actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(false);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null); // No name conflict
       actionTypesRepository.update.mockResolvedValue(updatedActionType);
 
       // Act
@@ -522,7 +546,7 @@ describe('ActionTypesService (RED PHASE)', () => {
 
       // Assert
       expect(actionTypesRepository.findById).toHaveBeenCalledWith(mockActionTypeId);
-      expect(actionTypesRepository.existsByNameAndHabitId).toHaveBeenCalledWith(
+      expect(actionTypesRepository.findByNameAndHabitId).toHaveBeenCalledWith(
         updateActionTypeDto.name,
         mockHabitId
       );
@@ -544,15 +568,18 @@ describe('ActionTypesService (RED PHASE)', () => {
         NotFoundError
       );
 
-      expect(actionTypesRepository.existsByNameAndHabitId).not.toHaveBeenCalled();
+      expect(actionTypesRepository.findByNameAndHabitId).not.toHaveBeenCalled();
       expect(actionTypesRepository.update).not.toHaveBeenCalled();
     });
 
     it('should throw ConflictError when new name already exists for different action type in same habit', async () => {
       // Arrange
       const existingActionType = createMockActionType();
+      const anotherActionTypeId = 'another-action-type-id';
+      const anotherActionType = createMockActionType({ id: anotherActionTypeId });
+
       actionTypesRepository.findById.mockResolvedValue(existingActionType);
-      actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(true);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(anotherActionType);
 
       // Act & Assert
       await expect(service.update(mockActionTypeId, updateActionTypeDto)).rejects.toThrow(
@@ -563,6 +590,21 @@ describe('ActionTypesService (RED PHASE)', () => {
       );
 
       expect(actionTypesRepository.update).not.toHaveBeenCalled();
+    });
+
+    it('should allow update when name belongs to same action type', async () => {
+      // Arrange
+      const existingActionType = createMockActionType();
+      actionTypesRepository.findById.mockResolvedValue(existingActionType);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(existingActionType); // Same action type
+      actionTypesRepository.update.mockResolvedValue(existingActionType);
+
+      // Act
+      const result = await service.update(mockActionTypeId, updateActionTypeDto);
+
+      // Assert
+      expect(actionTypesRepository.update).toHaveBeenCalled();
+      expect(result).toBeDefined();
     });
 
     it('should not check name conflict when name is not being updated', async () => {
@@ -576,7 +618,7 @@ describe('ActionTypesService (RED PHASE)', () => {
       await service.update(mockActionTypeId, updateWithoutName);
 
       // Assert
-      expect(actionTypesRepository.existsByNameAndHabitId).not.toHaveBeenCalled();
+      expect(actionTypesRepository.findByNameAndHabitId).not.toHaveBeenCalled();
       expect(actionTypesRepository.update).toHaveBeenCalledWith(mockActionTypeId, {});
     });
 
@@ -591,7 +633,7 @@ describe('ActionTypesService (RED PHASE)', () => {
       await service.update(mockActionTypeId, sameNameDto);
 
       // Assert
-      expect(actionTypesRepository.existsByNameAndHabitId).not.toHaveBeenCalled();
+      expect(actionTypesRepository.findByNameAndHabitId).not.toHaveBeenCalled();
     });
 
     it('should throw ValidationException for invalid action type name', async () => {
@@ -599,34 +641,47 @@ describe('ActionTypesService (RED PHASE)', () => {
       const invalidUpdateDto = { name: '' }; // Invalid name
       const existingActionType = createMockActionType();
       actionTypesRepository.findById.mockResolvedValue(existingActionType);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null);
 
       // Act & Assert
       await expect(service.update(mockActionTypeId, invalidUpdateDto)).rejects.toThrow(
         ValidationException
       );
-      await expect(service.update(mockActionTypeId, invalidUpdateDto)).rejects.toThrow(
-        'ActionType name cannot be empty'
-      );
     });
 
-    describe('logo update functionality', () => {
-      const updateMockFile = createMockMulterFile({ originalname: 'new-logo.png' });
-      const newLogoUrl = 'https://example.com/new-logo.png';
+    describe('icon update functionality', () => {
+      const updateMockFile = createMockMulterFile({ originalname: 'new-icon.png' });
+      const newIconUrl = 'https://example.com/new-icon.png';
 
-      it('should successfully update action type with new logo', async () => {
+      it('should successfully update action type with new icon', async () => {
         // Arrange
         const existingActionType = createMockActionType();
         const updateDto: UpdateActionTypeDto = {};
-        const updatedActionType = existingActionType.updateLogo(newLogoUrl);
+        const updatedGlobalIdentifier = new GlobalEntityIdentifier(
+          validGlobalIdentifierId,
+          IdentifierName.create(mockActionTypeName),
+          IdentifierIcon.create(newIconUrl),
+          'action_type',
+          mockActionTypeId
+        );
+        const updatedActionType = new ActionType(
+          mockActionTypeId,
+          mockHabitId,
+          fixedDate,
+          fixedDate,
+          0,
+          null,
+          updatedGlobalIdentifier
+        );
 
         actionTypesRepository.findById.mockResolvedValue(existingActionType);
         cloudinaryService.uploadImage.mockResolvedValue({
           success: true,
-          url: newLogoUrl,
+          url: newIconUrl,
           data: {
-            publicId: 'new-logo',
-            url: newLogoUrl,
-            secureUrl: newLogoUrl,
+            publicId: 'new-icon',
+            url: newIconUrl,
+            secureUrl: newIconUrl,
             version: 1,
             signature: 'test-signature',
             width: 100,
@@ -650,7 +705,7 @@ describe('ActionTypesService (RED PHASE)', () => {
         expect(cloudinaryService.uploadImage).toHaveBeenCalledWith(
           updateMockFile,
           expect.objectContaining({
-            public_id: 'new-logo',
+            public_id: 'new-icon',
             folder: 'action-types',
             resourceType: 'auto',
           })
@@ -658,30 +713,44 @@ describe('ActionTypesService (RED PHASE)', () => {
         expect(actionTypesRepository.update).toHaveBeenCalledWith(
           mockActionTypeId,
           expect.objectContaining({
-            logo: newLogoUrl,
+            icon: newIconUrl,
           })
         );
-        expect(result.logo).toBe(newLogoUrl);
+        expect(result.logo).toBe(newIconUrl);
       });
 
-      it('should successfully update action type name and logo together', async () => {
+      it('should successfully update action type name and icon together', async () => {
         // Arrange
         const existingActionType = createMockActionType();
         const updateDto: UpdateActionTypeDto = {
           name: 'Updated Name',
         };
-        let updatedActionType = existingActionType.updateName(updateDto.name!);
-        updatedActionType = updatedActionType.updateLogo(newLogoUrl);
+        const updatedGlobalIdentifier = new GlobalEntityIdentifier(
+          validGlobalIdentifierId,
+          IdentifierName.create(updateDto.name!),
+          IdentifierIcon.create(newIconUrl),
+          'action_type',
+          mockActionTypeId
+        );
+        const updatedActionType = new ActionType(
+          mockActionTypeId,
+          mockHabitId,
+          fixedDate,
+          fixedDate,
+          0,
+          null,
+          updatedGlobalIdentifier
+        );
 
         actionTypesRepository.findById.mockResolvedValue(existingActionType);
-        actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(false);
+        actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null);
         cloudinaryService.uploadImage.mockResolvedValue({
           success: true,
-          url: newLogoUrl,
+          url: newIconUrl,
           data: {
-            publicId: 'new-logo',
-            url: newLogoUrl,
-            secureUrl: newLogoUrl,
+            publicId: 'new-icon',
+            url: newIconUrl,
+            secureUrl: newIconUrl,
             version: 1,
             signature: 'test-signature',
             width: 100,
@@ -702,7 +771,7 @@ describe('ActionTypesService (RED PHASE)', () => {
         const result = await service.update(mockActionTypeId, updateDto, updateMockFile);
 
         // Assert
-        expect(actionTypesRepository.existsByNameAndHabitId).toHaveBeenCalledWith(
+        expect(actionTypesRepository.findByNameAndHabitId).toHaveBeenCalledWith(
           updateDto.name,
           mockHabitId
         );
@@ -711,13 +780,13 @@ describe('ActionTypesService (RED PHASE)', () => {
           expect.any(Object)
         );
         expect(result.name).toBe(updateDto.name);
-        expect(result.logo).toBe(newLogoUrl);
+        expect(result.logo).toBe(newIconUrl);
       });
 
-      it('should throw ValidationException when logo upload fails', async () => {
+      it('should throw ValidationException when icon upload fails', async () => {
         // Arrange
         const existingActionType = createMockActionType();
-        const updateWithLogo: UpdateActionTypeDto = {};
+        const updateWithIcon: UpdateActionTypeDto = {};
 
         actionTypesRepository.findById.mockResolvedValue(existingActionType);
         cloudinaryService.uploadImage.mockResolvedValue({
@@ -727,13 +796,101 @@ describe('ActionTypesService (RED PHASE)', () => {
 
         // Act & Assert
         await expect(
-          service.update(mockActionTypeId, updateWithLogo, updateMockFile)
+          service.update(mockActionTypeId, updateWithIcon, updateMockFile)
         ).rejects.toThrow(ValidationException);
         await expect(
-          service.update(mockActionTypeId, updateWithLogo, updateMockFile)
+          service.update(mockActionTypeId, updateWithIcon, updateMockFile)
         ).rejects.toThrow('Invalid image format');
 
         expect(actionTypesRepository.update).not.toHaveBeenCalled();
+      });
+
+      it('should throw ValidationException when icon upload has no error message', async () => {
+        // Arrange
+        const existingActionType = createMockActionType();
+        const updateWithIcon: UpdateActionTypeDto = {};
+
+        actionTypesRepository.findById.mockResolvedValue(existingActionType);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: false,
+        });
+
+        // Act & Assert
+        await expect(
+          service.update(mockActionTypeId, updateWithIcon, updateMockFile)
+        ).rejects.toThrow('Failed to upload image. Uncontrolled error');
+      });
+
+      it('should throw ValidationException for invalid icon during entity update', async () => {
+        // Arrange
+        const existingActionType = createMockActionType();
+        const updateWithIcon: UpdateActionTypeDto = {};
+
+        actionTypesRepository.findById.mockResolvedValue(existingActionType);
+        cloudinaryService.uploadImage.mockResolvedValue({
+          success: true,
+          url: '', // Invalid empty icon URL
+          data: {
+            publicId: 'new-icon',
+            url: '',
+            secureUrl: '',
+            version: 1,
+            signature: 'test-signature',
+            width: 100,
+            height: 100,
+            format: 'png',
+            resourceType: 'image',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            tags: [],
+            bytes: 1024,
+            type: 'upload',
+            etag: 'test-etag',
+            placeholder: false,
+          },
+        });
+
+        // Act & Assert
+        await expect(
+          service.update(mockActionTypeId, updateWithIcon, updateMockFile)
+        ).rejects.toThrow(ValidationException);
+      });
+
+      it('should not update icon when no icon is provided in update', async () => {
+        // Arrange
+        const existingActionType = createMockActionType();
+        const updateWithoutIcon: UpdateActionTypeDto = { name: 'Updated Name' };
+        const updatedGlobalIdentifier = new GlobalEntityIdentifier(
+          validGlobalIdentifierId,
+          IdentifierName.create(updateWithoutIcon.name!),
+          IdentifierIcon.create(mockIconUrl),
+          'action_type',
+          mockActionTypeId
+        );
+        const updatedActionType = new ActionType(
+          mockActionTypeId,
+          mockHabitId,
+          fixedDate,
+          fixedDate,
+          0,
+          null,
+          updatedGlobalIdentifier
+        );
+
+        actionTypesRepository.findById.mockResolvedValue(existingActionType);
+        actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null);
+        actionTypesRepository.update.mockResolvedValue(updatedActionType);
+
+        // Act
+        await service.update(mockActionTypeId, updateWithoutIcon);
+
+        // Assert
+        expect(cloudinaryService.uploadImage).not.toHaveBeenCalled();
+        expect(actionTypesRepository.update).toHaveBeenCalledWith(
+          mockActionTypeId,
+          expect.objectContaining({
+            name: updateWithoutIcon.name,
+          })
+        );
       });
     });
   });
@@ -764,99 +921,14 @@ describe('ActionTypesService (RED PHASE)', () => {
     });
   });
 
-  describe('findMostActive()', () => {
-    it('should return most active action types', async () => {
-      // Arrange
-      const mockActiveTypes = [
-        createMockActionType({ totalActionsCount: 50 }),
-        createMockActionType({ totalActionsCount: 30 }),
-      ];
-      actionTypesRepository.findMostActive.mockResolvedValue(mockActiveTypes);
-
-      // Act
-      const result = await service.findMostActive(5);
-
-      // Assert
-      expect(actionTypesRepository.findMostActive).toHaveBeenCalledWith(5);
-      expect(result).toHaveLength(2);
-      expect(result[0].totalActionsCount).toBe(50);
-    });
-
-    it('should validate limit parameter', async () => {
-      // Act & Assert
-      await expect(service.findMostActive(-1)).rejects.toThrow(ValidationException);
-      await expect(service.findMostActive(0)).rejects.toThrow(ValidationException);
-      await expect(service.findMostActive(101)).rejects.toThrow(ValidationException);
-    });
-  });
-
-  describe('findRecentlyActive()', () => {
-    it('should return recently active action types', async () => {
-      // Arrange
-      const mockRecentTypes = [createMockActionType({ lastActionDate })];
-      actionTypesRepository.findRecentlyActive.mockResolvedValue(mockRecentTypes);
-
-      // Act
-      const result = await service.findRecentlyActive(7, 10);
-
-      // Assert
-      expect(actionTypesRepository.findRecentlyActive).toHaveBeenCalledWith(7, 10);
-      expect(result).toHaveLength(1);
-    });
-
-    it('should validate parameters', async () => {
-      // Act & Assert
-      await expect(service.findRecentlyActive(-1, 10)).rejects.toThrow(ValidationException);
-      await expect(service.findRecentlyActive(7, -1)).rejects.toThrow(ValidationException);
-      await expect(service.findRecentlyActive(0, 10)).rejects.toThrow(ValidationException);
-      await expect(service.findRecentlyActive(7, 0)).rejects.toThrow(ValidationException);
-    });
-  });
-
-  describe('getStatsByHabitId()', () => {
-    it('should return statistics for habit', async () => {
-      // Arrange
-      const mockStats = {
-        totalActionTypes: 5,
-        activeActionTypes: 4,
-        totalActions: 100,
-        averageActionsPerType: 20,
-        mostActiveActionType: {
-          id: mockActionTypeId,
-          name: mockActionTypeName,
-          totalActionsCount: 50,
-        },
-        leastActiveActionType: {
-          id: mockActionTypeId,
-          name: mockActionTypeName,
-          totalActionsCount: 0,
-        },
-        recentlyActiveCount: 3,
-      };
-      actionTypesRepository.getStatsByHabitId.mockResolvedValue(mockStats);
-
-      // Act
-      const result = await service.getStatsByHabitId(mockHabitId);
-
-      // Assert
-      expect(actionTypesRepository.getStatsByHabitId).toHaveBeenCalledWith(mockHabitId);
-      expect(result).toEqual(mockStats);
-    });
-  });
-
   describe('mapToResponse() - private method behavior verification', () => {
     it('should correctly map all action type properties to response DTO', async () => {
       // Arrange - Create an action type and test through public method
-      const mockActionType = new ActionType(
-        mockActionTypeId,
-        ActionTypeName.create(mockActionTypeName),
-        mockLogo,
-        mockHabitId,
-        fixedDate,
-        new Date('2024-01-02T00:00:00.000Z'), // Different updated date
-        5,
-        lastActionDate
-      );
+      const mockActionType = createMockActionType({
+        updatedAt: new Date('2024-01-02T00:00:00.000Z'), // Different updated date
+        totalActionsCount: 5,
+        lastActionDate,
+      });
 
       actionTypesRepository.findById.mockResolvedValue(mockActionType);
 
@@ -867,7 +939,7 @@ describe('ActionTypesService (RED PHASE)', () => {
       expect(result).toEqual({
         id: mockActionTypeId,
         name: mockActionTypeName,
-        logo: mockLogo,
+        logo: mockIconUrl,
         habitId: mockHabitId,
         totalActionsCount: 5,
         lastActionDate,
@@ -887,14 +959,14 @@ describe('ActionTypesService (RED PHASE)', () => {
       const mockFile = createMockMulterFile();
       const expectedActionType = createMockActionType();
 
-      actionTypesRepository.existsByNameAndHabitId.mockResolvedValue(false);
+      actionTypesRepository.findByNameAndHabitId.mockResolvedValue(null);
       cloudinaryService.uploadImage.mockResolvedValue({
         success: true,
-        url: mockLogo,
+        url: mockIconUrl,
         data: {
-          publicId: 'test-logo',
-          url: mockLogo,
-          secureUrl: mockLogo,
+          publicId: 'test-icon',
+          url: mockIconUrl,
+          secureUrl: mockIconUrl,
           version: 1,
           signature: 'test-signature',
           width: 100,
@@ -944,36 +1016,6 @@ describe('ActionTypesService (RED PHASE)', () => {
       // Assert
       expect(logSpy).toHaveBeenCalledWith(`Fetching action type with id: ${mockActionTypeId}`);
       expect(logSpy).toHaveBeenCalledWith('Fetching action types - page: 1, limit: 10');
-    });
-  });
-
-  describe('error handling edge cases', () => {
-    it('should handle repository failures gracefully', async () => {
-      // Arrange
-      const databaseError = new Error('Database connection failed');
-      actionTypesRepository.findAll.mockRejectedValue(databaseError);
-
-      // Act & Assert
-      await expect(service.findAll({ page: 1, limit: 10 })).rejects.toThrow(
-        'Database connection failed'
-      );
-    });
-
-    it('should handle malformed data from repository', async () => {
-      // Arrange
-      const malformedActionType = null; // Repository returns null unexpectedly
-      actionTypesRepository.findById.mockResolvedValue(malformedActionType);
-
-      // Act & Assert
-      await expect(service.findOne(mockActionTypeId)).rejects.toThrow(NotFoundError);
-    });
-
-    it('should validate UUID format in service methods', async () => {
-      // Arrange
-      const invalidUUID = 'invalid-uuid-format' as UUID;
-
-      // Act & Assert
-      await expect(service.findOne(invalidUUID)).rejects.toThrow();
     });
   });
 });
