@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { UUID } from '../../../domain/shared/types/common';
-import { DatabaseService } from '../../../infrastructure/database/database.service';
+import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { NotFoundError, ConflictError } from '../../../infrastructure/exceptions/app.exceptions';
 import {
   CreateGlobalEntityIdentifierData,
@@ -12,8 +12,8 @@ import { GlobalEntityIdentifiersRepository } from '../global-entity-identifiers.
 // Value objects only pattern - no entities
 // Repository works with plain data structures, validation happens via value objects
 
-// Mock Prisma client
-const mockPrismaClient = {
+// Mock PrismaService
+const mockPrismaService = {
   globalEntityIdentifiers: {
     create: jest.fn(),
     findUnique: jest.fn(),
@@ -25,13 +25,8 @@ const mockPrismaClient = {
   },
 };
 
-const mockDatabaseService = {
-  getClient: jest.fn(() => mockPrismaClient),
-};
-
 describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pattern', () => {
   let repository: GlobalEntityIdentifiersRepository;
-  let databaseService: jest.Mocked<DatabaseService>;
 
   // Test data fixtures
   // Note: These are plain strings, not value objects
@@ -43,7 +38,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
   const mockEntityType = 'habit';
 
   // Repository works with plain data structures from Prisma
-  const createMockPrismaIdentifier = (overrides: Partial<any> = {}) => ({
+  const createMockPrismaIdentifier = (overrides: Partial<any> = {}): Record<string, unknown> => ({
     id: mockIdentifierId,
     name: mockName,
     icon: mockIcon,
@@ -59,14 +54,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       providers: [
         GlobalEntityIdentifiersRepository,
         {
-          provide: DatabaseService,
-          useValue: mockDatabaseService,
+          provide: PrismaService,
+          useValue: mockPrismaService,
         },
       ],
     }).compile();
 
     repository = module.get<GlobalEntityIdentifiersRepository>(GlobalEntityIdentifiersRepository);
-    databaseService = module.get(DatabaseService);
   });
 
   describe('create()', () => {
@@ -80,13 +74,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should successfully create a new global entity identifier', async () => {
       // Arrange
       const mockPrismaResult = createMockPrismaIdentifier();
-      mockPrismaClient.globalEntityIdentifiers.create.mockResolvedValue(mockPrismaResult);
+      mockPrismaService.globalEntityIdentifiers.create.mockResolvedValue(mockPrismaResult);
 
       // Act
       const result = await repository.create(createData);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.create).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.create).toHaveBeenCalledWith({
         data: {
           name: createData.name,
           icon: createData.icon,
@@ -106,7 +100,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       const conflictError = new Error('Unique constraint failed');
       (conflictError as any).code = 'P2002';
       (conflictError as any).meta = { target: ['name'] };
-      mockPrismaClient.globalEntityIdentifiers.create.mockRejectedValue(conflictError);
+      mockPrismaService.globalEntityIdentifiers.create.mockRejectedValue(conflictError);
 
       // Act & Assert
       await expect(repository.create(createData)).rejects.toThrow(ConflictError);
@@ -120,7 +114,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       const conflictError = new Error('Unique constraint failed');
       (conflictError as any).code = 'P2002';
       (conflictError as any).meta = { target: ['icon'] };
-      mockPrismaClient.globalEntityIdentifiers.create.mockRejectedValue(conflictError);
+      mockPrismaService.globalEntityIdentifiers.create.mockRejectedValue(conflictError);
 
       // Act & Assert
       await expect(repository.create(createData)).rejects.toThrow(ConflictError);
@@ -134,7 +128,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       const conflictError = new Error('Unique constraint failed');
       (conflictError as any).code = 'P2002';
       (conflictError as any).meta = { target: ['name', 'icon'] };
-      mockPrismaClient.globalEntityIdentifiers.create.mockRejectedValue(conflictError);
+      mockPrismaService.globalEntityIdentifiers.create.mockRejectedValue(conflictError);
 
       // Act & Assert
       await expect(repository.create(createData)).rejects.toThrow(ConflictError);
@@ -148,7 +142,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       const conflictError = new Error('Unique constraint failed');
       (conflictError as any).code = 'P2002';
       (conflictError as any).meta = { target: ['entityType', 'entityId'] };
-      mockPrismaClient.globalEntityIdentifiers.create.mockRejectedValue(conflictError);
+      mockPrismaService.globalEntityIdentifiers.create.mockRejectedValue(conflictError);
 
       // Act & Assert
       await expect(repository.create(createData)).rejects.toThrow(ConflictError);
@@ -160,7 +154,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should rethrow other Prisma errors', async () => {
       // Arrange
       const databaseError = new Error('Database connection failed');
-      mockPrismaClient.globalEntityIdentifiers.create.mockRejectedValue(databaseError);
+      mockPrismaService.globalEntityIdentifiers.create.mockRejectedValue(databaseError);
 
       // Act & Assert
       await expect(repository.create(createData)).rejects.toThrow('Database connection failed');
@@ -171,13 +165,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should return identifier when found', async () => {
       // Arrange
       const mockPrismaResult = createMockPrismaIdentifier();
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(mockPrismaResult);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(mockPrismaResult);
 
       // Act
       const result = await repository.findById(mockIdentifierId);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
         where: { id: mockIdentifierId },
       });
       expect(result).toEqual(mockPrismaResult);
@@ -186,7 +180,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should return null when identifier not found', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
 
       // Act
       const result = await repository.findById(mockIdentifierId);
@@ -198,7 +192,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should handle database errors', async () => {
       // Arrange
       const databaseError = new Error('Database connection failed');
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockRejectedValue(databaseError);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockRejectedValue(databaseError);
 
       // Act & Assert
       await expect(repository.findById(mockIdentifierId)).rejects.toThrow(
@@ -211,13 +205,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should return identifier when found by name', async () => {
       // Arrange
       const mockPrismaResult = createMockPrismaIdentifier();
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(mockPrismaResult);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(mockPrismaResult);
 
       // Act
       const result = await repository.findByName(mockName);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
         where: { name: mockName },
       });
       expect(result).toEqual(mockPrismaResult);
@@ -226,7 +220,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should return null when not found by name', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
 
       // Act
       const result = await repository.findByName(mockName);
@@ -238,13 +232,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should handle case-sensitive name search', async () => {
       // Arrange
       const upperCaseName = 'MORNING EXERCISE';
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
 
       // Act
       const result = await repository.findByName(upperCaseName);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
         where: { name: upperCaseName },
       });
       expect(result).toBeNull(); // Should not find with different case
@@ -255,13 +249,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should return identifier when found by icon', async () => {
       // Arrange
       const mockPrismaResult = createMockPrismaIdentifier();
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(mockPrismaResult);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(mockPrismaResult);
 
       // Act
       const result = await repository.findByIcon(mockIcon);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
         where: { icon: mockIcon },
       });
       expect(result).toEqual(mockPrismaResult);
@@ -270,7 +264,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should return null when not found by icon', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
 
       // Act
       const result = await repository.findByIcon(mockIcon);
@@ -284,13 +278,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should return identifier when found by entity type and id', async () => {
       // Arrange
       const mockPrismaResult = createMockPrismaIdentifier();
-      mockPrismaClient.globalEntityIdentifiers.findFirst.mockResolvedValue(mockPrismaResult);
+      mockPrismaService.globalEntityIdentifiers.findFirst.mockResolvedValue(mockPrismaResult);
 
       // Act
       const result = await repository.findByEntityTypeAndId(mockEntityType, mockEntityId);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findFirst).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findFirst).toHaveBeenCalledWith({
         where: {
           entityType: mockEntityType,
           entityId: mockEntityId,
@@ -301,7 +295,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should return null when not found', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findFirst.mockResolvedValue(null);
+      mockPrismaService.globalEntityIdentifiers.findFirst.mockResolvedValue(null);
 
       // Act
       const result = await repository.findByEntityTypeAndId(mockEntityType, mockEntityId);
@@ -314,7 +308,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
   describe('existsByName()', () => {
     it('should return true when name exists', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(
         createMockPrismaIdentifier()
       );
 
@@ -322,7 +316,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       const result = await repository.existsByName(mockName);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
         where: { name: mockName },
       });
       expect(result).toBe(true);
@@ -330,7 +324,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should return false when name does not exist', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
 
       // Act
       const result = await repository.existsByName(mockName);
@@ -343,7 +337,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
   describe('existsByIcon()', () => {
     it('should return true when icon exists', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(
         createMockPrismaIdentifier()
       );
 
@@ -351,7 +345,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       const result = await repository.existsByIcon(mockIcon);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findUnique).toHaveBeenCalledWith({
         where: { icon: mockIcon },
       });
       expect(result).toBe(true);
@@ -359,7 +353,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should return false when icon does not exist', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(null);
 
       // Act
       const result = await repository.existsByIcon(mockIcon);
@@ -372,7 +366,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
   describe('existsByNameAndIcon()', () => {
     it('should return true when name and icon combination exists', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findFirst.mockResolvedValue(
+      mockPrismaService.globalEntityIdentifiers.findFirst.mockResolvedValue(
         createMockPrismaIdentifier()
       );
 
@@ -380,7 +374,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       const result = await repository.existsByNameAndIcon(mockName, mockIcon);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findFirst).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findFirst).toHaveBeenCalledWith({
         where: {
           name: mockName,
           icon: mockIcon,
@@ -391,7 +385,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should return false when combination does not exist', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findFirst.mockResolvedValue(null);
+      mockPrismaService.globalEntityIdentifiers.findFirst.mockResolvedValue(null);
 
       // Act
       const result = await repository.existsByNameAndIcon(mockName, mockIcon);
@@ -413,13 +407,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
         name: updateData.name,
         icon: updateData.icon,
       });
-      mockPrismaClient.globalEntityIdentifiers.update.mockResolvedValue(mockUpdatedResult);
+      mockPrismaService.globalEntityIdentifiers.update.mockResolvedValue(mockUpdatedResult);
 
       // Act
       const result = await repository.update(mockIdentifierId, updateData);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.update).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.update).toHaveBeenCalledWith({
         where: { id: mockIdentifierId },
         data: updateData,
       });
@@ -431,7 +425,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       // Arrange
       const notFoundError = new Error('Record not found');
       (notFoundError as any).code = 'P2025';
-      mockPrismaClient.globalEntityIdentifiers.update.mockRejectedValue(notFoundError);
+      mockPrismaService.globalEntityIdentifiers.update.mockRejectedValue(notFoundError);
 
       // Act & Assert
       await expect(repository.update(mockIdentifierId, updateData)).rejects.toThrow(NotFoundError);
@@ -445,7 +439,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       const conflictError = new Error('Unique constraint failed');
       (conflictError as any).code = 'P2002';
       (conflictError as any).meta = { target: ['name'] };
-      mockPrismaClient.globalEntityIdentifiers.update.mockRejectedValue(conflictError);
+      mockPrismaService.globalEntityIdentifiers.update.mockRejectedValue(conflictError);
 
       // Act & Assert
       await expect(repository.update(mockIdentifierId, updateData)).rejects.toThrow(ConflictError);
@@ -456,7 +450,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       const conflictError = new Error('Unique constraint failed');
       (conflictError as any).code = 'P2002';
       (conflictError as any).meta = { target: ['icon'] };
-      mockPrismaClient.globalEntityIdentifiers.update.mockRejectedValue(conflictError);
+      mockPrismaService.globalEntityIdentifiers.update.mockRejectedValue(conflictError);
 
       // Act & Assert
       await expect(repository.update(mockIdentifierId, updateData)).rejects.toThrow(ConflictError);
@@ -466,13 +460,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       // Arrange
       const partialUpdate: UpdateGlobalEntityIdentifierData = { name: 'New Name' };
       const mockResult = createMockPrismaIdentifier({ name: partialUpdate.name });
-      mockPrismaClient.globalEntityIdentifiers.update.mockResolvedValue(mockResult);
+      mockPrismaService.globalEntityIdentifiers.update.mockResolvedValue(mockResult);
 
       // Act
       await repository.update(mockIdentifierId, partialUpdate);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.update).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.update).toHaveBeenCalledWith({
         where: { id: mockIdentifierId },
         data: partialUpdate,
       });
@@ -484,13 +478,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
         icon: 'https://example.com/new-icon.png',
       };
       const mockResult = createMockPrismaIdentifier({ icon: partialUpdate.icon });
-      mockPrismaClient.globalEntityIdentifiers.update.mockResolvedValue(mockResult);
+      mockPrismaService.globalEntityIdentifiers.update.mockResolvedValue(mockResult);
 
       // Act
       await repository.update(mockIdentifierId, partialUpdate);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.update).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.update).toHaveBeenCalledWith({
         where: { id: mockIdentifierId },
         data: partialUpdate,
       });
@@ -500,7 +494,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
   describe('delete()', () => {
     it('should successfully delete identifier', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.delete.mockResolvedValue(
+      mockPrismaService.globalEntityIdentifiers.delete.mockResolvedValue(
         createMockPrismaIdentifier()
       );
 
@@ -508,7 +502,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       await repository.delete(mockIdentifierId);
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.delete).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.delete).toHaveBeenCalledWith({
         where: { id: mockIdentifierId },
       });
     });
@@ -517,7 +511,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       // Arrange
       const notFoundError = new Error('Record not found');
       (notFoundError as any).code = 'P2025';
-      mockPrismaClient.globalEntityIdentifiers.delete.mockRejectedValue(notFoundError);
+      mockPrismaService.globalEntityIdentifiers.delete.mockRejectedValue(notFoundError);
 
       // Act & Assert
       await expect(repository.delete(mockIdentifierId)).rejects.toThrow(NotFoundError);
@@ -530,7 +524,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       // Arrange
       const foreignKeyError = new Error('Foreign key constraint failed');
       (foreignKeyError as any).code = 'P2003';
-      mockPrismaClient.globalEntityIdentifiers.delete.mockRejectedValue(foreignKeyError);
+      mockPrismaService.globalEntityIdentifiers.delete.mockRejectedValue(foreignKeyError);
 
       // Act & Assert
       await expect(repository.delete(mockIdentifierId)).rejects.toThrow(
@@ -546,13 +540,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
         createMockPrismaIdentifier(),
         createMockPrismaIdentifier({ id: 'id-2', name: 'Different Name' }),
       ];
-      mockPrismaClient.globalEntityIdentifiers.findMany.mockResolvedValue(mockIdentifiers);
+      mockPrismaService.globalEntityIdentifiers.findMany.mockResolvedValue(mockIdentifiers);
 
       // Act
       const result = await repository.findAll();
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findMany).toHaveBeenCalledWith({
         orderBy: { name: 'asc' },
       });
       expect(result).toHaveLength(2);
@@ -560,7 +554,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should return empty array when no identifiers exist', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findMany.mockResolvedValue([]);
+      mockPrismaService.globalEntityIdentifiers.findMany.mockResolvedValue([]);
 
       // Act
       const result = await repository.findAll();
@@ -572,13 +566,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should apply entity type filter', async () => {
       // Arrange
       const mockIdentifiers = [createMockPrismaIdentifier()];
-      mockPrismaClient.globalEntityIdentifiers.findMany.mockResolvedValue(mockIdentifiers);
+      mockPrismaService.globalEntityIdentifiers.findMany.mockResolvedValue(mockIdentifiers);
 
       // Act
       await repository.findAll({ entityType: mockEntityType });
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findMany).toHaveBeenCalledWith({
         where: { entityType: mockEntityType },
         orderBy: { name: 'asc' },
       });
@@ -586,13 +580,13 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should apply custom ordering', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.findMany.mockResolvedValue([]);
+      mockPrismaService.globalEntityIdentifiers.findMany.mockResolvedValue([]);
 
       // Act
       await repository.findAll({ orderBy: 'icon' });
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.findMany).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.findMany).toHaveBeenCalledWith({
         orderBy: { icon: 'asc' },
       });
     });
@@ -601,25 +595,25 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
   describe('count()', () => {
     it('should return total count', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.count.mockResolvedValue(42);
+      mockPrismaService.globalEntityIdentifiers.count.mockResolvedValue(42);
 
       // Act
       const result = await repository.count();
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.count).toHaveBeenCalledWith({});
+      expect(mockPrismaService.globalEntityIdentifiers.count).toHaveBeenCalledWith(undefined);
       expect(result).toBe(42);
     });
 
     it('should return count with entity type filter', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.count.mockResolvedValue(15);
+      mockPrismaService.globalEntityIdentifiers.count.mockResolvedValue(15);
 
       // Act
       const result = await repository.count({ entityType: mockEntityType });
 
       // Assert
-      expect(mockPrismaClient.globalEntityIdentifiers.count).toHaveBeenCalledWith({
+      expect(mockPrismaService.globalEntityIdentifiers.count).toHaveBeenCalledWith({
         where: { entityType: mockEntityType },
       });
       expect(result).toBe(15);
@@ -627,7 +621,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
 
     it('should return zero when no identifiers exist', async () => {
       // Arrange
-      mockPrismaClient.globalEntityIdentifiers.count.mockResolvedValue(0);
+      mockPrismaService.globalEntityIdentifiers.count.mockResolvedValue(0);
 
       // Act
       const result = await repository.count();
@@ -641,6 +635,8 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should handle invalid UUID format', async () => {
       // Arrange
       const invalidId = 'invalid-uuid' as UUID;
+      const validationError = new Error('Invalid UUID format');
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockRejectedValue(validationError);
 
       // Act & Assert
       await expect(repository.findById(invalidId)).rejects.toThrow();
@@ -649,7 +645,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should handle database connection errors', async () => {
       // Arrange
       const connectionError = new Error('Connection refused');
-      mockPrismaClient.globalEntityIdentifiers.findMany.mockRejectedValue(connectionError);
+      mockPrismaService.globalEntityIdentifiers.findMany.mockRejectedValue(connectionError);
 
       // Act & Assert
       await expect(repository.findAll()).rejects.toThrow('Connection refused');
@@ -658,7 +654,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
     it('should handle malformed data from database', async () => {
       // Arrange
       const malformedData = { id: null, name: null }; // Invalid data structure
-      mockPrismaClient.globalEntityIdentifiers.findUnique.mockResolvedValue(malformedData);
+      mockPrismaService.globalEntityIdentifiers.findUnique.mockResolvedValue(malformedData);
 
       // Act & Assert
       await expect(repository.findById(mockIdentifierId)).rejects.toThrow();
@@ -668,7 +664,7 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
       // Arrange
       const timeoutError = new Error('Query timeout');
       (timeoutError as any).code = 'P2024';
-      mockPrismaClient.globalEntityIdentifiers.create.mockRejectedValue(timeoutError);
+      mockPrismaService.globalEntityIdentifiers.create.mockRejectedValue(timeoutError);
 
       // Act & Assert
       await expect(
@@ -683,24 +679,8 @@ describe('GlobalEntityIdentifiersRepository (RED PHASE) - Value Objects Only Pat
   });
 
   describe('transaction support', () => {
-    it('should support batch operations in transactions', async () => {
+    it('should support batch operations in transactions', () => {
       // This test verifies the repository can participate in transactions
-      // Arrange
-      const batchData = [
-        {
-          name: 'First',
-          icon: 'icon1.png',
-          entityType: mockEntityType,
-          entityId: 'id-1' as UUID,
-        },
-        {
-          name: 'Second',
-          icon: 'icon2.png',
-          entityType: mockEntityType,
-          entityId: 'id-2' as UUID,
-        },
-      ];
-
       // Mock transaction behavior would be tested here
       // This is a placeholder for actual transaction testing
 
