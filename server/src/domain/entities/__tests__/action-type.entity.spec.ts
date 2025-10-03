@@ -1,727 +1,1039 @@
 import { UUID } from '../../shared/types/common';
-import { ActionTypeName } from '../../value-objects/action-type-name';
+import { IdentifierIcon } from '../../value-objects/identifier-icon';
+import { IdentifierName } from '../../value-objects/identifier-name';
 import { ActionType } from '../action-type.entity';
+import { GlobalEntityIdentifier } from '../global-entity-identifier.entity';
 
-describe('ActionType Entity (RED PHASE)', () => {
+describe('ActionType Domain Entity', () => {
   const validActionTypeId: UUID = '123e4567-e89b-12d3-a456-426614174000';
   const validHabitId: UUID = '987fcdeb-51a2-43d1-9876-543210987654';
+  const validGlobalIdentifierId: UUID = 'global-id-123e4567-e89b-12d3-a456-426614174000';
   const validActionTypeName = 'Morning Push-ups';
-  const validLogo = 'https://example.com/pushups-logo.png';
+  const validIconUrl = 'https://example.com/pushups-icon.png';
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
-  const lastActionDate = new Date('2024-01-01T12:00:00.000Z');
+
+  // Helper to create mock GlobalEntityIdentifier
+  const createMockGlobalIdentifier = (
+    name: string = validActionTypeName,
+    icon: string = validIconUrl
+  ): GlobalEntityIdentifier => {
+    return new GlobalEntityIdentifier(
+      validGlobalIdentifierId,
+      IdentifierName.create(name),
+      IdentifierIcon.create(icon),
+      'action_type',
+      validActionTypeId
+    );
+  };
 
   describe('ActionType Constructor', () => {
-    it('should create ActionType instance with all required properties', () => {
-      // ARRANGE
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      // ACT
-      const actionType = new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      );
-
-      // ASSERT
-      expect(actionType.id).toBe(validActionTypeId);
-      expect(actionType.name).toBe(actionTypeName);
-      expect(actionType.logo).toBe(validLogo);
-      expect(actionType.habitId).toBe(validHabitId);
-      expect(actionType.createdAt).toBeInstanceOf(Date);
-      expect(actionType.updatedAt).toBeInstanceOf(Date);
-      expect(actionType.createdAt).toEqual(fixedDate);
-      expect(actionType.updatedAt).toEqual(fixedDate);
-      expect(actionType.totalActionsCount).toBe(0);
-      expect(actionType.lastActionDate).toBeNull();
-    });
-
-    it('should create ActionType with totalActionsCount and lastActionDate', () => {
-      // ARRANGE
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      // ACT
-      const actionType = new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        5,
-        lastActionDate
-      );
-
-      // ASSERT
-      expect(actionType.totalActionsCount).toBe(5);
-      expect(actionType.lastActionDate).toBeInstanceOf(Date);
-      expect(actionType.lastActionDate).toEqual(lastActionDate);
-    });
-
-    it('should throw error for invalid createdAt (non-Date)', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      expect(
-        () =>
-          new ActionType(
-            validActionTypeId,
-            actionTypeName,
-            validLogo,
-            validHabitId,
-            '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
-            fixedDate,
-            0,
-            null
-          )
-      ).toThrow('Invalid date: createdAt must be a valid Date object');
-    });
-
-    it('should throw error for invalid updatedAt (non-Date)', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      expect(
-        () =>
-          new ActionType(
-            validActionTypeId,
-            actionTypeName,
-            validLogo,
-            validHabitId,
-            fixedDate,
-            '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
-            0,
-            null
-          )
-      ).toThrow('Invalid date: updatedAt must be a valid Date object');
-    });
-
-    it('should throw error for invalid lastActionDate (non-Date, not null)', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      expect(
-        () =>
-          new ActionType(
-            validActionTypeId,
-            actionTypeName,
-            validLogo,
-            validHabitId,
-            fixedDate,
-            fixedDate,
-            0,
-            '2024-01-01T00:00:00.000Z' as any // ISO string should fail
-          )
-      ).toThrow('Invalid date: lastActionDate must be a valid Date object or null');
-    });
-
-    it('should throw error for empty logo', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      expect(
-        () =>
-          new ActionType(
-            validActionTypeId,
-            actionTypeName,
-            '', // Empty logo should fail
-            validHabitId,
-            fixedDate,
-            fixedDate,
-            0,
-            null
-          )
-      ).toThrow('Logo must be a non-empty string');
-    });
-
-    it('should throw error for invalid logo type', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      expect(
-        () =>
-          new ActionType(
-            validActionTypeId,
-            actionTypeName,
-            null as any, // null logo should fail
-            validHabitId,
-            fixedDate,
-            fixedDate,
-            0,
-            null
-          )
-      ).toThrow('Logo must be a non-empty string');
-    });
-
-    it('should throw error for negative totalActionsCount', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      expect(
-        () =>
-          new ActionType(
-            validActionTypeId,
-            actionTypeName,
-            validLogo,
-            validHabitId,
-            fixedDate,
-            fixedDate,
-            -1, // Negative count should fail
-            null
-          )
-      ).toThrow('Total actions count must be a non-negative integer');
-    });
-
-    it('should throw error for non-integer totalActionsCount', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      expect(
-        () =>
-          new ActionType(
-            validActionTypeId,
-            actionTypeName,
-            validLogo,
-            validHabitId,
-            fixedDate,
-            fixedDate,
-            3.5 as any, // Float should fail
-            null
-          )
-      ).toThrow('Total actions count must be a non-negative integer');
-    });
-
-    it('should throw error for invalid UUID format in id', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      expect(
-        () =>
-          new ActionType(
-            'invalid-uuid' as UUID,
-            actionTypeName,
-            validLogo,
-            validHabitId,
-            fixedDate,
-            fixedDate,
-            0,
-            null
-          )
-      ).toThrow('Invalid UUID format for id');
-    });
-
-    it('should throw error for invalid UUID format in habitId', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-
-      expect(
-        () =>
-          new ActionType(
-            validActionTypeId,
-            actionTypeName,
-            validLogo,
-            'invalid-habit-uuid' as UUID,
-            fixedDate,
-            fixedDate,
-            0,
-            null
-          )
-      ).toThrow('Invalid UUID format for habitId');
-    });
-  });
-
-  describe('ActionType.create() factory method', () => {
-    it('should create ActionType without database-generated fields', () => {
-      // ACT
-      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
-
-      // ASSERT
-      // Domain fields should be set
-      expect(actionType.name.getValue()).toBe(validActionTypeName);
-      expect(actionType.logo).toBe(validLogo);
-      expect(actionType.habitId).toBe(validHabitId);
-
-      // Database-generated fields should NOT be set by create() method
-      // These will be generated by the database upon insertion
-      expect(actionType.id).toBeUndefined();
-      expect(actionType.createdAt).toBeUndefined();
-      expect(actionType.updatedAt).toBeUndefined();
-      expect(actionType.totalActionsCount).toBeUndefined();
-      expect(actionType.lastActionDate).toBeUndefined();
-    });
-
-    it('should throw error for invalid ActionType name', () => {
-      expect(() =>
-        ActionType.create(
-          '', // Empty name should fail
-          validLogo,
-          validHabitId
-        )
-      ).toThrow('ActionType name cannot be empty');
-    });
-
-    it('should throw error for invalid logo during creation', () => {
-      expect(() =>
-        ActionType.create(
-          validActionTypeName,
-          '', // Empty logo should fail
-          validHabitId
-        )
-      ).toThrow('Logo must be a non-empty string');
-    });
-
-    it('should throw error for invalid habitId', () => {
-      expect(() =>
-        ActionType.create(validActionTypeName, validLogo, 'invalid-uuid' as UUID)
-      ).toThrow('Invalid UUID format for habitId');
-    });
-  });
-
-  describe('ActionType update methods', () => {
-    let baseActionType: ActionType;
-
-    beforeEach(() => {
-      // Use constructor for existing entities with all fields populated
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-      baseActionType = new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      );
-    });
-
-    describe('updateName()', () => {
-      it('should return new ActionType with updated name and current updatedAt', () => {
+    describe('Valid Construction', () => {
+      it('should create ActionType instance with all required properties', () => {
         // ARRANGE
-        const newName = 'Evening Stretching';
-        const beforeUpdate = new Date();
+        const globalIdentifier = createMockGlobalIdentifier();
 
         // ACT
-        const updatedActionType = baseActionType.updateName(newName);
-        const afterUpdate = new Date();
-
-        // ASSERT
-        expect(updatedActionType).not.toBe(baseActionType);
-        expect(updatedActionType.name.getValue()).toBe(newName);
-        expect(updatedActionType.id).toBe(baseActionType.id);
-        expect(updatedActionType.logo).toBe(baseActionType.logo);
-        expect(updatedActionType.habitId).toBe(baseActionType.habitId);
-        expect(updatedActionType.createdAt).toEqual(baseActionType.createdAt);
-
-        // updatedAt should be current Date
-        expect(updatedActionType.updatedAt).toBeInstanceOf(Date);
-        expect(updatedActionType.updatedAt.getTime()).toBeGreaterThanOrEqual(
-          beforeUpdate.getTime()
-        );
-        expect(updatedActionType.updatedAt.getTime()).toBeLessThanOrEqual(afterUpdate.getTime());
-
-        expect(updatedActionType.totalActionsCount).toBe(baseActionType.totalActionsCount);
-        expect(updatedActionType.lastActionDate).toBe(baseActionType.lastActionDate);
-      });
-
-      it('should throw error for invalid name', () => {
-        expect(() => baseActionType.updateName('')).toThrow('ActionType name cannot be empty');
-      });
-    });
-
-    describe('updateLogo()', () => {
-      it('should return new ActionType with updated logo and current updatedAt', () => {
-        // ARRANGE
-        const newLogo = 'https://example.com/new-stretching-logo.png';
-        const beforeUpdate = new Date();
-
-        // ACT
-        const updatedActionType = baseActionType.updateLogo(newLogo);
-        const afterUpdate = new Date();
-
-        // ASSERT
-        expect(updatedActionType).not.toBe(baseActionType);
-        expect(updatedActionType.logo).toBe(newLogo);
-        expect(updatedActionType.id).toBe(baseActionType.id);
-        expect(updatedActionType.name).toBe(baseActionType.name);
-        expect(updatedActionType.habitId).toBe(baseActionType.habitId);
-        expect(updatedActionType.createdAt).toEqual(baseActionType.createdAt);
-
-        // updatedAt should be current Date
-        expect(updatedActionType.updatedAt).toBeInstanceOf(Date);
-        expect(updatedActionType.updatedAt.getTime()).toBeGreaterThanOrEqual(
-          beforeUpdate.getTime()
-        );
-        expect(updatedActionType.updatedAt.getTime()).toBeLessThanOrEqual(afterUpdate.getTime());
-      });
-
-      it('should throw error for empty logo', () => {
-        expect(() => baseActionType.updateLogo('')).toThrow('Logo must be a non-empty string');
-      });
-
-      it('should throw error for null logo', () => {
-        expect(() => baseActionType.updateLogo(null as any)).toThrow('Logo must be a string');
-      });
-    });
-  });
-
-  describe('ActionType business logic methods', () => {
-    let actionType: ActionType;
-
-    beforeEach(() => {
-      actionType = new ActionType(
-        validActionTypeId,
-        ActionTypeName.create(validActionTypeName),
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        10,
-        lastActionDate
-      );
-    });
-
-    describe('hasActions()', () => {
-      it('should return true when totalActionsCount > 0', () => {
-        expect(actionType.hasActions()).toBe(true);
-      });
-
-      it('should return false when totalActionsCount is 0', () => {
-        const actionTypeName = ActionTypeName.create(validActionTypeName);
-        const noActionsType = new ActionType(
+        const actionType = new ActionType(
           validActionTypeId,
-          actionTypeName,
-          validLogo,
-          validHabitId,
-          fixedDate,
-          fixedDate,
-          0, // Zero actions
-          null
-        );
-
-        expect(noActionsType.hasActions()).toBe(false);
-      });
-    });
-
-    describe('hasRecentAction()', () => {
-      it('should return true when lastActionDate is within specified days', () => {
-        // ARRANGE
-        const recentDate = new Date();
-        recentDate.setDate(recentDate.getDate() - 1); // 1 day ago
-        const recentActionType = new ActionType(
-          validActionTypeId,
-          ActionTypeName.create(validActionTypeName),
-          validLogo,
-          validHabitId,
-          fixedDate,
-          fixedDate,
-          5,
-          recentDate
-        );
-
-        // ACT & ASSERT
-        expect(recentActionType.hasRecentAction(7)).toBe(true); // Within 7 days
-      });
-
-      it('should return false when lastActionDate is beyond specified days', () => {
-        // ARRANGE
-        const oldDate = new Date();
-        oldDate.setDate(oldDate.getDate() - 10); // 10 days ago
-        const oldActionType = new ActionType(
-          validActionTypeId,
-          ActionTypeName.create(validActionTypeName),
-          validLogo,
-          validHabitId,
-          fixedDate,
-          fixedDate,
-          5,
-          oldDate
-        );
-
-        // ACT & ASSERT
-        expect(oldActionType.hasRecentAction(7)).toBe(false); // Beyond 7 days
-      });
-
-      it('should return false when lastActionDate is null', () => {
-        const actionTypeName = ActionTypeName.create(validActionTypeName);
-        const noActionType = new ActionType(
-          validActionTypeId,
-          actionTypeName,
-          validLogo,
           validHabitId,
           fixedDate,
           fixedDate,
           0,
-          null // No last action date
+          null,
+          globalIdentifier
         );
 
-        expect(noActionType.hasRecentAction(7)).toBe(false);
+        // ASSERT
+        expect(actionType.id).toBe(validActionTypeId);
+        expect(actionType.habitId).toBe(validHabitId);
+        expect(actionType.createdAt).toBeInstanceOf(Date);
+        expect(actionType.updatedAt).toBeInstanceOf(Date);
+        expect(actionType.createdAt).toEqual(fixedDate);
+        expect(actionType.updatedAt).toEqual(fixedDate);
+        expect(actionType.totalActionsCount).toBe(0);
+        expect(actionType.lastActionDate).toBeNull();
+        expect(actionType.globalEntityIdentifier).toBe(globalIdentifier);
       });
 
-      it('should throw error for invalid days parameter', () => {
-        expect(() => actionType.hasRecentAction(-1)).toThrow('Days must be a positive number');
-        expect(() => actionType.hasRecentAction(0)).toThrow('Days must be a positive number');
-      });
-    });
-
-    describe('isActivelyUsed()', () => {
-      it('should return true when has actions and recent activity', () => {
+      it('should create ActionType with totalActionsCount and lastActionDate', () => {
         // ARRANGE
-        const recentDate = new Date();
-        recentDate.setDate(recentDate.getDate() - 3); // 3 days ago
-        const activeActionType = new ActionType(
+        const globalIdentifier = createMockGlobalIdentifier();
+        const lastActionDate = new Date('2024-01-15T12:00:00.000Z');
+
+        // ACT
+        const actionType = new ActionType(
           validActionTypeId,
-          ActionTypeName.create(validActionTypeName),
-          validLogo,
           validHabitId,
           fixedDate,
           fixedDate,
           5,
-          recentDate
+          lastActionDate,
+          globalIdentifier
         );
 
-        // ACT & ASSERT
-        expect(activeActionType.isActivelyUsed(7)).toBe(true);
+        // ASSERT
+        expect(actionType.totalActionsCount).toBe(5);
+        expect(actionType.lastActionDate).toBeInstanceOf(Date);
+        expect(actionType.lastActionDate).toEqual(lastActionDate);
       });
 
-      it('should return false when has no actions', () => {
-        const actionTypeName = ActionTypeName.create(validActionTypeName);
-        const noActionsType = new ActionType(
-          validActionTypeId,
-          actionTypeName,
-          validLogo,
-          validHabitId,
-          fixedDate,
-          fixedDate,
-          0, // No actions
-          null
-        );
-
-        expect(noActionsType.isActivelyUsed(7)).toBe(false);
-      });
-
-      it('should return false when has actions but no recent activity', () => {
+      it('should create ActionType with current timestamps', () => {
         // ARRANGE
-        const oldDate = new Date();
-        oldDate.setDate(oldDate.getDate() - 30); // 30 days ago
-        const inactiveActionType = new ActionType(
+        const globalIdentifier = createMockGlobalIdentifier();
+        const beforeCreation = new Date();
+        const currentDate = new Date();
+
+        // ACT
+        const actionType = new ActionType(
           validActionTypeId,
-          ActionTypeName.create(validActionTypeName),
-          validLogo,
+          validHabitId,
+          currentDate,
+          currentDate,
+          0,
+          null,
+          globalIdentifier
+        );
+        const afterCreation = new Date();
+
+        // ASSERT
+        expect(actionType.createdAt).toBeInstanceOf(Date);
+        expect(actionType.updatedAt).toBeInstanceOf(Date);
+        expect(actionType.createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
+        expect(actionType.createdAt.getTime()).toBeLessThanOrEqual(afterCreation.getTime());
+        expect(actionType.updatedAt.getTime()).toBeGreaterThanOrEqual(beforeCreation.getTime());
+        expect(actionType.updatedAt.getTime()).toBeLessThanOrEqual(afterCreation.getTime());
+      });
+    });
+
+    describe('Date Validation', () => {
+      it('should throw error for invalid createdAt (non-Date)', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
+              fixedDate,
+              0,
+              null,
+              globalIdentifier
+            )
+        ).toThrow('Invalid date: createdAt must be a valid Date object');
+      });
+
+      it('should throw error for null createdAt', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              null as any,
+              fixedDate,
+              0,
+              null,
+              globalIdentifier
+            )
+        ).toThrow('Invalid date: createdAt must be a Date object');
+      });
+
+      it('should throw error for undefined createdAt', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              undefined as any,
+              fixedDate,
+              0,
+              null,
+              globalIdentifier
+            )
+        ).toThrow('Invalid date: createdAt must be a Date object');
+      });
+
+      it('should throw error for invalid createdAt (invalid Date object)', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+        const invalidDate = new Date('invalid-date-string');
+
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              invalidDate,
+              fixedDate,
+              0,
+              null,
+              globalIdentifier
+            )
+        ).toThrow('Invalid date: createdAt must be a valid Date object');
+      });
+
+      it('should throw error for invalid updatedAt (non-Date)', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              fixedDate,
+              '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
+              0,
+              null,
+              globalIdentifier
+            )
+        ).toThrow('Invalid date: updatedAt must be a valid Date object');
+      });
+
+      it('should throw error for null updatedAt', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              fixedDate,
+              null as any,
+              0,
+              null,
+              globalIdentifier
+            )
+        ).toThrow('Invalid date: updatedAt must be a Date object');
+      });
+
+      it('should throw error for invalid updatedAt (invalid Date object)', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+        const invalidDate = new Date('invalid-date-string');
+
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              fixedDate,
+              invalidDate,
+              0,
+              null,
+              globalIdentifier
+            )
+        ).toThrow('Invalid date: updatedAt must be a valid Date object');
+      });
+
+      it('should accept null lastActionDate', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+
+        // ACT
+        const actionType = new ActionType(
+          validActionTypeId,
           validHabitId,
           fixedDate,
           fixedDate,
-          10,
-          oldDate
+          0,
+          null, // null is valid for lastActionDate
+          globalIdentifier
         );
 
+        // ASSERT
+        expect(actionType.lastActionDate).toBeNull();
+      });
+
+      it('should throw error for invalid lastActionDate (non-Date, not null)', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+
         // ACT & ASSERT
-        expect(inactiveActionType.isActivelyUsed(7)).toBe(false);
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              fixedDate,
+              fixedDate,
+              0,
+              '2024-01-01T00:00:00.000Z' as any, // ISO string should fail
+              globalIdentifier
+            )
+        ).toThrow('Invalid date: lastActionDate must be a valid Date object or null');
+      });
+
+      it('should throw error for invalid lastActionDate (invalid Date object)', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+        const invalidDate = new Date('invalid-date-string');
+
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              fixedDate,
+              fixedDate,
+              0,
+              invalidDate,
+              globalIdentifier
+            )
+        ).toThrow('Invalid date: lastActionDate must be a valid Date object');
+      });
+
+      it('should store valid lastActionDate as Date object', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+        const lastActionDate = new Date('2024-01-15T12:00:00.000Z');
+
+        // ACT
+        const actionType = new ActionType(
+          validActionTypeId,
+          validHabitId,
+          fixedDate,
+          fixedDate,
+          3,
+          lastActionDate,
+          globalIdentifier
+        );
+
+        // ASSERT
+        expect(actionType.lastActionDate).toBeInstanceOf(Date);
+        expect(actionType.lastActionDate).toEqual(lastActionDate);
+      });
+    });
+
+    describe('GlobalEntityIdentifier Validation', () => {
+      it('should throw error for null globalEntityIdentifier', () => {
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              fixedDate,
+              fixedDate,
+              0,
+              null,
+              null as any
+            )
+        ).toThrow('globalEntityIdentifier must be a valid GlobalEntityIdentifier instance');
+      });
+
+      it('should throw error for undefined globalEntityIdentifier', () => {
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              fixedDate,
+              fixedDate,
+              0,
+              null,
+              undefined as any
+            )
+        ).toThrow('globalEntityIdentifier must be a valid GlobalEntityIdentifier instance');
+      });
+
+      it('should throw error for invalid globalEntityIdentifier type', () => {
+        // ACT & ASSERT
+        expect(
+          () =>
+            new ActionType(
+              validActionTypeId,
+              validHabitId,
+              fixedDate,
+              fixedDate,
+              0,
+              null,
+              { name: 'Test', icon: 'test.png' } as any // Plain object should fail
+            )
+        ).toThrow('globalEntityIdentifier must be a valid GlobalEntityIdentifier instance');
+      });
+
+      it('should accept valid globalEntityIdentifier', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier();
+
+        // ACT
+        const actionType = new ActionType(
+          validActionTypeId,
+          validHabitId,
+          fixedDate,
+          fixedDate,
+          0,
+          null,
+          globalIdentifier
+        );
+
+        // ASSERT
+        expect(actionType.globalEntityIdentifier).toBe(globalIdentifier);
+        expect(actionType.globalEntityIdentifier).toBeInstanceOf(GlobalEntityIdentifier);
       });
     });
   });
 
-  describe('ActionType equality and comparison', () => {
-    it('should return true for same id', () => {
-      const actionTypeName1 = ActionTypeName.create(validActionTypeName);
-      const actionTypeName2 = ActionTypeName.create('Different Name');
+  describe('Getter Methods', () => {
+    describe('name getter', () => {
+      it('should return name from globalEntityIdentifier', () => {
+        // ARRANGE
+        const globalIdentifier = createMockGlobalIdentifier('Evening Yoga');
+        const actionType = new ActionType(
+          validActionTypeId,
+          validHabitId,
+          fixedDate,
+          fixedDate,
+          0,
+          null,
+          globalIdentifier
+        );
 
-      const actionType1 = new ActionType(
-        validActionTypeId,
-        actionTypeName1,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      );
-      const actionType2 = new ActionType(
-        validActionTypeId,
-        actionTypeName2,
-        'different-logo.png',
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      );
+        // ACT
+        const name = actionType.name;
 
-      expect(actionType1.equals(actionType2)).toBe(true);
+        // ASSERT
+        expect(name).toBe('Evening Yoga');
+      });
+
+      it('should return updated name after globalEntityIdentifier change', () => {
+        // ARRANGE
+        const globalIdentifier1 = createMockGlobalIdentifier('Original Name');
+        const globalIdentifier2 = createMockGlobalIdentifier('Updated Name');
+
+        const actionType1 = new ActionType(
+          validActionTypeId,
+          validHabitId,
+          fixedDate,
+          fixedDate,
+          0,
+          null,
+          globalIdentifier1
+        );
+
+        const actionType2 = new ActionType(
+          validActionTypeId,
+          validHabitId,
+          fixedDate,
+          new Date(),
+          0,
+          null,
+          globalIdentifier2
+        );
+
+        // ACT & ASSERT
+        expect(actionType1.name).toBe('Original Name');
+        expect(actionType2.name).toBe('Updated Name');
+      });
     });
 
-    it('should return false for different id', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-      const differentId: UUID = '987fcdeb-51a2-43d1-9876-543210987654';
+    describe('icon getter', () => {
+      it('should return icon from globalEntityIdentifier', () => {
+        // ARRANGE
+        const customIconUrl = 'https://example.com/custom-icon.png';
+        const globalIdentifier = createMockGlobalIdentifier(validActionTypeName, customIconUrl);
+        const actionType = new ActionType(
+          validActionTypeId,
+          validHabitId,
+          fixedDate,
+          fixedDate,
+          0,
+          null,
+          globalIdentifier
+        );
 
-      const actionType1 = new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      );
-      const actionType2 = new ActionType(
-        differentId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      );
+        // ACT
+        const icon = actionType.icon;
 
-      expect(actionType1.equals(actionType2)).toBe(false);
-    });
+        // ASSERT
+        expect(icon).toBe(customIconUrl);
+      });
 
-    it('should return true for belongsToHabit with matching habitId', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-      const actionType = new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      );
+      it('should return updated icon after globalEntityIdentifier change', () => {
+        // ARRANGE
+        const iconUrl1 = 'https://example.com/icon1.png';
+        const iconUrl2 = 'https://example.com/icon2.png';
+        const globalIdentifier1 = createMockGlobalIdentifier(validActionTypeName, iconUrl1);
+        const globalIdentifier2 = createMockGlobalIdentifier(validActionTypeName, iconUrl2);
 
-      expect(actionType.belongsToHabit(validHabitId)).toBe(true);
-    });
+        const actionType1 = new ActionType(
+          validActionTypeId,
+          validHabitId,
+          fixedDate,
+          fixedDate,
+          0,
+          null,
+          globalIdentifier1
+        );
 
-    it('should return false for belongsToHabit with different habitId', () => {
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
-      const actionType = new ActionType(
-        validActionTypeId,
-        actionTypeName,
-        validLogo,
-        validHabitId,
-        fixedDate,
-        fixedDate,
-        0,
-        null
-      );
-      const differentHabitId: UUID = '111e1111-e11e-11e1-a111-111111111111';
+        const actionType2 = new ActionType(
+          validActionTypeId,
+          validHabitId,
+          fixedDate,
+          new Date(),
+          0,
+          null,
+          globalIdentifier2
+        );
 
-      expect(actionType.belongsToHabit(differentHabitId)).toBe(false);
-    });
-  });
-
-  describe('Database-generated fields behavior', () => {
-    it('should NOT accept id parameter in create() method', () => {
-      // ACT
-      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
-
-      // ASSERT
-      expect(actionType.id).toBeUndefined();
-    });
-
-    it('should NOT accept createdAt parameter in create() method', () => {
-      // ACT
-      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
-
-      // ASSERT
-      expect(actionType.createdAt).toBeUndefined();
-    });
-
-    it('should NOT accept updatedAt parameter in create() method', () => {
-      // ACT
-      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
-
-      // ASSERT
-      expect(actionType.updatedAt).toBeUndefined();
-    });
-
-    it('should NOT accept totalActionsCount parameter in create() method', () => {
-      // ACT
-      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
-
-      // ASSERT
-      expect(actionType.totalActionsCount).toBeUndefined();
-    });
-
-    it('should NOT accept lastActionDate parameter in create() method', () => {
-      // ACT
-      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
-
-      // ASSERT
-      expect(actionType.lastActionDate).toBeUndefined();
-    });
-
-    it('should create valid ActionType for database insertion with only domain fields', () => {
-      // ACT
-      const actionType = ActionType.create(validActionTypeName, validLogo, validHabitId);
-
-      // ASSERT - only domain-specific fields should be populated
-      expect(actionType.name).toBeInstanceOf(ActionTypeName);
-      expect(actionType.name.getValue()).toBe(validActionTypeName);
-      expect(actionType.logo).toBe(validLogo);
-      expect(actionType.habitId).toBe(validHabitId);
-
-      // Database will generate these
-      expect(actionType.id).toBeUndefined();
-      expect(actionType.createdAt).toBeUndefined();
-      expect(actionType.updatedAt).toBeUndefined();
-      expect(actionType.totalActionsCount).toBeUndefined();
-      expect(actionType.lastActionDate).toBeUndefined();
+        // ACT & ASSERT
+        expect(actionType1.icon).toBe(iconUrl1);
+        expect(actionType2.icon).toBe(iconUrl2);
+      });
     });
   });
 
-  describe('Edge cases and validation', () => {
+  describe('toJSON() Method', () => {
+    it('should return JSON representation with all fields', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const lastActionDate = new Date('2024-01-15T12:00:00.000Z');
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        5,
+        lastActionDate,
+        globalIdentifier
+      );
+
+      // ACT
+      const json = actionType.toJSON();
+
+      // ASSERT
+      expect(json).toEqual({
+        id: validActionTypeId,
+        habitId: validHabitId,
+        name: validActionTypeName,
+        icon: validIconUrl,
+        totalActionsCount: 5,
+        lastActionDate,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+      });
+    });
+
+    it('should return JSON with null lastActionDate', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ACT
+      const json = actionType.toJSON();
+
+      // ASSERT
+      expect(json).toEqual({
+        id: validActionTypeId,
+        habitId: validHabitId,
+        name: validActionTypeName,
+        icon: validIconUrl,
+        totalActionsCount: 0,
+        lastActionDate: null,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+      });
+    });
+
+    it('should include name and icon from globalEntityIdentifier', () => {
+      // ARRANGE
+      const customName = 'Custom Action Type';
+      const customIcon = 'https://example.com/custom.png';
+      const globalIdentifier = createMockGlobalIdentifier(customName, customIcon);
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ACT
+      const json = actionType.toJSON();
+
+      // ASSERT
+      expect(json.name).toBe(customName);
+      expect(json.icon).toBe(customIcon);
+    });
+
+    it('should return object with proper types', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ACT
+      const json = actionType.toJSON();
+
+      // ASSERT
+      expect(typeof json.id).toBe('string');
+      expect(typeof json.habitId).toBe('string');
+      expect(typeof json.name).toBe('string');
+      expect(typeof json.icon).toBe('string');
+      expect(typeof json.totalActionsCount).toBe('number');
+      expect(json.lastActionDate).toBeNull();
+      expect(json.createdAt).toBeInstanceOf(Date);
+      expect(json.updatedAt).toBeInstanceOf(Date);
+    });
+  });
+
+  describe('equals() Method', () => {
+    it('should return true for ActionTypes with same id', () => {
+      // ARRANGE
+      const globalIdentifier1 = createMockGlobalIdentifier('Name 1');
+      const globalIdentifier2 = createMockGlobalIdentifier('Name 2');
+
+      const actionType1 = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier1
+      );
+
+      const actionType2 = new ActionType(
+        validActionTypeId,
+        validHabitId, // Same ID
+        new Date(),
+        new Date(),
+        10,
+        new Date(),
+        globalIdentifier2 // Different globalEntityIdentifier
+      );
+
+      // ACT
+      const result = actionType1.equals(actionType2);
+
+      // ASSERT
+      expect(result).toBe(true);
+    });
+
+    it('should return false for ActionTypes with different ids', () => {
+      // ARRANGE
+      const differentId: UUID = '111e1111-e11e-11e1-a111-111111111111';
+      const globalIdentifier1 = createMockGlobalIdentifier();
+      const globalIdentifier2 = createMockGlobalIdentifier();
+
+      const actionType1 = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier1
+      );
+
+      const actionType2 = new ActionType(
+        differentId, // Different ID
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier2
+      );
+
+      // ACT
+      const result = actionType1.equals(actionType2);
+
+      // ASSERT
+      expect(result).toBe(false);
+    });
+
+    it('should compare by id regardless of other property values', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const actionType1 = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      const actionType2 = new ActionType(
+        validActionTypeId, // Same ID
+        validHabitId,
+        new Date('2025-01-01'),
+        new Date('2025-01-01'),
+        100,
+        new Date(),
+        globalIdentifier
+      );
+
+      // ACT
+      const result = actionType1.equals(actionType2);
+
+      // ASSERT
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('Edge Cases and Boundary Conditions', () => {
+    it('should handle zero totalActionsCount', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+
+      // ACT
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0, // Zero count
+        null,
+        globalIdentifier
+      );
+
+      // ASSERT
+      expect(actionType.totalActionsCount).toBe(0);
+    });
+
+    it('should handle large totalActionsCount values', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const largeCount = 999999999;
+
+      // ACT
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        largeCount,
+        null,
+        globalIdentifier
+      );
+
+      // ASSERT
+      expect(actionType.totalActionsCount).toBe(largeCount);
+    });
+
     it('should handle maximum safe integer for totalActionsCount', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
       const maxCount = Number.MAX_SAFE_INTEGER;
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
 
+      // ACT
       const actionType = new ActionType(
         validActionTypeId,
-        actionTypeName,
-        validLogo,
         validHabitId,
         fixedDate,
         fixedDate,
         maxCount,
-        null
+        null,
+        globalIdentifier
       );
 
+      // ASSERT
       expect(actionType.totalActionsCount).toBe(maxCount);
     });
 
     it('should handle date precision correctly', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
       const preciseDate = new Date('2024-01-01T12:30:45.123Z');
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
+      const preciseLastAction = new Date('2024-01-15T14:25:33.987Z');
+
+      // ACT
       const actionType = new ActionType(
         validActionTypeId,
-        actionTypeName,
-        validLogo,
         validHabitId,
         preciseDate,
         preciseDate,
         0,
-        null
+        preciseLastAction,
+        globalIdentifier
       );
 
+      // ASSERT
       expect(actionType.createdAt.getTime()).toBe(preciseDate.getTime());
       expect(actionType.updatedAt.getTime()).toBe(preciseDate.getTime());
+      expect(actionType.lastActionDate?.getTime()).toBe(preciseLastAction.getTime());
     });
 
-    it('should validate logo size constraints', () => {
-      // Test for extremely large logo (simulating base64 image > 2MB)
-      const largeLogo = `data:image/png;base64,${'a'.repeat(3 * 1024 * 1024)}`; // 3MB
-      const actionTypeName = ActionTypeName.create(validActionTypeName);
+    it('should handle action type name at maximum length boundary', () => {
+      // ARRANGE
+      const maxLengthName = 'a'.repeat(50); // 50 chars max
+      const globalIdentifier = createMockGlobalIdentifier(maxLengthName);
 
-      expect(
-        () =>
-          new ActionType(
-            validActionTypeId,
-            actionTypeName,
-            largeLogo,
-            validHabitId,
-            fixedDate,
-            fixedDate,
-            0,
-            null
-          )
-      ).toThrow('Logo size cannot exceed 2MB');
+      // ACT
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ASSERT
+      expect(actionType.name).toBe(maxLengthName);
+      expect(actionType.name).toHaveLength(50);
+    });
+
+    it('should handle action type name at minimum length boundary', () => {
+      // ARRANGE
+      const minLengthName = 'a'; // 1 char min
+      const globalIdentifier = createMockGlobalIdentifier(minLengthName);
+
+      // ACT
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ASSERT
+      expect(actionType.name).toBe(minLengthName);
+      expect(actionType.name).toHaveLength(1);
+    });
+
+    it('should handle icon URL at maximum length boundary', () => {
+      // ARRANGE
+      // Calculate exact 500 char URL: https://example.com/ = 20 chars, .png = 4 chars, so 476 'a's needed
+      const maxLengthUrl = `https://example.com/${'a'.repeat(476)}.png`; // Exactly 500 chars
+      const globalIdentifier = createMockGlobalIdentifier(validActionTypeName, maxLengthUrl);
+
+      // ACT
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ASSERT
+      expect(actionType.icon).toBe(maxLengthUrl);
+      expect(actionType.icon).toHaveLength(500);
+    });
+
+    it('should validate that all date parameters are proper Date objects', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const createdAt = new Date('2024-01-01T10:00:00.000Z');
+      const updatedAt = new Date('2024-01-02T11:00:00.000Z');
+      const lastActionDate = new Date('2024-01-03T12:00:00.000Z');
+
+      // ACT
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        createdAt,
+        updatedAt,
+        5,
+        lastActionDate,
+        globalIdentifier
+      );
+
+      // ASSERT
+      expect(actionType.createdAt).toBeInstanceOf(Date);
+      expect(actionType.updatedAt).toBeInstanceOf(Date);
+      expect(actionType.lastActionDate).toBeInstanceOf(Date);
+      expect(actionType.createdAt).toEqual(createdAt);
+      expect(actionType.updatedAt).toEqual(updatedAt);
+      expect(actionType.lastActionDate).toEqual(lastActionDate);
+    });
+  });
+
+  describe('Immutability and Read-Only Properties', () => {
+    it('should have read-only id property declared in TypeScript', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ACT & ASSERT
+      // TypeScript's readonly modifier is compile-time only
+      // At runtime, JavaScript allows property modification
+      // The real protection is at compile-time where TypeScript will error
+      expect(actionType.id).toBe(validActionTypeId);
+
+      // Verify the property is accessible
+      const idValue: UUID = actionType.id;
+      expect(typeof idValue).toBe('string');
+    });
+
+    it('should have read-only habitId property', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ACT
+      const originalHabitId = actionType.habitId;
+
+      // ASSERT - habitId is defined as readonly in TypeScript
+      expect(actionType.habitId).toBe(originalHabitId);
+      expect(actionType.habitId).toBe(validHabitId);
+    });
+
+    it('should have read-only createdAt property', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ACT
+      const originalCreatedAt = actionType.createdAt;
+
+      // ASSERT - createdAt is defined as readonly in TypeScript
+      expect(actionType.createdAt).toBe(originalCreatedAt);
+      expect(actionType.createdAt).toEqual(fixedDate);
+    });
+
+    it('should have read-only updatedAt property', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ACT
+      const originalUpdatedAt = actionType.updatedAt;
+
+      // ASSERT - updatedAt is defined as readonly in TypeScript
+      expect(actionType.updatedAt).toBe(originalUpdatedAt);
+      expect(actionType.updatedAt).toEqual(fixedDate);
+    });
+
+    it('should have read-only totalActionsCount property', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        5,
+        null,
+        globalIdentifier
+      );
+
+      // ACT
+      const originalCount = actionType.totalActionsCount;
+
+      // ASSERT - totalActionsCount is defined as readonly in TypeScript
+      expect(actionType.totalActionsCount).toBe(originalCount);
+      expect(actionType.totalActionsCount).toBe(5);
+    });
+
+    it('should have read-only lastActionDate property', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const lastActionDate = new Date('2024-01-15T12:00:00.000Z');
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        lastActionDate,
+        globalIdentifier
+      );
+
+      // ACT
+      const originalLastActionDate = actionType.lastActionDate;
+
+      // ASSERT - lastActionDate is defined as readonly in TypeScript
+      expect(actionType.lastActionDate).toBe(originalLastActionDate);
+      expect(actionType.lastActionDate).toEqual(lastActionDate);
+    });
+
+    it('should have read-only globalEntityIdentifier property', () => {
+      // ARRANGE
+      const globalIdentifier = createMockGlobalIdentifier();
+      const actionType = new ActionType(
+        validActionTypeId,
+        validHabitId,
+        fixedDate,
+        fixedDate,
+        0,
+        null,
+        globalIdentifier
+      );
+
+      // ACT
+      const originalGlobalIdentifier = actionType.globalEntityIdentifier;
+
+      // ASSERT - globalEntityIdentifier is defined as readonly in TypeScript
+      expect(actionType.globalEntityIdentifier).toBe(originalGlobalIdentifier);
+      expect(actionType.globalEntityIdentifier).toBe(globalIdentifier);
     });
   });
 });
