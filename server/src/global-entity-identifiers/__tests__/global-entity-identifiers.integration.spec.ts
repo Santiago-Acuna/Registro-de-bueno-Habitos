@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { UUID } from '../../domain/shared/types/common';
-import { DatabaseService } from '../../infrastructure/database/database.service';
+import { PrismaService } from '../../infrastructure/database/prisma.service';
 import {
   NotFoundError,
   ConflictError,
@@ -17,19 +17,20 @@ import { GlobalEntityIdentifiersService } from '../services/global-entity-identi
 // Services and repositories work with plain data structures (not domain entities)
 // Similar to action-types module which uses ActionTypeName value object
 
-// Mock Database service with in-memory data store
-class MockDatabaseService {
+// Mock Prisma service with in-memory data store
+class MockPrismaService {
   private identifiers: Map<string, any> = new Map();
   private nextId = 1;
 
   private generateId(): string {
-    return `test-${this.nextId++}-e89b-12d3-a456-426614174000`;
+    const id = this.nextId++;
+    // Generate a valid UUID v4 format
+    const hex = id.toString(16).padStart(8, '0');
+    return `${hex.substring(0, 8)}-${hex.substring(0, 4)}-4${hex.substring(1, 4)}-a${hex.substring(1, 4)}-${hex.substring(0, 12).padEnd(12, '0')}`;
   }
 
-  getClient() {
-    return {
-      globalEntityIdentifiers: {
-        create: jest.fn(async ({ data }) => {
+  globalEntityIdentifiers = {
+    create: jest.fn(async ({ data }: { data: any }) => {
           const id = this.generateId();
 
           // Check for name uniqueness constraint
@@ -130,7 +131,7 @@ class MockDatabaseService {
           );
         }),
 
-        findMany: jest.fn(async ({ where, orderBy }) => {
+        findMany: jest.fn(async ({ where, orderBy }: { where?: any; orderBy?: any }) => {
           let results = Array.from(this.identifiers.values());
 
           // Apply filters
@@ -142,9 +143,9 @@ class MockDatabaseService {
 
           // Apply ordering
           if (orderBy) {
-            const field = Object.keys(orderBy)[0];
+            const field = Object.keys(orderBy)[0] as string;
             const direction = orderBy[field];
-            results.sort((a, b) => {
+            results.sort((a: any, b: any) => {
               if (direction === 'asc') {
                 return a[field] > b[field] ? 1 : -1;
               } else {
@@ -156,11 +157,11 @@ class MockDatabaseService {
           return results;
         }),
 
-        count: jest.fn(async ({ where }) => {
+        count: jest.fn(async (args?: { where?: any }) => {
           let results = Array.from(this.identifiers.values());
 
-          if (where?.entityType) {
-            results = results.filter(identifier => identifier.entityType === where.entityType);
+          if (args?.where?.entityType) {
+            results = results.filter(identifier => identifier.entityType === args.where.entityType);
           }
 
           return results.length;
@@ -224,9 +225,7 @@ class MockDatabaseService {
           this.identifiers.delete(where.id);
           return identifier;
         }),
-      },
-    };
-  }
+      };
 
   clearData() {
     this.identifiers.clear();
@@ -238,7 +237,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
   let app: INestApplication;
   let service: GlobalEntityIdentifiersService;
   let repository: GlobalEntityIdentifiersRepository;
-  let mockDatabaseService: MockDatabaseService;
+  let mockPrismaService: MockPrismaService;
 
   // Test data fixtures
   // Plain strings used for testing - validation happens via value objects at service layer
@@ -248,19 +247,19 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
   const mockEntityType = 'habit';
 
   beforeAll(async () => {
-    mockDatabaseService = new MockDatabaseService();
+    mockPrismaService = new MockPrismaService();
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [GlobalEntityIdentifiersModule],
     })
-      .overrideProvider(DatabaseService)
-      .useValue(mockDatabaseService)
+      .overrideProvider(PrismaService)
+      .useValue(mockPrismaService)
       .compile();
 
     app = moduleFixture.createNestApplication();
 
     service = app.get(GlobalEntityIdentifiersService);
-    repository = app.get(GlobalEntityIdentifiersRepository);
+    repository = app.get('IGlobalEntityIdentifiersRepository');
 
     await app.init();
   });
@@ -271,7 +270,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockDatabaseService.clearData();
+    mockPrismaService.clearData();
   });
 
   describe('Full CRUD Flow Integration', () => {
@@ -426,7 +425,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       // Create first identifier
       await service.create({
         name: 'Name1',
-        icon: 'icon1.png',
+        icon: 'https://example.com/icons/icon1.png',
         entityType: mockEntityType,
         entityId: '111e1111-e11e-11e1-a111-111111111111' as UUID,
       });
@@ -435,7 +434,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       await expect(
         service.create({
           name: 'Name1', // Same name
-          icon: 'icon2.png',
+          icon: 'https://example.com/icons/icon2.png',
           entityType: 'action-type',
           entityId: '222e2222-e22e-22e2-a222-222222222222' as UUID,
         })
@@ -488,14 +487,14 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       // Create two identifiers
       const result1 = await service.create({
         name: 'First Name',
-        icon: 'icon1.png',
+        icon: 'https://example.com/icons/icon1.png',
         entityType: mockEntityType,
         entityId: '111e1111-e11e-11e1-a111-111111111111' as UUID,
       });
 
       await service.create({
         name: 'Second Name',
-        icon: 'icon2.png',
+        icon: 'https://example.com/icons/icon2.png',
         entityType: 'action-type',
         entityId: '222e2222-e22e-22e2-a222-222222222222' as UUID,
       });
@@ -510,20 +509,20 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       // Create two identifiers
       const result1 = await service.create({
         name: 'First Name',
-        icon: 'icon1.png',
+        icon: 'https://example.com/icons/icon1.png',
         entityType: mockEntityType,
         entityId: '111e1111-e11e-11e1-a111-111111111111' as UUID,
       });
 
       await service.create({
         name: 'Second Name',
-        icon: 'icon2.png',
+        icon: 'https://example.com/icons/icon2.png',
         entityType: 'action-type',
         entityId: '222e2222-e22e-22e2-a222-222222222222' as UUID,
       });
 
       // Attempt to update first to have the same icon as second
-      await expect(service.update(result1.id, { icon: 'icon2.png' })).rejects.toThrow(
+      await expect(service.update(result1.id, { icon: 'https://example.com/icons/icon2.png' })).rejects.toThrow(
         ConflictError
       );
     });
@@ -559,7 +558,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
 
   describe('Error Handling Integration', () => {
     it('should handle not found errors correctly', async () => {
-      const nonExistentId = '999e9999-e99e-99e9-a999-999999999999' as UUID;
+      const nonExistentId = '999e9999-e99e-4999-a999-999999999999' as UUID;
 
       // Test various operations with non-existent ID
       await expect(service.findById(nonExistentId)).rejects.toThrow(NotFoundError);
@@ -631,21 +630,21 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       // Create multiple identifiers
       await service.create({
         name: 'First',
-        icon: 'icon1.png',
+        icon: 'https://example.com/icons/icon1.png',
         entityType: 'habit',
         entityId: '111e1111-e11e-11e1-a111-111111111111' as UUID,
       });
 
       await service.create({
         name: 'Second',
-        icon: 'icon2.png',
+        icon: 'https://example.com/icons/icon2.png',
         entityType: 'habit',
         entityId: '222e2222-e22e-22e2-a222-222222222222' as UUID,
       });
 
       await service.create({
         name: 'Third',
-        icon: 'icon3.png',
+        icon: 'https://example.com/icons/icon3.png',
         entityType: 'action-type',
         entityId: '333e3333-e33e-33e3-a333-333333333333' as UUID,
       });
@@ -659,34 +658,40 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       // Create identifiers with different entity types
       await service.create({
         name: 'Habit 1',
-        icon: 'habit1.png',
+        icon: 'https://example.com/icons/habit1.png',
         entityType: 'habit',
         entityId: '111e1111-e11e-11e1-a111-111111111111' as UUID,
       });
 
       await service.create({
         name: 'Habit 2',
-        icon: 'habit2.png',
+        icon: 'https://example.com/icons/habit2.png',
         entityType: 'habit',
         entityId: '222e2222-e22e-22e2-a222-222222222222' as UUID,
       });
 
       await service.create({
         name: 'Action Type 1',
-        icon: 'action1.png',
+        icon: 'https://example.com/icons/action1.png',
         entityType: 'action-type',
         entityId: '333e3333-e33e-33e3-a333-333333333333' as UUID,
       });
 
       // Filter by habit entity type
       const habits = await repository.findAll({ entityType: 'habit' });
+      expect(Array.isArray(habits)).toBe(true);
       expect(habits).toHaveLength(2);
-      expect(habits.every(h => h.entityType === 'habit')).toBe(true);
+      if (Array.isArray(habits)) {
+        expect(habits.every(h => h.entityType === 'habit')).toBe(true);
+      }
 
       // Filter by action-type entity type
       const actionTypes = await repository.findAll({ entityType: 'action-type' });
+      expect(Array.isArray(actionTypes)).toBe(true);
       expect(actionTypes).toHaveLength(1);
-      expect(actionTypes[0].entityType).toBe('action-type');
+      if (Array.isArray(actionTypes) && actionTypes[0]) {
+        expect(actionTypes[0].entityType).toBe('action-type');
+      }
     });
 
     it('should count identifiers correctly', async () => {
@@ -696,7 +701,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       // Create some identifiers
       await service.create({
         name: 'First',
-        icon: 'icon1.png',
+        icon: 'https://example.com/icons/icon1.png',
         entityType: 'habit',
         entityId: '111e1111-e11e-11e1-a111-111111111111' as UUID,
       });
@@ -705,7 +710,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
 
       await service.create({
         name: 'Second',
-        icon: 'icon2.png',
+        icon: 'https://example.com/icons/icon2.png',
         entityType: 'action-type',
         entityId: '222e2222-e22e-22e2-a222-222222222222' as UUID,
       });
@@ -724,13 +729,13 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       const concurrentCreations = [
         service.create({
           name: mockName,
-          icon: 'icon1.png',
+          icon: 'https://example.com/icons/icon1.png',
           entityType: 'habit',
           entityId: '111e1111-e11e-11e1-a111-111111111111' as UUID,
         }),
         service.create({
           name: mockName,
-          icon: 'icon2.png',
+          icon: 'https://example.com/icons/icon2.png',
           entityType: 'action-type',
           entityId: '222e2222-e22e-22e2-a222-222222222222' as UUID,
         }),
@@ -887,7 +892,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       // Create first identifier for habit
       await service.create({
         name: 'First Name',
-        icon: 'icon1.png',
+        icon: 'https://example.com/icons/icon1.png',
         entityType: 'habit',
         entityId: habitId,
       });
@@ -896,7 +901,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       await expect(
         service.create({
           name: 'Second Name',
-          icon: 'icon2.png',
+          icon: 'https://example.com/icons/icon2.png',
           entityType: 'habit',
           entityId: habitId, // Same entity
         })
