@@ -17,10 +17,10 @@ export class ActionTypeResponseDto {
   name: string;
 
   @ApiProperty({
-    description: 'Logo URL for the action type',
-    example: 'https://example.com/pushups-logo.png',
+    description: 'Icon URL for the action type',
+    example: 'https://example.com/pushups-icon.png',
   })
-  logo: string;
+  icon: string;
 
   @ApiProperty({
     description: 'UUID of the habit this action type belongs to',
