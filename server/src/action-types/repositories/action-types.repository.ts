@@ -327,17 +327,17 @@ export class ActionTypesRepository implements IActionTypesRepository {
     const where: Record<string, never> = {} as never;
 
     if (filters?.habitId) {
-      where.habitId = filters.habitId as never;
+      where['habitId'] = filters.habitId as never;
     }
 
     if (filters?.hasActions) {
-      where.totalActionsCount = { gt: 0 } as never;
+      where['totalActionsCount'] = { gt: 0 } as never;
     }
 
     if (filters?.recentActivityDays) {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - filters.recentActivityDays);
-      where.lastActionDate = { gte: cutoffDate } as never;
+      where['lastActionDate'] = { gte: cutoffDate } as never;
     }
 
     return Object.keys(where).length > 0 ? where : undefined;
