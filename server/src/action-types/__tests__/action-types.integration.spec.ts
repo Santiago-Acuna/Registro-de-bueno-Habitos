@@ -350,9 +350,7 @@ describe('ActionTypes API Integration Tests (RED PHASE)', () => {
       actionTypesRepository.findAll.mockResolvedValue(mockPaginatedResult);
 
       // Act & Assert
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/action-types')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/api/v1/action-types').expect(200);
 
       expect(response.body).toEqual(
         expect.objectContaining({
@@ -536,9 +534,7 @@ describe('ActionTypes API Integration Tests (RED PHASE)', () => {
       actionTypesRepository.findAll.mockResolvedValue(mockPaginatedResult);
 
       // Act & Assert
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/action-types')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/api/v1/action-types').expect(200);
 
       expect(response.body).toEqual({
         data: [],
@@ -599,9 +595,7 @@ describe('ActionTypes API Integration Tests (RED PHASE)', () => {
 
     it('should return 400 for invalid habitId UUID format', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/api/v1/action-types/habit/invalid-uuid')
-        .expect(400);
+      await request(app.getHttpServer()).get('/api/v1/action-types/habit/invalid-uuid').expect(400);
     });
 
     it('should return empty results when habit has no action types', async () => {
@@ -863,7 +857,6 @@ describe('ActionTypes API Integration Tests (RED PHASE)', () => {
         .expect(400);
     });
 
-
     it('should return 400 for invalid update data - name too long', async () => {
       // Act & Assert
       await request(app.getHttpServer())
@@ -1057,9 +1050,7 @@ describe('ActionTypes API Integration Tests (RED PHASE)', () => {
       actionTypesRepository.findAll.mockRejectedValue(new Error('Database connection failed'));
 
       // Act & Assert
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/action-types')
-        .expect(500);
+      const response = await request(app.getHttpServer()).get('/api/v1/action-types').expect(500);
 
       expect(response.body).toEqual(
         expect.objectContaining({
