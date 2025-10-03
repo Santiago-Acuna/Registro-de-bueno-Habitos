@@ -22,7 +22,7 @@ const mockActionTypesRepository = {
   findAll: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
-  findByName: jest.fn(),
+  findByNameAndHabitId: jest.fn(),
   findByHabitId: jest.fn(),
 };
 
