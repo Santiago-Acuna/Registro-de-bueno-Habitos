@@ -698,7 +698,7 @@ describe('GlobalEntityIdentifiersService (RED PHASE) - Value Objects Pattern', (
   describe('boundary and edge cases', () => {
     it('should handle very long names (boundary test)', async () => {
       // Arrange
-      const longName = 'A'.repeat(255); // Maximum length
+      const longName = 'A'.repeat(50); // Maximum length
       repository.existsByName.mockResolvedValue(false);
       repository.existsByIcon.mockResolvedValue(false);
       repository.create.mockResolvedValue(createMockGlobalEntityIdentifier({ name: longName }));
@@ -717,7 +717,7 @@ describe('GlobalEntityIdentifiersService (RED PHASE) - Value Objects Pattern', (
 
     it('should reject names exceeding maximum length', async () => {
       // Arrange
-      const tooLongName = 'A'.repeat(256); // Exceeds maximum
+      const tooLongName = 'A'.repeat(51); // Exceeds maximum
 
       // Act & Assert
       await expect(

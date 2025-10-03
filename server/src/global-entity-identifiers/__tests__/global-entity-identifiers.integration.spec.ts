@@ -810,7 +810,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
     });
 
     it('should handle maximum name length', async () => {
-      const maxLengthName = 'A'.repeat(255); // Maximum allowed
+      const maxLengthName = 'A'.repeat(50); // Maximum allowed
       const result = await service.create({
         name: maxLengthName,
         icon: mockIcon,

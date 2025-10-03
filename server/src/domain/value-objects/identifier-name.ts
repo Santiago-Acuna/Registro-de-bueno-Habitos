@@ -1,6 +1,6 @@
 export class IdentifierName {
-  private static readonly MAX_LENGTH = 255;
   private static readonly MIN_LENGTH = 1;
+  private static readonly MAX_LENGTH = 50;
 
   private constructor(private readonly value: string) {}
 
@@ -16,7 +16,7 @@ export class IdentifierName {
     }
 
     if (trimmedName.length > this.MAX_LENGTH) {
-      throw new Error('Identifier name cannot exceed 255 characters');
+      throw new Error(`Identifier name cannot exceed ${this.MAX_LENGTH} characters`);
     }
 
     // Check for Unicode characters (only allow ASCII + Spanish characters)

@@ -40,7 +40,7 @@ export class GlobalEntityIdentifiersService {
         throw new ValidationException('Name cannot be empty');
       }
       if (message.includes('cannot exceed')) {
-        throw new ValidationException('Name cannot exceed 255 characters');
+        throw new ValidationException('Name cannot exceed 50 characters');
       }
       throw new ValidationException(message);
     }
