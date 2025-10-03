@@ -1,4 +1,3 @@
-import { GlobalEntityIdentifier } from '../../domain/entities/global-entity-identifier.entity';
 import { PaginatedResult, PaginationParams, UUID } from '../../domain/shared/types/common';
 
 export interface CreateGlobalEntityIdentifierData {
@@ -16,31 +15,40 @@ export interface UpdateGlobalEntityIdentifierData {
 export interface GlobalEntityIdentifierFilterOptions {
   entityType?: string;
   namePrefix?: string;
+  orderBy?: string;
+}
+
+export interface GlobalEntityIdentifierData {
+  id: string;
+  name: string;
+  icon: string;
+  entityType: string;
+  entityId: string;
 }
 
 export interface IGlobalEntityIdentifiersRepository {
-  create(data: CreateGlobalEntityIdentifierData): Promise<GlobalEntityIdentifier>;
-  findById(id: UUID): Promise<GlobalEntityIdentifier | null>;
-  findByName(name: string): Promise<GlobalEntityIdentifier | null>;
-  findByIcon(icon: string): Promise<GlobalEntityIdentifier | null>;
+  create(data: CreateGlobalEntityIdentifierData): Promise<GlobalEntityIdentifierData>;
+  findById(id: UUID): Promise<GlobalEntityIdentifierData | null>;
+  findByName(name: string): Promise<GlobalEntityIdentifierData | null>;
+  findByIcon(icon: string): Promise<GlobalEntityIdentifierData | null>;
   findByEntityTypeAndId(
     entityType: string,
     entityId: UUID
-  ): Promise<GlobalEntityIdentifier | null>;
+  ): Promise<GlobalEntityIdentifierData | null>;
   findAll(
-    params: PaginationParams,
+    params?: PaginationParams | GlobalEntityIdentifierFilterOptions,
     filters?: GlobalEntityIdentifierFilterOptions
-  ): Promise<PaginatedResult<GlobalEntityIdentifier>>;
+  ): Promise<PaginatedResult<GlobalEntityIdentifierData> | GlobalEntityIdentifierData[]>;
   findByEntityType(
     entityType: string,
     params: PaginationParams
-  ): Promise<PaginatedResult<GlobalEntityIdentifier>>;
-  update(id: UUID, data: UpdateGlobalEntityIdentifierData): Promise<GlobalEntityIdentifier>;
+  ): Promise<PaginatedResult<GlobalEntityIdentifierData>>;
+  update(id: UUID, data: UpdateGlobalEntityIdentifierData): Promise<GlobalEntityIdentifierData>;
   delete(id: UUID): Promise<void>;
   existsByName(name: string): Promise<boolean>;
   existsByIcon(icon: string): Promise<boolean>;
   existsByNameAndIcon(name: string, icon: string): Promise<boolean>;
   count(filters?: GlobalEntityIdentifierFilterOptions): Promise<number>;
   countByEntityType(entityType: string): Promise<number>;
-  findByNamePrefix(namePrefix: string, limit: number): Promise<GlobalEntityIdentifier[]>;
+  findByNamePrefix(namePrefix: string, limit: number): Promise<GlobalEntityIdentifierData[]>;
 }
