@@ -8,11 +8,11 @@ export class CreateActionTypeDto {
     description: 'Name of the action type',
     example: 'Morning Push-ups',
     minLength: 2,
-    maxLength: 100,
+    maxLength: 50,
   })
   @IsNotEmpty({ message: 'ActionType name is required' })
   @IsString({ message: 'ActionType name must be a string' })
-  @Length(2, 100, { message: 'ActionType name must be between 2 and 100 characters' })
+  @Length(2, 50, { message: 'ActionType name must be between 2 and 50 characters' })
   name!: string;
 
   @ApiProperty({
