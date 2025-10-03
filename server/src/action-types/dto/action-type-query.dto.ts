@@ -3,8 +3,9 @@ import { Transform, Type } from 'class-transformer';
 import { IsOptional, IsBoolean, IsInt, IsUUID, Min, Max } from 'class-validator';
 
 import { UUID } from '../../domain/shared/types/common';
+import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
 
-export class ActionTypeQueryDto {
+export class ActionTypeQueryDto extends PaginationQueryDto {
   @ApiPropertyOptional({
     description: 'Filter by habit ID',
     example: '987fcdeb-51a2-43d1-9876-543210987654',
