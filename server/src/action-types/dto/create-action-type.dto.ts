@@ -13,7 +13,7 @@ export class CreateActionTypeDto {
   @IsNotEmpty({ message: 'ActionType name is required' })
   @IsString({ message: 'ActionType name must be a string' })
   @Length(2, 100, { message: 'ActionType name must be between 2 and 100 characters' })
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: 'UUID of the habit this action type belongs to',
@@ -22,5 +22,5 @@ export class CreateActionTypeDto {
   })
   @IsNotEmpty({ message: 'Habit ID is required' })
   @IsUUID(4, { message: 'Habit ID must be a valid UUID' })
-  habitId: UUID;
+  habitId!: UUID;
 }
