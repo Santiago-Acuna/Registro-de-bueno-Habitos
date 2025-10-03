@@ -30,7 +30,6 @@ const mockActionTypesService = {
   findOne: jest.fn(),
   update: jest.fn(),
   remove: jest.fn(),
-  incrementActionCount: jest.fn(),
   findMostActive: jest.fn(),
   findRecentlyActive: jest.fn(),
   getStatsByHabitId: jest.fn(),
