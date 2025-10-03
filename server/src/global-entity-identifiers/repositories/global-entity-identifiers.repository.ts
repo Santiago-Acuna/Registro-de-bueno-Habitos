@@ -364,11 +364,11 @@ export class GlobalEntityIdentifiersRepository implements IGlobalEntityIdentifie
     const where: Record<string, unknown> = {};
 
     if (filters.entityType) {
-      where.entityType = filters.entityType;
+      where['entityType'] = filters.entityType;
     }
 
     if (filters.namePrefix) {
-      where.name = {
+      where['name'] = {
         startsWith: filters.namePrefix,
       };
     }
