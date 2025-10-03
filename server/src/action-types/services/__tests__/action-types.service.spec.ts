@@ -31,7 +31,6 @@ const mockActionTypesRepository = {
   findByNameAndHabitId: jest.fn(),
   update: jest.fn(),
   delete: jest.fn(),
-  incrementActionCount: jest.fn(),
   findMostActive: jest.fn(),
   findRecentlyActive: jest.fn(),
   count: jest.fn(),
