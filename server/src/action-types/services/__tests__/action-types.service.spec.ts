@@ -205,7 +205,7 @@ describe('ActionTypesService (RED PHASE)', () => {
         expect.objectContaining({
           id: mockActionTypeId,
           name: mockActionTypeName,
-          logo: mockIconUrl,
+          icon: mockIconUrl,
           habitId: mockHabitId,
         })
       );
@@ -421,7 +421,7 @@ describe('ActionTypesService (RED PHASE)', () => {
       expect(actionTypeResponse).toEqual({
         id: mockActionType.id,
         name: mockActionType.globalEntityIdentifier.name.getValue(),
-        logo: mockActionType.globalEntityIdentifier.icon.getValue(),
+        icon: mockActionType.globalEntityIdentifier.icon.getValue(),
         habitId: mockActionType.habitId,
         totalActionsCount: mockActionType.totalActionsCount,
         lastActionDate: mockActionType.lastActionDate,
@@ -716,7 +716,7 @@ describe('ActionTypesService (RED PHASE)', () => {
             icon: newIconUrl,
           })
         );
-        expect(result.logo).toBe(newIconUrl);
+        expect(result.icon).toBe(newIconUrl);
       });
 
       it('should successfully update action type name and icon together', async () => {
@@ -780,7 +780,7 @@ describe('ActionTypesService (RED PHASE)', () => {
           expect.any(Object)
         );
         expect(result.name).toBe(updateDto.name);
-        expect(result.logo).toBe(newIconUrl);
+        expect(result.icon).toBe(newIconUrl);
       });
 
       it('should throw ValidationException when icon upload fails', async () => {
@@ -939,7 +939,7 @@ describe('ActionTypesService (RED PHASE)', () => {
       expect(result).toEqual({
         id: mockActionTypeId,
         name: mockActionTypeName,
-        logo: mockIconUrl,
+        icon: mockIconUrl,
         habitId: mockHabitId,
         totalActionsCount: 5,
         lastActionDate,
