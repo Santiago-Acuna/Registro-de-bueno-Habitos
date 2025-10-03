@@ -25,7 +25,6 @@ const mockValidate = validate as jest.MockedFunction<typeof validate>;
 import { UUID } from '../../../domain/shared/types/common';
 import { UploadImageDto } from '../../../helpers/cloudinary';
 import { PaginatedResponseDto } from '../../../infrastructure/dto/paginated-response.dto';
-import { PaginationQueryDto } from '../../../infrastructure/dto/pagination-query.dto';
 import {
   ValidationException,
   NotFoundError,
@@ -69,7 +68,7 @@ describe('ActionTypesController', () => {
   ): ActionTypeResponseDto => ({
     id: mockActionTypeId,
     name: mockActionTypeName,
-    logo: mockLogo,
+    icon: mockLogo,
     habitId: mockHabitId,
     totalActionsCount: 0,
     lastActionDate: null,
@@ -224,7 +223,7 @@ describe('ActionTypesController', () => {
   });
 
   describe('findAll()', () => {
-    const paginationQuery: PaginationQueryDto = {
+    const paginationQuery: ActionTypeQueryDto = {
       page: 1,
       limit: 10,
     };
@@ -239,7 +238,7 @@ describe('ActionTypesController', () => {
       const result = await controller.findAll(paginationQuery);
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith(paginationQuery, undefined);
+      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, undefined);
       expect(result).toEqual(expectedResponse);
       expect(result.data).toHaveLength(2);
     });
@@ -257,7 +256,7 @@ describe('ActionTypesController', () => {
       const result = await controller.findAll({ ...paginationQuery, ...queryDto });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith(paginationQuery, {
+      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
         habitId: mockHabitId,
       });
       expect(result).toEqual(expectedResponse);
@@ -276,7 +275,7 @@ describe('ActionTypesController', () => {
       await controller.findAll({ ...paginationQuery, ...queryDto });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith(paginationQuery, {
+      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
         hasActions: true,
       });
     });
@@ -294,7 +293,7 @@ describe('ActionTypesController', () => {
       await controller.findAll({ ...paginationQuery, ...queryDto });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith(paginationQuery, {
+      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
         hasActions: false,
       });
     });
@@ -308,7 +307,7 @@ describe('ActionTypesController', () => {
       await controller.findAll(paginationQuery);
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith(paginationQuery, undefined);
+      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, undefined);
     });
 
     it('should handle service errors', async () => {
@@ -336,7 +335,7 @@ describe('ActionTypesController', () => {
       await controller.findAll({ ...paginationQuery, ...queryDto });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith(paginationQuery, {
+      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
         habitId: mockHabitId,
         hasActions: true,
         recentActivityDays: 7,
@@ -345,7 +344,7 @@ describe('ActionTypesController', () => {
   });
 
   describe('findByHabitId()', () => {
-    const paginationQuery: PaginationQueryDto = {
+    const paginationQuery: ActionTypeQueryDto = {
       page: 1,
       limit: 10,
     };
@@ -362,7 +361,7 @@ describe('ActionTypesController', () => {
       // Assert
       expect(actionTypesService.findByHabitId).toHaveBeenCalledWith(
         mockHabitId,
-        paginationQuery,
+        { page: 1, limit: 10 },
         undefined
       );
       expect(result).toEqual(expectedResponse);
@@ -373,13 +372,15 @@ describe('ActionTypesController', () => {
     it('should handle pagination and filters for habit-specific query', async () => {
       // Arrange
       const queryDto: ActionTypeQueryDto = {
+        page: 2,
+        limit: 5,
         hasActions: true,
       };
       const expectedResponse = new PaginatedResponseDto([], 0, 2, 5);
       actionTypesService.findByHabitId.mockResolvedValue(expectedResponse);
 
       // Act
-      await controller.findByHabitId(mockHabitId, { page: 2, limit: 5 }, queryDto);
+      await controller.findByHabitId(mockHabitId, queryDto);
 
       // Assert
       expect(actionTypesService.findByHabitId).toHaveBeenCalledWith(
@@ -475,7 +476,7 @@ describe('ActionTypesController', () => {
       const mockFile = createMockMulterFile();
       const expectedResponse = createMockActionTypeResponse({
         name: updateActionTypeDto.name ?? 'Updated Push-ups Name',
-        logo: 'https://example.com/new-icon.png',
+        icon: 'https://example.com/new-icon.png',
         updatedAt: new Date('2024-01-02T00:00:00.000Z'),
       });
       mockValidate.mockResolvedValue([]);
@@ -729,7 +730,7 @@ describe('ActionTypesController', () => {
 
     it('should handle pagination query parameters', async () => {
       // Arrange
-      const paginationQuery: PaginationQueryDto = {
+      const paginationQuery: ActionTypeQueryDto = {
         page: 2,
         limit: 20,
       };
@@ -740,12 +741,12 @@ describe('ActionTypesController', () => {
       await controller.findAll(paginationQuery);
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith(paginationQuery, undefined);
+      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 2, limit: 20 }, undefined);
     });
 
     it('should handle boolean query parameters correctly', async () => {
       // Arrange
-      const paginationQuery: PaginationQueryDto = { page: 1, limit: 10 };
+      const paginationQuery: ActionTypeQueryDto = { page: 1, limit: 10 };
       const expectedResponse = new PaginatedResponseDto([], 0, 1, 10);
       actionTypesService.findAll.mockResolvedValue(expectedResponse);
 
@@ -754,10 +755,10 @@ describe('ActionTypesController', () => {
       await controller.findAll({ ...paginationQuery, hasActions: false });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith(paginationQuery, {
+      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
         hasActions: true,
       });
-      expect(actionTypesService.findAll).toHaveBeenCalledWith(paginationQuery, {
+      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
         hasActions: false,
       });
     });
