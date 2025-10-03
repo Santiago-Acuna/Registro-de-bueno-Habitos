@@ -8,20 +8,20 @@ class ActionTypeStatsSummaryDto {
     example: '123e4567-e89b-12d3-a456-426614174000',
     format: 'uuid',
   })
-  id: UUID;
+  id!: UUID;
 
   @ApiProperty({
     description: 'Action type name',
     example: 'Morning Push-ups',
   })
-  name: string;
+  name!: string;
 
   @ApiProperty({
     description: 'Total actions count for this action type',
     example: 50,
     minimum: 0,
   })
-  totalActionsCount: number;
+  totalActionsCount!: number;
 }
 
 export class ActionTypeStatsResponseDto {
@@ -30,28 +30,28 @@ export class ActionTypeStatsResponseDto {
     example: 5,
     minimum: 0,
   })
-  totalActionTypes: number;
+  totalActionTypes!: number;
 
   @ApiProperty({
     description: 'Number of action types with at least one action performed',
     example: 4,
     minimum: 0,
   })
-  activeActionTypes: number;
+  activeActionTypes!: number;
 
   @ApiProperty({
     description: 'Sum of all action counts across all action types',
     example: 100,
     minimum: 0,
   })
-  totalActions: number;
+  totalActions!: number;
 
   @ApiProperty({
     description: 'Average number of actions per action type',
     example: 20.5,
     minimum: 0,
   })
-  averageActionsPerType: number;
+  averageActionsPerType!: number;
 
   @ApiPropertyOptional({
     description: 'Most active action type (highest action count)',
@@ -72,5 +72,5 @@ export class ActionTypeStatsResponseDto {
     example: 3,
     minimum: 0,
   })
-  recentlyActiveCount: number;
+  recentlyActiveCount!: number;
 }
