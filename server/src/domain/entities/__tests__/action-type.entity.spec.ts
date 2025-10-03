@@ -580,8 +580,8 @@ describe('ActionType Domain Entity', () => {
       const json = actionType.toJSON();
 
       // ASSERT
-      expect(json.name).toBe(customName);
-      expect(json.icon).toBe(customIcon);
+      expect(json['name']).toBe(customName);
+      expect(json['icon']).toBe(customIcon);
     });
 
     it('should return object with proper types', () => {
@@ -601,14 +601,14 @@ describe('ActionType Domain Entity', () => {
       const json = actionType.toJSON();
 
       // ASSERT
-      expect(typeof json.id).toBe('string');
-      expect(typeof json.habitId).toBe('string');
-      expect(typeof json.name).toBe('string');
-      expect(typeof json.icon).toBe('string');
-      expect(typeof json.totalActionsCount).toBe('number');
-      expect(json.lastActionDate).toBeNull();
-      expect(json.createdAt).toBeInstanceOf(Date);
-      expect(json.updatedAt).toBeInstanceOf(Date);
+      expect(typeof json['id']).toBe('string');
+      expect(typeof json['habitId']).toBe('string');
+      expect(typeof json['name']).toBe('string');
+      expect(typeof json['icon']).toBe('string');
+      expect(typeof json['totalActionsCount']).toBe('number');
+      expect(json['lastActionDate']).toBeNull();
+      expect(json['createdAt']).toBeInstanceOf(Date);
+      expect(json['updatedAt']).toBeInstanceOf(Date);
     });
   });
 
