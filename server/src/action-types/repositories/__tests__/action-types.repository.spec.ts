@@ -1,17 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ActionType } from '../../../domain/entities/action-type.entity';
-import { GlobalEntityIdentifier } from '../../../domain/entities/global-entity-identifier.entity';
 import { UUID, PaginationParams } from '../../../domain/shared/types/common';
-import { IdentifierIcon } from '../../../domain/value-objects/identifier-icon';
-import { IdentifierName } from '../../../domain/value-objects/identifier-name';
 import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { NotFoundError, ConflictError } from '../../../infrastructure/exceptions/app.exceptions';
 import {
   CreateActionTypeData,
   UpdateActionTypeData,
   ActionTypeFilterOptions,
-  ActionTypeStats,
 } from '../../interfaces/action-types-repository.interface';
 import { ActionTypesRepository } from '../action-types.repository';
 
@@ -67,42 +63,43 @@ describe('ActionTypesRepository (RED PHASE)', () => {
     ...overrides,
   });
 
-  // Helper to create mock GlobalEntityIdentifier
-  const createMockGlobalIdentifier = (
-    name: string = mockActionTypeName,
-    icon: string = mockIconUrl
-  ): GlobalEntityIdentifier => {
-    return new GlobalEntityIdentifier(
-      validGlobalIdentifierId,
-      IdentifierName.create(name),
-      IdentifierIcon.create(icon),
-      'action_type',
-      mockActionTypeId
-    );
-  };
+  // Helper to create mock GlobalEntityIdentifier (unused in tests)
+  // const createMockGlobalIdentifier = (
+  //   name: string = mockActionTypeName,
+  //   icon: string = mockIconUrl
+  // ): GlobalEntityIdentifier => {
+  //   return new GlobalEntityIdentifier(
+  //     validGlobalIdentifierId,
+  //     IdentifierName.create(name),
+  //     IdentifierIcon.create(icon),
+  //     'action_type',
+  //     mockActionTypeId
+  //   );
+  // };
 
-  const createMockActionType = (overrides: Partial<any> = {}): ActionType => {
-    const globalIdentifier = overrides.globalEntityIdentifier || createMockGlobalIdentifier();
-    const defaults = {
-      id: mockActionTypeId,
-      habitId: mockHabitId,
-      createdAt: fixedDate,
-      updatedAt: fixedDate,
-      totalActionsCount: 0,
-      lastActionDate: null,
-      globalEntityIdentifier: globalIdentifier,
-    };
-    const merged = { ...defaults, ...overrides };
-    return new ActionType(
-      merged.id,
-      merged.habitId,
-      merged.createdAt,
-      merged.updatedAt,
-      merged.totalActionsCount,
-      merged.lastActionDate,
-      merged.globalEntityIdentifier
-    );
-  };
+  // Helper function to create mock ActionType entities (unused in tests)
+  // const createMockActionType = (overrides: Partial<any> = {}): ActionType => {
+  //   const globalIdentifier = overrides.globalEntityIdentifier || createMockGlobalIdentifier();
+  //   const defaults = {
+  //     id: mockActionTypeId,
+  //     habitId: mockHabitId,
+  //     createdAt: fixedDate,
+  //     updatedAt: fixedDate,
+  //     totalActionsCount: 0,
+  //     lastActionDate: null,
+  //     globalEntityIdentifier: globalIdentifier,
+  //   };
+  //   const merged = { ...defaults, ...overrides };
+  //   return new ActionType(
+  //     merged.id,
+  //     merged.habitId,
+  //     merged.createdAt,
+  //     merged.updatedAt,
+  //     merged.totalActionsCount,
+  //     merged.lastActionDate,
+  //     merged.globalEntityIdentifier
+  //   );
+  // };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -392,7 +389,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         include: { globalEntityIdentifiers: true },
       });
       expect(result.data).toHaveLength(1);
-      expect(result.data[0].habitId).toBe(mockHabitId);
+      expect(result.data[0]?.habitId).toBe(mockHabitId);
     });
 
     it('should apply additional filters for habit-specific query', async () => {
@@ -525,6 +522,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
       expect(mockPrismaClient.actionTypes.update).toHaveBeenCalledWith({
         where: { id: mockActionTypeId },
         data: partialUpdate,
+        include: { globalEntityIdentifiers: true },
       });
     });
   });
@@ -577,7 +575,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
         include: { globalEntityIdentifiers: true },
       });
       expect(result).toHaveLength(2);
-      expect(result[0].totalActionsCount).toBe(50);
+      expect(result[0]?.totalActionsCount).toBe(50);
     });
   });
 
