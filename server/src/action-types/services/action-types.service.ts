@@ -241,7 +241,7 @@ export class ActionTypesService {
     return {
       id: actionType.id,
       name: actionType.globalEntityIdentifier.name.getValue(),
-      logo: actionType.globalEntityIdentifier.icon.getValue(),
+      icon: actionType.globalEntityIdentifier.icon.getValue(),
       habitId: actionType.habitId,
       totalActionsCount: actionType.totalActionsCount,
       lastActionDate: actionType.lastActionDate ? new Date(actionType.lastActionDate) : null,
