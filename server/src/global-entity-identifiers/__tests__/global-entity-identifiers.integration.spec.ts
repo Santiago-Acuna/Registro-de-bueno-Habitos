@@ -819,7 +819,7 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       });
 
       expect(result.name).toBe(maxLengthName);
-      expect(result.name).toHaveLength(255);
+      expect(result.name).toHaveLength(50);
     });
 
     it('should trim whitespace from names', async () => {
