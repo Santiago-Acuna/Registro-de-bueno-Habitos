@@ -11,6 +11,9 @@ import {
   UseInterceptors,
   UploadedFile,
   ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
+  Version,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiTags } from '@nestjs/swagger';
@@ -20,7 +23,6 @@ import { validate } from 'class-validator';
 import { UUID } from '../../domain/shared/types/common';
 import { UploadImageDto } from '../../helpers/cloudinary';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
-import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
 import { ValidationException } from '../../infrastructure/exceptions/app.exceptions';
 import { ActionTypeQueryDto } from '../dto/action-type-query.dto';
 import { ActionTypeResponseDto } from '../dto/action-type-response.dto';
@@ -36,6 +38,8 @@ export class ActionTypesController {
   constructor(private readonly actionTypesService: ActionTypesService) {}
 
   @Post()
+  @Version('1')
+  @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(FileInterceptor('icon'))
   async create(
     @Body() createActionTypeDto: CreateActionTypeDto,
@@ -59,9 +63,8 @@ export class ActionTypesController {
   }
 
   @Get()
-  async findAll(
-    @Query() query: PaginationQueryDto & ActionTypeQueryDto
-  ): Promise<PaginatedResponseDto<ActionTypeResponseDto>> {
+  @Version('1')
+  async findAll(@Query() query: ActionTypeQueryDto): Promise<PaginatedResponseDto<ActionTypeResponseDto>> {
     const { page = 1, limit = 10, habitId, hasActions, recentActivityDays } = query;
     const paginationQuery = { page, limit };
 
@@ -76,18 +79,18 @@ export class ActionTypesController {
   }
 
   @Get('habit/:habitId')
+  @Version('1')
   async findByHabitId(
     @Param('habitId', ParseUUIDPipe) habitId: UUID,
-    @Query() query: PaginationQueryDto & ActionTypeQueryDto,
-    @Query() queryFilters?: ActionTypeQueryDto
+    @Query() query: ActionTypeQueryDto
   ): Promise<PaginatedResponseDto<ActionTypeResponseDto>> {
-    const { page = 1, limit = 10 } = query;
+    const { page = 1, limit = 10, hasActions, recentActivityDays } = query;
     const paginationQuery = { page, limit };
 
     const filterParams: Partial<ActionTypeFilterOptions> = {};
-    if (queryFilters?.hasActions !== undefined) filterParams.hasActions = queryFilters.hasActions;
-    if (queryFilters?.recentActivityDays !== undefined) {
-      filterParams.recentActivityDays = queryFilters.recentActivityDays;
+    if (hasActions !== undefined) filterParams.hasActions = hasActions;
+    if (recentActivityDays !== undefined) {
+      filterParams.recentActivityDays = recentActivityDays;
     }
 
     const filters = this.extractFilters(filterParams);
@@ -96,11 +99,13 @@ export class ActionTypesController {
   }
 
   @Get(':id')
+  @Version('1')
   async findOne(@Param('id', ParseUUIDPipe) id: UUID): Promise<ActionTypeResponseDto> {
     return this.actionTypesService.findOne(id);
   }
 
   @Patch(':id')
+  @Version('1')
   @UseInterceptors(FileInterceptor('icon'))
   async update(
     @Param('id', ParseUUIDPipe) id: UUID,
@@ -129,6 +134,8 @@ export class ActionTypesController {
   }
 
   @Delete(':id')
+  @Version('1')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id', ParseUUIDPipe) id: UUID): Promise<void> {
     return this.actionTypesService.remove(id);
   }
