@@ -87,7 +87,7 @@ model globalEntityIdentifiers {
 
 model habits {
   id                      String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  habitType               habitComplexity
+  habitType               habitComplexity          @map("habit_type")
   createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt               DateTime                 @default(now()) @map("updated_at") @db.Timestamptz(6)
   isActive                Boolean                  @default(true) @map("is_active")
