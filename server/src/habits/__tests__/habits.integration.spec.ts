@@ -184,7 +184,7 @@ describe('Habits API Integration Tests', () => {
         .post('/api/v1/habits')
         .field('name', createHabitDto.name)
         .field('habitType', createHabitDto.habitType)
-        .attach('logo', createImageBuffer(), 'test-logo.png')
+        .attach('icon', createImageBuffer(), 'test-logo.png')
         .expect(201);
 
       expect(response.body).toEqual(
@@ -210,7 +210,7 @@ describe('Habits API Integration Tests', () => {
         .post('/api/v1/habits')
         .field('name', createHabitDto.name)
         .field('habitType', createHabitDto.habitType)
-        .attach('logo', createImageBuffer(), 'test-logo.png')
+        .attach('icon', createImageBuffer(), 'test-logo.png')
         .expect(409);
 
       expect(response.body).toEqual(
@@ -227,7 +227,7 @@ describe('Habits API Integration Tests', () => {
         .post('/api/v1/habits')
         .field('name', '') // Invalid empty name
         .field('habitType', createHabitDto.habitType)
-        .attach('logo', createImageBuffer(), 'test-logo.png')
+        .attach('icon', createImageBuffer(), 'test-logo.png')
         .expect(400);
 
       // Standard NestJS ValidationPipe returns message as array
@@ -245,7 +245,7 @@ describe('Habits API Integration Tests', () => {
         .post('/api/v1/habits')
         .field('name', createHabitDto.name)
         .field('habitType', 'INVALID_TYPE')
-        .attach('logo', createImageBuffer(), 'test-logo.png')
+        .attach('icon', createImageBuffer(), 'test-logo.png')
         .expect(400);
 
       expect(response.body).toEqual(
@@ -292,7 +292,7 @@ describe('Habits API Integration Tests', () => {
         .post('/api/v1/habits')
         .field('name', createHabitDto.name)
         .field('habitType', createHabitDto.habitType)
-        .attach('logo', createImageBuffer(), 'test-logo.png')
+        .attach('icon', createImageBuffer(), 'test-logo.png')
         .expect(400);
 
       expect(response.body).toEqual(
