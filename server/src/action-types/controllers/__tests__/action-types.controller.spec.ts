@@ -256,9 +256,12 @@ describe('ActionTypesController', () => {
       const result = await controller.findAll({ ...paginationQuery, ...queryDto });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
-        habitId: mockHabitId,
-      });
+      expect(actionTypesService.findAll).toHaveBeenCalledWith(
+        { page: 1, limit: 10 },
+        {
+          habitId: mockHabitId,
+        }
+      );
       expect(result).toEqual(expectedResponse);
     });
 
@@ -275,9 +278,12 @@ describe('ActionTypesController', () => {
       await controller.findAll({ ...paginationQuery, ...queryDto });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
-        hasActions: true,
-      });
+      expect(actionTypesService.findAll).toHaveBeenCalledWith(
+        { page: 1, limit: 10 },
+        {
+          hasActions: true,
+        }
+      );
     });
 
     it('should handle hasActions filter being false', async () => {
@@ -293,9 +299,12 @@ describe('ActionTypesController', () => {
       await controller.findAll({ ...paginationQuery, ...queryDto });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
-        hasActions: false,
-      });
+      expect(actionTypesService.findAll).toHaveBeenCalledWith(
+        { page: 1, limit: 10 },
+        {
+          hasActions: false,
+        }
+      );
     });
 
     it('should not apply filters when all filter parameters are undefined', async () => {
@@ -335,11 +344,14 @@ describe('ActionTypesController', () => {
       await controller.findAll({ ...paginationQuery, ...queryDto });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
-        habitId: mockHabitId,
-        hasActions: true,
-        recentActivityDays: 7,
-      });
+      expect(actionTypesService.findAll).toHaveBeenCalledWith(
+        { page: 1, limit: 10 },
+        {
+          habitId: mockHabitId,
+          hasActions: true,
+          recentActivityDays: 7,
+        }
+      );
     });
   });
 
@@ -755,12 +767,18 @@ describe('ActionTypesController', () => {
       await controller.findAll({ ...paginationQuery, hasActions: false });
 
       // Assert
-      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
-        hasActions: true,
-      });
-      expect(actionTypesService.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, {
-        hasActions: false,
-      });
+      expect(actionTypesService.findAll).toHaveBeenCalledWith(
+        { page: 1, limit: 10 },
+        {
+          hasActions: true,
+        }
+      );
+      expect(actionTypesService.findAll).toHaveBeenCalledWith(
+        { page: 1, limit: 10 },
+        {
+          hasActions: false,
+        }
+      );
     });
   });
 });

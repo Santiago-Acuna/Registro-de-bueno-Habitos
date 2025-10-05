@@ -31,201 +31,201 @@ class MockPrismaService {
 
   globalEntityIdentifiers = {
     create: jest.fn(async ({ data }: { data: any }) => {
-          const id = this.generateId();
+      const id = this.generateId();
 
-          // Check for name uniqueness constraint
-          const existingWithName = Array.from(this.identifiers.values()).find(
-            identifier => identifier.name === data.name
-          );
-          if (existingWithName) {
-            const error = new Error(
-              'Unique constraint failed on the constraint: `global_entity_identifiers_name_unique`'
-            );
-            (error as any).code = 'P2002';
-            (error as any).meta = { target: ['name'] };
-            throw error;
-          }
+      // Check for name uniqueness constraint
+      const existingWithName = Array.from(this.identifiers.values()).find(
+        identifier => identifier.name === data.name
+      );
+      if (existingWithName) {
+        const error = new Error(
+          'Unique constraint failed on the constraint: `global_entity_identifiers_name_unique`'
+        );
+        (error as any).code = 'P2002';
+        (error as any).meta = { target: ['name'] };
+        throw error;
+      }
 
-          // Check for icon uniqueness constraint
-          const existingWithIcon = Array.from(this.identifiers.values()).find(
-            identifier => identifier.icon === data.icon
-          );
-          if (existingWithIcon) {
-            const error = new Error(
-              'Unique constraint failed on the constraint: `global_entity_identifiers_icon_unique`'
-            );
-            (error as any).code = 'P2002';
-            (error as any).meta = { target: ['icon'] };
-            throw error;
-          }
+      // Check for icon uniqueness constraint
+      const existingWithIcon = Array.from(this.identifiers.values()).find(
+        identifier => identifier.icon === data.icon
+      );
+      if (existingWithIcon) {
+        const error = new Error(
+          'Unique constraint failed on the constraint: `global_entity_identifiers_icon_unique`'
+        );
+        (error as any).code = 'P2002';
+        (error as any).meta = { target: ['icon'] };
+        throw error;
+      }
 
-          // Check for name+icon combination uniqueness
-          const existingWithBoth = Array.from(this.identifiers.values()).find(
-            identifier => identifier.name === data.name && identifier.icon === data.icon
-          );
-          if (existingWithBoth) {
-            const error = new Error(
-              'Unique constraint failed on the constraint: `global_entity_identifiers_name_icon_unique`'
-            );
-            (error as any).code = 'P2002';
-            (error as any).meta = { target: ['name', 'icon'] };
-            throw error;
-          }
+      // Check for name+icon combination uniqueness
+      const existingWithBoth = Array.from(this.identifiers.values()).find(
+        identifier => identifier.name === data.name && identifier.icon === data.icon
+      );
+      if (existingWithBoth) {
+        const error = new Error(
+          'Unique constraint failed on the constraint: `global_entity_identifiers_name_icon_unique`'
+        );
+        (error as any).code = 'P2002';
+        (error as any).meta = { target: ['name', 'icon'] };
+        throw error;
+      }
 
-          // Check for entityType+entityId combination uniqueness
-          const existingEntity = Array.from(this.identifiers.values()).find(
-            identifier =>
-              identifier.entityType === data.entityType && identifier.entityId === data.entityId
-          );
-          if (existingEntity) {
-            const error = new Error(
-              'Unique constraint failed on the constraint: `global_entity_identifiers_entity_unique`'
-            );
-            (error as any).code = 'P2002';
-            (error as any).meta = { target: ['entityType', 'entityId'] };
-            throw error;
-          }
+      // Check for entityType+entityId combination uniqueness
+      const existingEntity = Array.from(this.identifiers.values()).find(
+        identifier =>
+          identifier.entityType === data.entityType && identifier.entityId === data.entityId
+      );
+      if (existingEntity) {
+        const error = new Error(
+          'Unique constraint failed on the constraint: `global_entity_identifiers_entity_unique`'
+        );
+        (error as any).code = 'P2002';
+        (error as any).meta = { target: ['entityType', 'entityId'] };
+        throw error;
+      }
 
-          const identifier = {
-            id,
-            name: data.name,
-            icon: data.icon,
-            entityType: data.entityType,
-            entityId: data.entityId,
-          };
-
-          this.identifiers.set(id, identifier);
-          return identifier;
-        }),
-
-        findUnique: jest.fn(async ({ where }) => {
-          if (where.id) {
-            return this.identifiers.get(where.id) || null;
-          }
-          if (where.name) {
-            return (
-              Array.from(this.identifiers.values()).find(
-                identifier => identifier.name === where.name
-              ) || null
-            );
-          }
-          if (where.icon) {
-            return (
-              Array.from(this.identifiers.values()).find(
-                identifier => identifier.icon === where.icon
-              ) || null
-            );
-          }
-          return null;
-        }),
-
-        findFirst: jest.fn(async ({ where }) => {
-          return (
-            Array.from(this.identifiers.values()).find(
-              identifier =>
-                (!where.name || identifier.name === where.name) &&
-                (!where.icon || identifier.icon === where.icon) &&
-                (!where.entityType || identifier.entityType === where.entityType) &&
-                (!where.entityId || identifier.entityId === where.entityId)
-            ) || null
-          );
-        }),
-
-        findMany: jest.fn(async ({ where, orderBy }: { where?: any; orderBy?: any }) => {
-          let results = Array.from(this.identifiers.values());
-
-          // Apply filters
-          if (where) {
-            if (where.entityType) {
-              results = results.filter(identifier => identifier.entityType === where.entityType);
-            }
-          }
-
-          // Apply ordering
-          if (orderBy) {
-            const field = Object.keys(orderBy)[0] as string;
-            const direction = orderBy[field];
-            results.sort((a: any, b: any) => {
-              if (direction === 'asc') {
-                return a[field] > b[field] ? 1 : -1;
-              } else {
-                return a[field] < b[field] ? 1 : -1;
-              }
-            });
-          }
-
-          return results;
-        }),
-
-        count: jest.fn(async (args?: { where?: any }) => {
-          let results = Array.from(this.identifiers.values());
-
-          if (args?.where?.entityType) {
-            results = results.filter(identifier => identifier.entityType === args.where.entityType);
-          }
-
-          return results.length;
-        }),
-
-        update: jest.fn(async ({ where, data }) => {
-          const identifier = this.identifiers.get(where.id);
-          if (!identifier) {
-            const error = new Error('Record not found');
-            (error as any).code = 'P2025';
-            throw error;
-          }
-
-          // Check for name uniqueness constraint if name is being updated
-          if (data.name && data.name !== identifier.name) {
-            const existing = Array.from(this.identifiers.values()).find(
-              i => i.id !== where.id && i.name === data.name
-            );
-            if (existing) {
-              const error = new Error(
-                'Unique constraint failed on the constraint: `global_entity_identifiers_name_unique`'
-              );
-              (error as any).code = 'P2002';
-              (error as any).meta = { target: ['name'] };
-              throw error;
-            }
-          }
-
-          // Check for icon uniqueness constraint if icon is being updated
-          if (data.icon && data.icon !== identifier.icon) {
-            const existing = Array.from(this.identifiers.values()).find(
-              i => i.id !== where.id && i.icon === data.icon
-            );
-            if (existing) {
-              const error = new Error(
-                'Unique constraint failed on the constraint: `global_entity_identifiers_icon_unique`'
-              );
-              (error as any).code = 'P2002';
-              (error as any).meta = { target: ['icon'] };
-              throw error;
-            }
-          }
-
-          const updated = {
-            ...identifier,
-            ...data,
-          };
-
-          this.identifiers.set(where.id, updated);
-          return updated;
-        }),
-
-        delete: jest.fn(async ({ where }) => {
-          const identifier = this.identifiers.get(where.id);
-          if (!identifier) {
-            const error = new Error('Record not found');
-            (error as any).code = 'P2025';
-            throw error;
-          }
-
-          this.identifiers.delete(where.id);
-          return identifier;
-        }),
+      const identifier = {
+        id,
+        name: data.name,
+        icon: data.icon,
+        entityType: data.entityType,
+        entityId: data.entityId,
       };
+
+      this.identifiers.set(id, identifier);
+      return identifier;
+    }),
+
+    findUnique: jest.fn(async ({ where }) => {
+      if (where.id) {
+        return this.identifiers.get(where.id) || null;
+      }
+      if (where.name) {
+        return (
+          Array.from(this.identifiers.values()).find(
+            identifier => identifier.name === where.name
+          ) || null
+        );
+      }
+      if (where.icon) {
+        return (
+          Array.from(this.identifiers.values()).find(
+            identifier => identifier.icon === where.icon
+          ) || null
+        );
+      }
+      return null;
+    }),
+
+    findFirst: jest.fn(async ({ where }) => {
+      return (
+        Array.from(this.identifiers.values()).find(
+          identifier =>
+            (!where.name || identifier.name === where.name) &&
+            (!where.icon || identifier.icon === where.icon) &&
+            (!where.entityType || identifier.entityType === where.entityType) &&
+            (!where.entityId || identifier.entityId === where.entityId)
+        ) || null
+      );
+    }),
+
+    findMany: jest.fn(async ({ where, orderBy }: { where?: any; orderBy?: any }) => {
+      let results = Array.from(this.identifiers.values());
+
+      // Apply filters
+      if (where) {
+        if (where.entityType) {
+          results = results.filter(identifier => identifier.entityType === where.entityType);
+        }
+      }
+
+      // Apply ordering
+      if (orderBy) {
+        const field = Object.keys(orderBy)[0] as string;
+        const direction = orderBy[field];
+        results.sort((a: any, b: any) => {
+          if (direction === 'asc') {
+            return a[field] > b[field] ? 1 : -1;
+          } else {
+            return a[field] < b[field] ? 1 : -1;
+          }
+        });
+      }
+
+      return results;
+    }),
+
+    count: jest.fn(async (args?: { where?: any }) => {
+      let results = Array.from(this.identifiers.values());
+
+      if (args?.where?.entityType) {
+        results = results.filter(identifier => identifier.entityType === args.where.entityType);
+      }
+
+      return results.length;
+    }),
+
+    update: jest.fn(async ({ where, data }) => {
+      const identifier = this.identifiers.get(where.id);
+      if (!identifier) {
+        const error = new Error('Record not found');
+        (error as any).code = 'P2025';
+        throw error;
+      }
+
+      // Check for name uniqueness constraint if name is being updated
+      if (data.name && data.name !== identifier.name) {
+        const existing = Array.from(this.identifiers.values()).find(
+          i => i.id !== where.id && i.name === data.name
+        );
+        if (existing) {
+          const error = new Error(
+            'Unique constraint failed on the constraint: `global_entity_identifiers_name_unique`'
+          );
+          (error as any).code = 'P2002';
+          (error as any).meta = { target: ['name'] };
+          throw error;
+        }
+      }
+
+      // Check for icon uniqueness constraint if icon is being updated
+      if (data.icon && data.icon !== identifier.icon) {
+        const existing = Array.from(this.identifiers.values()).find(
+          i => i.id !== where.id && i.icon === data.icon
+        );
+        if (existing) {
+          const error = new Error(
+            'Unique constraint failed on the constraint: `global_entity_identifiers_icon_unique`'
+          );
+          (error as any).code = 'P2002';
+          (error as any).meta = { target: ['icon'] };
+          throw error;
+        }
+      }
+
+      const updated = {
+        ...identifier,
+        ...data,
+      };
+
+      this.identifiers.set(where.id, updated);
+      return updated;
+    }),
+
+    delete: jest.fn(async ({ where }) => {
+      const identifier = this.identifiers.get(where.id);
+      if (!identifier) {
+        const error = new Error('Record not found');
+        (error as any).code = 'P2025';
+        throw error;
+      }
+
+      this.identifiers.delete(where.id);
+      return identifier;
+    }),
+  };
 
   clearData() {
     this.identifiers.clear();
@@ -522,9 +522,9 @@ describe('GlobalEntityIdentifiers Integration Tests (RED PHASE) - Value Objects 
       });
 
       // Attempt to update first to have the same icon as second
-      await expect(service.update(result1.id, { icon: 'https://example.com/icons/icon2.png' })).rejects.toThrow(
-        ConflictError
-      );
+      await expect(
+        service.update(result1.id, { icon: 'https://example.com/icons/icon2.png' })
+      ).rejects.toThrow(ConflictError);
     });
 
     it('should allow updating to same name (no-op)', async () => {

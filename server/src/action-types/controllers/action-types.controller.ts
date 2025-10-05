@@ -64,7 +64,9 @@ export class ActionTypesController {
 
   @Get()
   @Version('1')
-  async findAll(@Query() query: ActionTypeQueryDto): Promise<PaginatedResponseDto<ActionTypeResponseDto>> {
+  async findAll(
+    @Query() query: ActionTypeQueryDto
+  ): Promise<PaginatedResponseDto<ActionTypeResponseDto>> {
     const { page = 1, limit = 10, habitId, hasActions, recentActivityDays } = query;
     const paginationQuery = { page, limit };
 
