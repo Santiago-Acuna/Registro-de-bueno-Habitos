@@ -21,16 +21,36 @@ export class ActionTypesRepository implements IActionTypesRepository {
 
   async create(data: CreateActionTypeData): Promise<ActionType> {
     try {
+      // Validate required habitId
+      if (!data.habitId || data.habitId.trim() === '') {
+        throw new Error('habitId is required and must be a valid UUID');
+      }
+
+      // Step 1: Create action type with ONLY habitId
       const createdActionType = await this.prisma.actionTypes.create({
+        data: {
+          habitId: data.habitId,
+        },
+      });
+
+      // Step 2: Create global identifier with name, icon, entityType, entityId
+      const globalIdentifier = await this.prisma.globalEntityIdentifiers.create({
         data: {
           name: data.name,
           icon: data.icon,
-          habitId: data.habitId,
-        } as never,
+          entityType: 'action_type',
+          entityId: createdActionType.id,
+        },
+      });
+
+      // Step 3: Update action type to link globalIdentifierId
+      const updatedActionType = await this.prisma.actionTypes.update({
+        where: { id: createdActionType.id },
+        data: { globalIdentifierId: globalIdentifier.id },
         include: { globalEntityIdentifiers: true },
       });
 
-      return this.mapToDomain(createdActionType as never);
+      return this.mapToDomain(updatedActionType as never);
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
         throw new ConflictError(
