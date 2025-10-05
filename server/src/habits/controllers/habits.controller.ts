@@ -37,14 +37,14 @@ import { HabitsService } from '../services/habits.service';
 export class HabitsController {
   constructor(private readonly habitsService: HabitsService) {}
   @Post()
-  @UseInterceptors(FileInterceptor('logo'))
+  @UseInterceptors(FileInterceptor('icon'))
   @Version('1')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create a new habit',
     description: 'Creates a new habit with the provided information. Habit names must be unique.',
   })
-  @ApiFile('logo')
+  @ApiFile('icon')
   @ApiBody({ type: CreateHabitDto })
   @ApiResponse({
     status: 201,
