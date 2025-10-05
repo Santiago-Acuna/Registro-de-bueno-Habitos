@@ -24,11 +24,15 @@ const mockPrismaClient = {
     aggregate: jest.fn(),
     updateMany: jest.fn(),
   },
+  globalEntityIdentifiers: {
+    create: jest.fn(),
+  },
   $transaction: jest.fn(),
 };
 
 const mockPrismaService = {
   actionTypes: mockPrismaClient.actionTypes,
+  globalEntityIdentifiers: mockPrismaClient.globalEntityIdentifiers,
   $transaction: mockPrismaClient.$transaction,
 };
 
@@ -117,40 +121,281 @@ describe('ActionTypesRepository (RED PHASE)', () => {
     repository = module.get<ActionTypesRepository>(ActionTypesRepository);
   });
 
-  describe('create()', () => {
+  describe('create() - RED PHASE: 3-Step Creation Process', () => {
     const createData: CreateActionTypeData = {
       name: mockActionTypeName,
       icon: mockIconUrl,
       habitId: mockHabitId,
     };
 
-    it('should successfully create a new action type', async () => {
-      // Arrange
-      const mockPrismaResult = createMockPrismaActionType();
-      mockPrismaClient.actionTypes.create.mockResolvedValue(mockPrismaResult);
+    it('should create action type using 3-step process: create entity, create global identifier, link them', async () => {
+      // Arrange - Mock the 3-step process
+      const actionTypeWithoutGlobalId = {
+        id: mockActionTypeId,
+        habitId: mockHabitId,
+        lastActionDate: null,
+        totalActionsCount: 0,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+        globalIdentifierId: null,
+      };
+
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockActionTypeName,
+        icon: mockIconUrl,
+        entityType: 'action_type',
+        entityId: mockActionTypeId,
+      };
+
+      const finalActionType = createMockPrismaActionType();
+
+      mockPrismaClient.actionTypes.create.mockResolvedValue(actionTypeWithoutGlobalId);
+      mockPrismaClient.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaClient.actionTypes.update.mockResolvedValue(finalActionType);
 
       // Act
       const result = await repository.create(createData);
 
-      // Assert
+      // Assert - Step 1: Create action type with ONLY habitId (no name, icon, or globalIdentifierId)
       expect(mockPrismaClient.actionTypes.create).toHaveBeenCalledWith({
         data: {
-          name: createData.name,
-          icon: createData.icon,
-          habitId: createData.habitId,
+          habitId: mockHabitId,
+          // Should NOT include: name, icon, globalIdentifierId
         },
+      });
+
+      // Assert - Step 2: Create global identifier with name, icon, entityType, entityId
+      expect(mockPrismaClient.globalEntityIdentifiers.create).toHaveBeenCalledWith({
+        data: {
+          name: mockActionTypeName,
+          icon: mockIconUrl,
+          entityType: 'action_type',
+          entityId: mockActionTypeId,
+        },
+      });
+
+      // Assert - Step 3: Update action type to link globalIdentifierId
+      expect(mockPrismaClient.actionTypes.update).toHaveBeenCalledWith({
+        where: { id: mockActionTypeId },
+        data: { globalIdentifierId: validGlobalIdentifierId },
         include: { globalEntityIdentifiers: true },
       });
+
+      // Verify the returned ActionType entity
       expect(result).toBeInstanceOf(ActionType);
-      // Verify returned entity has database-generated fields populated
       expect(result.id).toBe(mockActionTypeId);
+      expect(result.habitId).toBe(mockHabitId);
       expect(result.globalEntityIdentifier.name.getValue()).toBe(mockActionTypeName);
       expect(result.globalEntityIdentifier.icon.getValue()).toBe(mockIconUrl);
-      expect(result.habitId).toBe(mockHabitId);
-      expect(result.createdAt).toEqual(fixedDate);
-      expect(result.updatedAt).toEqual(fixedDate);
-      expect(result.totalActionsCount).toBe(0);
-      expect(result.lastActionDate).toBeNull();
+      expect(result.globalEntityIdentifier.entityType).toBe('action_type');
+      expect(result.globalEntityIdentifier.entityId).toBe(mockActionTypeId);
+    });
+
+    it('should let database generate ID and timestamps (not passed in create data)', async () => {
+      // Arrange
+      const actionTypeWithoutGlobalId = {
+        id: mockActionTypeId,
+        habitId: mockHabitId,
+        lastActionDate: null,
+        totalActionsCount: 0,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+        globalIdentifierId: null,
+      };
+
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockActionTypeName,
+        icon: mockIconUrl,
+        entityType: 'action_type',
+        entityId: mockActionTypeId,
+      };
+
+      const finalActionType = createMockPrismaActionType();
+
+      mockPrismaClient.actionTypes.create.mockResolvedValue(actionTypeWithoutGlobalId);
+      mockPrismaClient.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaClient.actionTypes.update.mockResolvedValue(finalActionType);
+
+      // Act
+      const result = await repository.create(createData);
+
+      // Assert - Database-generated fields should NOT be in create data
+      expect(mockPrismaClient.actionTypes.create).toHaveBeenCalledWith({
+        data: {
+          habitId: mockHabitId,
+          // Should NOT include: id, createdAt, updatedAt, totalActionsCount, lastActionDate
+        },
+      });
+
+      // Verify database-generated values are returned
+      expect(result.id).toBe(mockActionTypeId); // Database generated
+      expect(result.createdAt).toEqual(fixedDate); // Database generated
+      expect(result.updatedAt).toEqual(fixedDate); // Database generated
+      expect(result.totalActionsCount).toBe(0); // Database default
+      expect(result.lastActionDate).toBeNull(); // Database default
+    });
+
+    it('should verify habitId is required and must be valid UUID', async () => {
+      // Arrange
+      const invalidData = { ...createData, habitId: '' as UUID };
+
+      // Act & Assert
+      await expect(repository.create(invalidData)).rejects.toThrow();
+    });
+
+    it('should ensure name and icon go to globalEntityIdentifiers, NOT actionTypes table', async () => {
+      // Arrange
+      const actionTypeWithoutGlobalId = {
+        id: mockActionTypeId,
+        habitId: mockHabitId,
+        lastActionDate: null,
+        totalActionsCount: 0,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+        globalIdentifierId: null,
+      };
+
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockActionTypeName,
+        icon: mockIconUrl,
+        entityType: 'action_type',
+        entityId: mockActionTypeId,
+      };
+
+      const finalActionType = createMockPrismaActionType();
+
+      mockPrismaClient.actionTypes.create.mockResolvedValue(actionTypeWithoutGlobalId);
+      mockPrismaClient.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaClient.actionTypes.update.mockResolvedValue(finalActionType);
+
+      // Act
+      await repository.create(createData);
+
+      // Assert - Step 1: actionTypes.create should NOT have name or icon
+      const step1Call = mockPrismaClient.actionTypes.create.mock.calls[0]?.[0];
+      expect(step1Call?.data).not.toHaveProperty('name');
+      expect(step1Call?.data).not.toHaveProperty('icon');
+
+      // Assert - Step 2: globalEntityIdentifiers.create SHOULD have name and icon
+      const step2Call = mockPrismaClient.globalEntityIdentifiers.create.mock.calls[0]?.[0];
+      expect(step2Call?.data).toHaveProperty('name', mockActionTypeName);
+      expect(step2Call?.data).toHaveProperty('icon', mockIconUrl);
+    });
+
+    it('should verify globalEntityIdentifier.entityType is "action_type"', async () => {
+      // Arrange
+      const actionTypeWithoutGlobalId = {
+        id: mockActionTypeId,
+        habitId: mockHabitId,
+        lastActionDate: null,
+        totalActionsCount: 0,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+        globalIdentifierId: null,
+      };
+
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockActionTypeName,
+        icon: mockIconUrl,
+        entityType: 'action_type',
+        entityId: mockActionTypeId,
+      };
+
+      const finalActionType = createMockPrismaActionType();
+
+      mockPrismaClient.actionTypes.create.mockResolvedValue(actionTypeWithoutGlobalId);
+      mockPrismaClient.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaClient.actionTypes.update.mockResolvedValue(finalActionType);
+
+      // Act
+      await repository.create(createData);
+
+      // Assert - entityType must be 'action_type'
+      expect(mockPrismaClient.globalEntityIdentifiers.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          entityType: 'action_type',
+        }),
+      });
+    });
+
+    it('should verify globalEntityIdentifier.entityId matches created actionType.id', async () => {
+      // Arrange
+      const actionTypeWithoutGlobalId = {
+        id: mockActionTypeId,
+        habitId: mockHabitId,
+        lastActionDate: null,
+        totalActionsCount: 0,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+        globalIdentifierId: null,
+      };
+
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockActionTypeName,
+        icon: mockIconUrl,
+        entityType: 'action_type',
+        entityId: mockActionTypeId,
+      };
+
+      const finalActionType = createMockPrismaActionType();
+
+      mockPrismaClient.actionTypes.create.mockResolvedValue(actionTypeWithoutGlobalId);
+      mockPrismaClient.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaClient.actionTypes.update.mockResolvedValue(finalActionType);
+
+      // Act
+      await repository.create(createData);
+
+      // Assert - entityId in global identifier must match action type id
+      expect(mockPrismaClient.globalEntityIdentifiers.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          entityId: mockActionTypeId,
+        }),
+      });
+    });
+
+    it('should verify the 3 Prisma calls are made in correct order', async () => {
+      // Arrange
+      const actionTypeWithoutGlobalId = {
+        id: mockActionTypeId,
+        habitId: mockHabitId,
+        lastActionDate: null,
+        totalActionsCount: 0,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+        globalIdentifierId: null,
+      };
+
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockActionTypeName,
+        icon: mockIconUrl,
+        entityType: 'action_type',
+        entityId: mockActionTypeId,
+      };
+
+      const finalActionType = createMockPrismaActionType();
+
+      mockPrismaClient.actionTypes.create.mockResolvedValue(actionTypeWithoutGlobalId);
+      mockPrismaClient.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaClient.actionTypes.update.mockResolvedValue(finalActionType);
+
+      // Act
+      await repository.create(createData);
+
+      // Assert - Verify call order
+      const createOrder = mockPrismaClient.actionTypes.create.mock.invocationCallOrder[0];
+      const globalCreateOrder =
+        mockPrismaClient.globalEntityIdentifiers.create.mock.invocationCallOrder[0];
+      const updateOrder = mockPrismaClient.actionTypes.update.mock.invocationCallOrder[0];
+
+      expect(createOrder).toBeLessThan(globalCreateOrder!);
+      expect(globalCreateOrder).toBeLessThan(updateOrder!);
     });
 
     it('should throw ConflictError when name already exists for habit', async () => {
@@ -158,7 +403,7 @@ describe('ActionTypesRepository (RED PHASE)', () => {
       const conflictError = new Error('Unique constraint failed');
       (conflictError as any).code = 'P2002';
       (conflictError as any).meta = { target: ['name', 'habitId'] };
-      mockPrismaClient.actionTypes.create.mockRejectedValue(conflictError);
+      mockPrismaClient.globalEntityIdentifiers.create.mockRejectedValue(conflictError);
 
       // Act & Assert
       await expect(repository.create(createData)).rejects.toThrow(ConflictError);
@@ -176,8 +421,8 @@ describe('ActionTypesRepository (RED PHASE)', () => {
       await expect(repository.create(createData)).rejects.toThrow('Database connection failed');
     });
 
-    it('should handle invalid data validation', async () => {
-      // Arrange
+    it('should handle invalid name data validation', async () => {
+      // Arrange - Empty name should fail validation
       const invalidData = { ...createData, name: '' };
 
       // Act & Assert
