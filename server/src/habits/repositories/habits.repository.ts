@@ -19,17 +19,44 @@ import { IHabitsRepository, CreateHabitData } from '../interfaces/habits-reposit
 export class HabitsRepository implements IHabitsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  private mapToPrismaHabitType(
+    habitType: HabitComplexity
+  ): 'simple' | 'complex' | 'withoutIntervals' {
+    const mapping = {
+      [HabitComplexity.SIMPLE]: 'simple' as const,
+      [HabitComplexity.COMPLEX]: 'complex' as const,
+      [HabitComplexity.WITHOUT_INTERVALS]: 'withoutIntervals' as const,
+    };
+    return mapping[habitType];
+  }
+
   async create(data: CreateHabitData): Promise<Habit> {
     try {
+      // First, create the habit without global identifier
       const createdHabit = await this.prisma.habits.create({
         data: {
-          name: data.name,
-          habitType: data.habitType as any,
-          icon: data.icon,
-        } as any,
+          habitType: this.mapToPrismaHabitType(data.habitType),
+        },
       });
 
-      return this.mapToDomain(createdHabit);
+      // Then create the global identifier with the habit's ID
+      const globalIdentifier = await this.prisma.globalEntityIdentifiers.create({
+        data: {
+          name: data.name,
+          icon: data.icon,
+          entityType: 'habit',
+          entityId: createdHabit.id,
+        },
+      });
+
+      // Finally, link the habit to the global identifier
+      const updatedHabit = await this.prisma.habits.update({
+        where: { id: createdHabit.id },
+        data: { globalIdentifierId: globalIdentifier.id },
+        include: { globalEntityIdentifiers: true },
+      });
+
+      return this.mapToDomain(updatedHabit);
     } catch (error: any) {
       if (error.message) {
         throw new Error(error.message);
