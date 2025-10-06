@@ -6,9 +6,8 @@ import {
   ValidationArguments,
 } from 'class-validator';
 
-
-@ValidatorConstraint({ async: false })
-class IsImageFileConstraint implements ValidatorConstraintInterface {
+@ValidatorConstraint({ name: 'isImageFile', async: false })
+export class IsImageFileConstraint implements ValidatorConstraintInterface {
   validate(file: Express.Multer.File, args: ValidationArguments) {
     if (!file) {
       return false; // El archivo no existe
@@ -43,11 +42,14 @@ class IsImageFileConstraint implements ValidatorConstraintInterface {
   }
 }
 
-export function IsImageFile(options: { allowedMimeTypes: string[], maxSize: number }, validationOptions: ValidationOptions) {
+export function IsImageFile(
+  options: { allowedMimeTypes: string[]; maxSize: number },
+  validationOptions: ValidationOptions
+) {
   return function (object: Record<string, any>, propertyName: string) {
     registerDecorator({
       target: object.constructor,
-      propertyName: propertyName,
+      propertyName,
       options: validationOptions,
       constraints: [options],
       validator: IsImageFileConstraint,

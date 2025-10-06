@@ -7,13 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model actionLogs {
   id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   startTime         DateTime           @map("start_time") @db.Timestamptz(6)
   endTime           DateTime?          @map("end_time") @db.Timestamptz(6)
   durationSeconds   Int?               @map("duration_seconds")
-  actionDate        DateTime?          @map("action_date") @db.Date
+  actionDate        DateTime           @default(dbgenerated("CURRENT_DATE")) @map("action_date") @db.Date
   createdAt         DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime           @default(now()) @map("updated_at") @db.Timestamptz(6)
   actionTypeId      String             @map("action_type_id") @db.Uuid
@@ -28,29 +27,26 @@ model actionLogs {
   @@map("action_logs")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model actionTypes {
-  id                String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String
-  logo              String
-  lastActionDate    DateTime?    @map("last_action_date") @db.Timestamptz(6)
-  totalActionsCount Int          @default(0) @map("total_actions_count")
-  createdAt         DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime     @default(now()) @map("updated_at") @db.Timestamptz(6)
-  habitId           String       @map("habit_id") @db.Uuid
-  actionLogs        actionLogs[]
-  habits            habits       @relation(fields: [habitId], references: [id], onDelete: Cascade, map: "fk_action_types_habit_id")
+  id                      String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  lastActionDate          DateTime?                @map("last_action_date") @db.Timestamptz(6)
+  totalActionsCount       Int                      @default(0) @map("total_actions_count")
+  createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                 @default(now()) @map("updated_at") @db.Timestamptz(6)
+  habitId                 String                   @map("habit_id") @db.Uuid
+  globalIdentifierId      String?                  @map("global_identifier_id") @db.Uuid
+  actionLogs              actionLogs[]
+  globalEntityIdentifiers globalEntityIdentifiers? @relation(fields: [globalIdentifierId], references: [id], onDelete: Restrict, map: "fk_action_types_global_identifier")
+  habits                  habits                   @relation(fields: [habitId], references: [id], onDelete: Cascade, map: "fk_action_types_habit_id")
 
-  @@unique([logo, habitId], map: "action_types_logo_habit_unique")
-  @@unique([name, habitId], map: "action_types_name_habit_unique")
   @@index([createdAt], map: "idx_action_types_created_at")
+  @@index([globalIdentifierId], map: "idx_action_types_global_identifier_id")
   @@index([habitId, totalActionsCount(sort: Desc)], map: "idx_action_types_habit_actions_count")
   @@index([habitId], map: "idx_action_types_habit_id")
   @@index([totalActionsCount(sort: Desc)], map: "idx_action_types_total_actions_count")
   @@map("action_types")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model books {
   id                           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name                         String        @db.VarChar(100)
@@ -73,23 +69,38 @@ model books {
   @@index([totalReadingSessions(sort: Desc)], map: "idx_books_total_sessions")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
-model habits {
-  id                String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name              String          @db.VarChar(50)
-  habitType         habitComplexity @map("habit_type")
-  logo              String
-  createdAt         DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime        @default(now()) @map("updated_at") @db.Timestamptz(6)
-  isActive          Boolean         @default(true) @map("is_active")
-  totalActionsCount Int             @default(0) @map("total_actions_count")
-  lastActionDate    DateTime?       @map("last_action_date") @db.Timestamptz(6)
-  actionTypes       actionTypes[]
+model globalEntityIdentifiers {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String        @unique(map: "global_entity_identifiers_name_unique") @db.VarChar(255)
+  icon        String        @unique(map: "global_entity_identifiers_icon_unique")
+  entityType  String        @map("entity_type") @db.VarChar(20)
+  entityId    String        @map("entity_id") @db.Uuid
+  actionTypes actionTypes[]
+  habits      habits[]
 
-  @@index([createdAt], map: "idx_habits_created_at")
+  @@unique([entityType, entityId], map: "global_entity_identifiers_entity_unique")
+  @@unique([name, icon], map: "global_entity_identifiers_name_icon_unique")
+  @@index([entityType, entityId], map: "idx_global_entity_identifiers_entity_lookup")
+  @@index([name], map: "idx_global_entity_identifiers_name_prefix")
+  @@map("global_entity_identifiers")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model habits {
+  id                      String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  habitType               habitComplexity          @map("habit_type")
+  createdAt               DateTime                 @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime                 @default(now()) @map("updated_at") @db.Timestamptz(6)
+  isActive                Boolean                  @default(true) @map("is_active")
+  totalActionsCount       Int                      @default(0) @map("total_actions_count")
+  lastActionDate          DateTime?                @map("last_action_date") @db.Timestamptz(6)
+  globalIdentifierId      String?                  @map("global_identifier_id") @db.Uuid
+  actionTypes             actionTypes[]
+  globalEntityIdentifiers globalEntityIdentifiers? @relation(fields: [globalIdentifierId], references: [id], onDelete: Restrict, map: "fk_habits_global_identifier")
+
+  @@index([createdAt], map: "idx_habits_created_at")
+  @@index([globalIdentifierId], map: "idx_habits_global_identifier_id")
+}
+
 model pronunciationLogs {
   id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   actionId           String     @unique @map("action_id") @db.Uuid
@@ -106,7 +117,6 @@ model pronunciationLogs {
   @@map("pronunciation_logs")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model readingLogs {
   id                          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   actionId                    String     @unique @map("action_id") @db.Uuid

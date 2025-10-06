@@ -6,8 +6,16 @@
       "WebFetch(domain:www.npmjs.com)",
       "Bash(npm run type-check:*)",
       "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(npm test:*)",
+      "Bash(npx eslint:*)",
+      "Bash(find:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run build:*)",
       "Bash(node:*)",
-      "Bash(npm install:*)"
+      "Bash(cat:*)",
+      "Bash(npx prettier:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": []
   }

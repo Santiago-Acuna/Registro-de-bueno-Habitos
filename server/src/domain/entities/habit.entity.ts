@@ -1,105 +1,89 @@
 import { BaseEntity, HabitComplexity, SoftDeletable, UUID } from '../shared/types/common';
-import { HabitName } from '../value-objects/habit-name';
+import { IdentifierIcon } from '../value-objects/identifier-icon';
+import { IdentifierName } from '../value-objects/identifier-name';
+
+import { GlobalEntityIdentifier } from './global-entity-identifier.entity';
 
 export interface HabitProps extends BaseEntity, SoftDeletable {
-  name: HabitName;
   habitType: HabitComplexity;
-  logo: string;
   totalActionsCount: number;
   lastActionDate: Date | null;
+  globalEntityIdentifier: GlobalEntityIdentifier;
 }
 
 export class Habit implements HabitProps {
   constructor(
     public readonly id: UUID,
-    public readonly name: HabitName,
     public readonly habitType: HabitComplexity,
-    public readonly logo: string,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
-    public readonly isActive: boolean = true,
-    public readonly totalActionsCount: number = 0,
-    public readonly lastActionDate: Date | null = null
+    public readonly isActive: boolean,
+    public readonly totalActionsCount: number,
+    public readonly lastActionDate: Date | null,
+    public readonly globalEntityIdentifier: GlobalEntityIdentifier
   ) {
-    this.validateLogo(logo);
-  }
-
-  public static create(
-    id: UUID,
-    name: string,
-    habitType: HabitComplexity,
-    logo: string,
-    createdAt?: Date,
-    updatedAt?: Date
-  ): Habit {
-    const habitName = HabitName.create(name);
-    const now = new Date();
-
-    return new Habit(
-      id,
-      habitName,
-      habitType,
-      logo,
-      createdAt || now,
-      updatedAt || now
-    );
+    this.validateDate(createdAt, 'createdAt');
+    this.validateDate(updatedAt, 'updatedAt');
+    if (lastActionDate !== null) {
+      this.validateDate(lastActionDate, 'lastActionDate');
+    }
+    this.validateGlobalEntityIdentifier(globalEntityIdentifier);
   }
 
   public updateName(newName: string): Habit {
-    const updatedName = HabitName.create(newName);
+    const updatedName = IdentifierName.create(newName);
+    const updatedGlobalIdentifier = new GlobalEntityIdentifier(
+      this.globalEntityIdentifier.id,
+      updatedName,
+      this.globalEntityIdentifier.icon,
+      this.globalEntityIdentifier.entityType,
+      this.globalEntityIdentifier.entityId
+    );
+
     return new Habit(
       this.id,
-      updatedName,
       this.habitType,
-      this.logo,
       this.createdAt,
       new Date(),
       this.isActive,
       this.totalActionsCount,
-      this.lastActionDate
+      this.lastActionDate,
+      updatedGlobalIdentifier
     );
   }
 
-  public updateLogo(newLogo: string): Habit {
-    this.validateLogo(newLogo);
+  public updateIcon(newIconUrl: string): Habit {
+    const updatedIcon = IdentifierIcon.create(newIconUrl);
+    const updatedGlobalIdentifier = new GlobalEntityIdentifier(
+      this.globalEntityIdentifier.id,
+      this.globalEntityIdentifier.name,
+      updatedIcon,
+      this.globalEntityIdentifier.entityType,
+      this.globalEntityIdentifier.entityId
+    );
+
     return new Habit(
       this.id,
-      this.name,
       this.habitType,
-      newLogo,
       this.createdAt,
       new Date(),
       this.isActive,
       this.totalActionsCount,
-      this.lastActionDate
+      this.lastActionDate,
+      updatedGlobalIdentifier
     );
   }
 
   public deactivate(): Habit {
     return new Habit(
       this.id,
-      this.name,
       this.habitType,
-      this.logo,
       this.createdAt,
       new Date(),
       false,
       this.totalActionsCount,
-      this.lastActionDate
-    );
-  }
-
-  public incrementActionCount(): Habit {
-    return new Habit(
-      this.id,
-      this.name,
-      this.habitType,
-      this.logo,
-      this.createdAt,
-      new Date(),
-      this.isActive,
-      this.totalActionsCount + 1,
-      new Date()
+      this.lastActionDate,
+      this.globalEntityIdentifier
     );
   }
 
@@ -115,15 +99,31 @@ export class Habit implements HabitProps {
     return this.habitType === HabitComplexity.WITHOUT_INTERVALS;
   }
 
-  private validateLogo(logo: string): void {
-    if (!logo || typeof logo !== 'string') {
-      throw new Error('Logo must be a non-empty string');
+  private validateDate(date: Date | null, fieldName: string): void {
+    // lastActionDate can be null (no action yet)
+    if (fieldName === 'lastActionDate' && date === null) {
+      return;
     }
 
-    // Maximum 2MB for base64 encoded images
-    const maxSize = 2 * 1024 * 1024;
-    if (logo.length > maxSize) {
-      throw new Error('Logo size cannot exceed 2MB');
+    if (date === null || date === undefined) {
+      throw new Error(`Invalid date: ${fieldName} must be a Date object`);
+    }
+
+    if (!(date instanceof Date)) {
+      if (fieldName === 'lastActionDate') {
+        throw new Error(`Invalid date: ${fieldName} must be a valid Date object or null`);
+      }
+      throw new Error(`Invalid date: ${fieldName} must be a valid Date object`);
+    }
+
+    if (isNaN(date.getTime())) {
+      throw new Error(`Invalid date: ${fieldName} must be a valid Date object`);
+    }
+  }
+
+  private validateGlobalEntityIdentifier(globalEntityIdentifier: GlobalEntityIdentifier): void {
+    if (!globalEntityIdentifier || !(globalEntityIdentifier instanceof GlobalEntityIdentifier)) {
+      throw new Error('globalEntityIdentifier must be a valid GlobalEntityIdentifier instance');
     }
   }
 

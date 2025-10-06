@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
-import { HabitsController } from './controllers/habits.controller';
-import { HabitsService } from './services/habits.service';
-import { HabitsRepository } from './repositories/habits.repository';
+
 import { CloudinaryModule } from '../helpers/cloudinary';
+
+import { HabitsController } from './controllers/habits.controller';
+import { HabitsRepository } from './repositories/habits.repository';
+import { HabitsService } from './services/habits.service';
 
 @Module({
   controllers: [HabitsController],
@@ -13,7 +15,7 @@ import { CloudinaryModule } from '../helpers/cloudinary';
       useClass: HabitsRepository,
     },
   ],
-  imports:[CloudinaryModule],
+  imports: [CloudinaryModule],
   exports: [HabitsService],
 })
 export class HabitsModule {}

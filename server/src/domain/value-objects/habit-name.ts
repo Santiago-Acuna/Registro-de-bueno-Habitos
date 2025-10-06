@@ -5,7 +5,11 @@ export class HabitName {
   private constructor(private readonly value: string) {}
 
   public static create(name: string): HabitName {
-    if (!name || typeof name !== 'string') {
+    if (typeof name !== 'string') {
+      throw new Error('Habit name must be a non-empty string');
+    }
+
+    if (name === '' || !name) {
       throw new Error('Habit name must be a non-empty string');
     }
 
@@ -19,7 +23,16 @@ export class HabitName {
       throw new Error(`Habit name cannot exceed ${this.MAX_LENGTH} characters`);
     }
 
+    // Check for Unicode characters (only allow ASCII characters)
+    if (!this.isAsciiOnly(trimmedName)) {
+      throw new Error('Names with Unicode characters are not allowed');
+    }
+
     return new HabitName(trimmedName);
+  }
+
+  private static isAsciiOnly(str: string): boolean {
+    return /^[\x00-\x7F]*$/.test(str);
   }
 
   public getValue(): string {

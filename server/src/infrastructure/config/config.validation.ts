@@ -16,9 +16,7 @@ export const configValidation = Joi.object({
 
   RATE_LIMIT_WINDOW: Joi.number().default(60000),
 
-  LOG_LEVEL: Joi.string()
-    .valid('error', 'warn', 'log', 'debug', 'verbose')
-    .default('log'),
+  LOG_LEVEL: Joi.string().valid('error', 'warn', 'log', 'debug', 'verbose').default('log'),
 
   // Cloudinary Configuration
   CLOUDINARY_CLOUD_NAME: Joi.string().required(),

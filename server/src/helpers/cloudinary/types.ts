@@ -6,21 +6,13 @@ export interface CloudinaryConfig {
   apiKey: string;
   apiSecret: string;
   secure?: boolean;
-  folder?: string
+  folder?: string;
 }
 
 /**
  * Supported image formats for upload
  */
-export type SupportedImageFormat =
-  | 'jpg'
-  | 'jpeg'
-  | 'png'
-  | 'webp'
-  | 'gif'
-  | 'bmp'
-  | 'tiff'
-  | 'svg';
+export type SupportedImageFormat = 'jpg' | 'jpeg' | 'png' | 'webp' | 'gif' | 'bmp' | 'tiff' | 'svg';
 
 /**
  * Upload options for Cloudinary
@@ -34,7 +26,7 @@ export interface CloudinaryUploadOptions {
   quality?: 'auto' | 'auto:best' | 'auto:good' | 'auto:eco' | number;
   transformation?: Record<string, any>;
   tags?: string[];
-  public_id?: string
+  public_id?: string;
 }
 
 /**

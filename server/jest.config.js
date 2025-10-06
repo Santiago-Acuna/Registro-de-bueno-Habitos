@@ -1,13 +1,19 @@
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  transformIgnorePatterns: [
+    'node_modules/(?!(class-validator|class-transformer)/)'
+  ],
   roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: [
     '**/__tests__/**/*.+(ts|tsx|js)',
     '**/*.(test|spec).+(ts|tsx|js)',
   ],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: '<rootDir>/tsconfig.jest.json',
+      isolatedModules: false,
+    }],
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -27,9 +33,7 @@ module.exports = {
       statements: 80,
     },
   },
-  moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-  },
+  setupFiles: ['reflect-metadata'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 30000,
   verbose: true,

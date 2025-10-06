@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { DatabaseModule } from './infrastructure/database/database.module';
-import { HabitsModule } from './habits/habits.module';
+
+import { ActionTypesModule } from './action-types/action-types.module';
 import { BooksModule } from './books/books.module';
-import { HealthController } from './infrastructure/health/health.controller';
+import { HabitsModule } from './habits/habits.module';
 import { configValidation } from './infrastructure/config/config.validation';
+import { DatabaseModule } from './infrastructure/database/database.module';
+import { HealthController } from './infrastructure/health/health.controller';
 
 @Module({
   imports: [
@@ -38,6 +40,7 @@ import { configValidation } from './infrastructure/config/config.validation';
     // Feature modules
     HabitsModule,
     BooksModule,
+    ActionTypesModule,
   ],
   controllers: [HealthController],
   providers: [],
