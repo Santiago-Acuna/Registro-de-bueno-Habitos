@@ -1,7 +1,7 @@
-import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger, VersioningType } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 
 import { AppModule } from './app.module';
@@ -10,7 +10,7 @@ import { LoggingInterceptor } from './infrastructure/interceptors/logging.interc
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  
+
   try {
     // Create NestJS application
     const app = await NestFactory.create(AppModule, {
@@ -18,10 +18,10 @@ async function bootstrap() {
     });
 
     const configService = app.get(ConfigService);
-    
+
     // Global configuration
     app.setGlobalPrefix('api');
-    
+
     // API versioning
     app.enableVersioning({
       type: VersioningType.URI,
@@ -29,9 +29,11 @@ async function bootstrap() {
     });
 
     // Security middleware
-    app.use(helmet({
-      contentSecurityPolicy: false, // Disable CSP for API
-    }));
+    app.use(
+      helmet({
+        contentSecurityPolicy: false, // Disable CSP for API
+      })
+    );
 
     // CORS configuration
     app.enableCors({
@@ -42,14 +44,16 @@ async function bootstrap() {
     });
 
     // Global validation pipe
-    app.useGlobalPipes(new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
-    }));
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: {
+          enableImplicitConversion: true,
+        },
+      })
+    );
 
     // Global exception filter
     app.useGlobalFilters(new HttpExceptionFilter());
@@ -86,8 +90,9 @@ async function bootstrap() {
     logger.log(`🚀 Server started successfully on port ${port}`);
     logger.log(`📊 Environment: ${configService.get('NODE_ENV', 'development')}`);
     logger.log(`📚 API Documentation: http://localhost:${port}/docs`);
-    logger.log(`💚 Health Check: http://localhost:${port}/api/${configService.get('API_VERSION', 'v1')}/health`);
-
+    logger.log(
+      `💚 Health Check: http://localhost:${port}/api/${configService.get('API_VERSION', 'v1')}/health`
+    );
   } catch (error) {
     logger.error('❌ Failed to start server:', error);
     process.exit(1);
@@ -95,7 +100,7 @@ async function bootstrap() {
 }
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (error) => {
+process.on('uncaughtException', error => {
   const logger = new Logger('UncaughtException');
   logger.fatal('Uncaught exception:', error);
   process.exit(1);
@@ -107,7 +112,7 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1);
 });
 
-bootstrap().catch((error) => {
+bootstrap().catch(error => {
   const logger = new Logger('Bootstrap');
   logger.fatal('Failed to start application:', error);
   process.exit(1);

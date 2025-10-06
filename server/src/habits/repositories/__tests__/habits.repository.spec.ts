@@ -1,0 +1,1003 @@
+import { Test, TestingModule } from '@nestjs/testing';
+
+import { GlobalEntityIdentifier } from '../../../domain/entities/global-entity-identifier.entity';
+import { Habit } from '../../../domain/entities/habit.entity';
+import {
+  HabitComplexity,
+  UUID,
+  PaginationParams,
+  FilterOptions,
+} from '../../../domain/shared/types/common';
+import { IdentifierIcon } from '../../../domain/value-objects/identifier-icon';
+import { IdentifierName } from '../../../domain/value-objects/identifier-name';
+import { PrismaService } from '../../../infrastructure/database/prisma.service';
+import { NotFoundError } from '../../../infrastructure/exceptions/app.exceptions';
+import { CreateHabitData } from '../../interfaces/habits-repository.interface';
+import { HabitsRepository } from '../habits.repository';
+
+// Mock uuid generation
+jest.mock('uuid', () => ({
+  v4: jest.fn(() => 'mocked-uuid-123e4567-e89b-12d3-a456-426614174000'),
+}));
+
+// Mock Prisma Service
+const mockPrismaService = {
+  habits: {
+    create: jest.fn(),
+    findUnique: jest.fn(),
+    findMany: jest.fn(),
+    findFirst: jest.fn(),
+    update: jest.fn(),
+    count: jest.fn(),
+  },
+  globalEntityIdentifiers: {
+    create: jest.fn(),
+  },
+};
+
+describe('HabitsRepository', () => {
+  let repository: HabitsRepository;
+
+  // Test data fixtures
+  const mockHabitId: UUID = '123e4567-e89b-12d3-a456-426614174000';
+  const validGlobalIdentifierId = 'global-id-123e4567-e89b-12d3-a456-426614174000';
+  const mockHabitName = 'Morning Exercise';
+  const mockIconUrl = 'https://example.com/logo.png';
+  const fixedDate = new Date('2024-01-01T00:00:00.000Z');
+
+  // Helper to create mock GlobalEntityIdentifier
+  const createMockCreateHabitData = (
+    overrides: Partial<CreateHabitData> = {}
+  ): CreateHabitData => ({
+    name: mockHabitName,
+    habitType: HabitComplexity.SIMPLE,
+    icon: mockIconUrl,
+    ...overrides,
+  });
+
+  // Prisma data structure with JOIN to globalEntityIdentifiers
+  const createMockPrismaData = (overrides: Partial<any> = {}): any => ({
+    id: mockHabitId,
+    habitType: HabitComplexity.SIMPLE,
+    globalIdentifierId: validGlobalIdentifierId,
+    globalEntityIdentifiers: {
+      id: validGlobalIdentifierId,
+      name: mockHabitName,
+      icon: mockIconUrl,
+      entityType: 'habit',
+      entityId: mockHabitId,
+    },
+    isActive: true,
+    totalActionsCount: 0,
+    lastActionDate: null,
+    createdAt: fixedDate,
+    updatedAt: fixedDate,
+    ...overrides,
+  });
+
+  beforeEach(async () => {
+    jest.clearAllMocks();
+
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        HabitsRepository,
+        {
+          provide: PrismaService,
+          useValue: mockPrismaService,
+        },
+      ],
+    }).compile();
+
+    repository = module.get<HabitsRepository>(HabitsRepository);
+  });
+
+  describe('create()', () => {
+    it('should create habit with only required fields from CreateHabitData', async () => {
+      // Arrange - Only provide the 3 required fields
+      const createData = createMockCreateHabitData();
+      const mockPrismaResponse = createMockPrismaData();
+
+      // Mock the 3-step process
+      const habitWithoutGlobalId = { id: mockHabitId, habitType: 'simple' };
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockHabitName,
+        icon: mockIconUrl,
+        entityType: 'habit',
+        entityId: mockHabitId,
+      };
+
+      mockPrismaService.habits.create.mockResolvedValue(habitWithoutGlobalId);
+      mockPrismaService.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaService.habits.update.mockResolvedValue(mockPrismaResponse);
+
+      // Act
+      const result = await repository.create(createData);
+
+      // Assert - Step 1: Create habit with only habitType
+      expect(mockPrismaService.habits.create).toHaveBeenCalledWith({
+        data: {
+          habitType: 'simple',
+        },
+      });
+
+      // Assert - Step 2: Create global identifier
+      expect(mockPrismaService.globalEntityIdentifiers.create).toHaveBeenCalledWith({
+        data: {
+          name: mockHabitName,
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+      });
+
+      // Assert - Step 3: Update habit with globalIdentifierId
+      expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        data: { globalIdentifierId: validGlobalIdentifierId },
+        include: { globalEntityIdentifiers: true },
+      });
+
+      // Verify the returned Habit entity has database-generated defaults
+      expect(result).toBeInstanceOf(Habit);
+      expect(result.id).toBe(mockHabitId);
+      expect(result.globalEntityIdentifier.name.getValue()).toBe(mockHabitName);
+      expect(result.habitType).toBe(HabitComplexity.SIMPLE);
+      expect(result.globalEntityIdentifier.icon.getValue()).toBe(mockIconUrl);
+      expect(result.isActive).toBe(true); // Database default
+      expect(result.totalActionsCount).toBe(0); // Database default
+      expect(result.lastActionDate).toBeNull(); // Database default
+      expect(result.createdAt).toEqual(fixedDate); // Database generated
+      expect(result.updatedAt).toEqual(fixedDate); // Database generated
+    });
+
+    it('should let database generate ID during habit creation', async () => {
+      // Arrange
+      const createData = createMockCreateHabitData();
+      const mockPrismaResponse = createMockPrismaData();
+
+      // Mock the 3-step process
+      const habitWithoutGlobalId = { id: mockHabitId, habitType: 'simple' };
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockHabitName,
+        icon: mockIconUrl,
+        entityType: 'habit',
+        entityId: mockHabitId,
+      };
+
+      mockPrismaService.habits.create.mockResolvedValue(habitWithoutGlobalId);
+      mockPrismaService.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaService.habits.update.mockResolvedValue(mockPrismaResponse);
+
+      // Act
+      const result = await repository.create(createData);
+
+      // Assert - Verify ID is NOT passed to Prisma (database generates it)
+      expect(mockPrismaService.habits.create).toHaveBeenCalledWith({
+        data: {
+          habitType: 'simple',
+          // NO ID should be passed - database generates it
+        },
+      });
+
+      // Verify the returned habit has database-generated ID
+      expect(result.id).toBe(mockHabitId); // From mock response
+    });
+
+    it('should handle COMPLEX habit type creation', async () => {
+      // Arrange
+      const createData = createMockCreateHabitData({
+        habitType: HabitComplexity.COMPLEX,
+      });
+      const mockPrismaResponse = createMockPrismaData({
+        habitType: HabitComplexity.COMPLEX,
+      });
+
+      // Mock the 3-step process
+      const habitWithoutGlobalId = { id: mockHabitId, habitType: 'complex' };
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockHabitName,
+        icon: mockIconUrl,
+        entityType: 'habit',
+        entityId: mockHabitId,
+      };
+
+      mockPrismaService.habits.create.mockResolvedValue(habitWithoutGlobalId);
+      mockPrismaService.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaService.habits.update.mockResolvedValue(mockPrismaResponse);
+
+      // Act
+      const result = await repository.create(createData);
+
+      // Assert
+      expect(mockPrismaService.habits.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            habitType: 'complex',
+          }),
+        })
+      );
+      expect(result.habitType).toBe(HabitComplexity.COMPLEX);
+      expect(result.isActive).toBe(true); // Still database default
+      expect(result.totalActionsCount).toBe(0); // Still database default
+    });
+
+    it('should handle WITHOUT_INTERVALS habit type creation', async () => {
+      // Arrange
+      const createData = createMockCreateHabitData({
+        habitType: HabitComplexity.WITHOUT_INTERVALS,
+      });
+      const mockPrismaResponse = createMockPrismaData({
+        habitType: HabitComplexity.WITHOUT_INTERVALS,
+      });
+
+      // Mock the 3-step process
+      const habitWithoutGlobalId = { id: mockHabitId, habitType: 'withoutIntervals' };
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockHabitName,
+        icon: mockIconUrl,
+        entityType: 'habit',
+        entityId: mockHabitId,
+      };
+
+      mockPrismaService.habits.create.mockResolvedValue(habitWithoutGlobalId);
+      mockPrismaService.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaService.habits.update.mockResolvedValue(mockPrismaResponse);
+
+      // Act
+      const result = await repository.create(createData);
+
+      // Assert
+      expect(result.habitType).toBe(HabitComplexity.WITHOUT_INTERVALS);
+      expect(result.isActive).toBe(true); // Database default
+      expect(result.totalActionsCount).toBe(0); // Database default
+      expect(result.lastActionDate).toBeNull(); // Database default
+    });
+
+    it('should create habit with custom name and icon', async () => {
+      // Arrange
+      const customName = 'Custom Habit Name';
+      const customIcon = 'https://example.com/custom-icon.png';
+      const createData = createMockCreateHabitData({
+        name: customName,
+        icon: customIcon,
+      });
+      const mockPrismaResponse = createMockPrismaData({
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: customName,
+          icon: customIcon,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+      });
+
+      // Mock the 3-step process
+      const habitWithoutGlobalId = { id: mockHabitId, habitType: 'simple' };
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: customName,
+        icon: customIcon,
+        entityType: 'habit',
+        entityId: mockHabitId,
+      };
+
+      mockPrismaService.habits.create.mockResolvedValue(habitWithoutGlobalId);
+      mockPrismaService.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaService.habits.update.mockResolvedValue(mockPrismaResponse);
+
+      // Act
+      const result = await repository.create(createData);
+
+      // Assert - Step 1: Create habit with only habitType
+      expect(mockPrismaService.habits.create).toHaveBeenCalledWith({
+        data: {
+          habitType: 'simple',
+        },
+      });
+
+      // Assert - Step 2: Create global identifier with custom name and icon
+      expect(mockPrismaService.globalEntityIdentifiers.create).toHaveBeenCalledWith({
+        data: {
+          name: customName,
+          icon: customIcon,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+      });
+
+      expect(result.globalEntityIdentifier.name.getValue()).toBe(customName);
+      expect(result.globalEntityIdentifier.icon.getValue()).toBe(customIcon);
+    });
+
+    it('should not pass database-generated fields in create data', async () => {
+      // Arrange
+      const createData = createMockCreateHabitData();
+      const mockPrismaResponse = createMockPrismaData();
+
+      // Mock the 3-step process
+      const habitWithoutGlobalId = { id: mockHabitId, habitType: 'simple' };
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockHabitName,
+        icon: mockIconUrl,
+        entityType: 'habit',
+        entityId: mockHabitId,
+      };
+
+      mockPrismaService.habits.create.mockResolvedValue(habitWithoutGlobalId);
+      mockPrismaService.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaService.habits.update.mockResolvedValue(mockPrismaResponse);
+
+      // Act
+      await repository.create(createData);
+
+      // Assert - Verify these fields are NOT sent to Prisma create
+      const callArgs = mockPrismaService.habits.create.mock.calls[0][0];
+      expect(callArgs.data).not.toHaveProperty('id'); // Database generates ID
+      expect(callArgs.data).not.toHaveProperty('createdAt');
+      expect(callArgs.data).not.toHaveProperty('updatedAt');
+      expect(callArgs.data).not.toHaveProperty('isActive');
+      expect(callArgs.data).not.toHaveProperty('totalActionsCount');
+      expect(callArgs.data).not.toHaveProperty('name'); // Name is in globalEntityIdentifiers
+      expect(callArgs.data).not.toHaveProperty('icon'); // Icon is in globalEntityIdentifiers
+      expect(callArgs.data).not.toHaveProperty('lastActionDate');
+
+      // Only habitType should be present in the first step
+      expect(Object.keys(callArgs.data)).toEqual(['habitType']);
+      expect(Object.keys(callArgs.data)).toHaveLength(1);
+    });
+
+    it('should propagate database creation errors', async () => {
+      // Arrange
+      const createData = createMockCreateHabitData();
+      const dbError = new Error('Database connection failed');
+      mockPrismaService.habits.create.mockRejectedValue(dbError);
+
+      // Act & Assert
+      await expect(repository.create(createData)).rejects.toThrow('Database connection failed');
+    });
+
+    it('should handle database constraint violations during creation', async () => {
+      // Arrange
+      const createData = createMockCreateHabitData();
+      const constraintError = { code: 'P2002', message: 'Unique constraint failed' };
+      mockPrismaService.habits.create.mockRejectedValue(constraintError);
+
+      // Act & Assert
+      await expect(repository.create(createData)).rejects.toThrow('Unique constraint failed');
+    });
+  });
+
+  describe('findById()', () => {
+    it('should return habit when found with JOIN to globalEntityIdentifiers', async () => {
+      // Arrange
+      const mockPrismaData = createMockPrismaData();
+      mockPrismaService.habits.findUnique.mockResolvedValue(mockPrismaData);
+
+      // Act
+      const result = await repository.findById(mockHabitId);
+
+      // Assert - Should include globalEntityIdentifiers in query
+      expect(mockPrismaService.habits.findUnique).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        include: {
+          globalEntityIdentifiers: true,
+        },
+      });
+      expect(result).toBeInstanceOf(Habit);
+      expect(result!.id).toBe(mockHabitId);
+      expect(result!.globalEntityIdentifier).toBeInstanceOf(GlobalEntityIdentifier);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe(mockHabitName);
+    });
+
+    it('should return null when habit not found', async () => {
+      // Arrange
+      mockPrismaService.habits.findUnique.mockResolvedValue(null);
+
+      // Act
+      const result = await repository.findById(mockHabitId);
+
+      // Assert
+      expect(mockPrismaService.habits.findUnique).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        include: {
+          globalEntityIdentifiers: true,
+        },
+      });
+      expect(result).toBeNull();
+    });
+
+    it('should propagate database errors', async () => {
+      // Arrange
+      const dbError = new Error('Database error');
+      mockPrismaService.habits.findUnique.mockRejectedValue(dbError);
+
+      // Act & Assert
+      await expect(repository.findById(mockHabitId)).rejects.toThrow('Database error');
+    });
+  });
+
+  describe('findAll()', () => {
+    const paginationParams: PaginationParams = { page: 1, limit: 10 };
+
+    it('should return paginated habits without filters with JOIN', async () => {
+      // Arrange
+      const mockHabitsData = [createMockPrismaData(), createMockPrismaData()];
+      mockPrismaService.habits.findMany.mockResolvedValue(mockHabitsData);
+      mockPrismaService.habits.count.mockResolvedValue(2);
+
+      // Act
+      const result = await repository.findAll(paginationParams);
+
+      // Assert - Should include globalEntityIdentifiers in query
+      expect(mockPrismaService.habits.findMany).toHaveBeenCalledWith({
+        where: {},
+        skip: 0,
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          globalEntityIdentifiers: true,
+        },
+      });
+      expect(mockPrismaService.habits.count).toHaveBeenCalledWith({ where: {} });
+      expect(result).toEqual({
+        data: expect.arrayContaining([expect.any(Habit)]),
+        total: 2,
+        page: 1,
+        limit: 10,
+        totalPages: 1,
+      });
+      expect(result.data).toHaveLength(2);
+    });
+
+    it('should return paginated habits with isActive filter', async () => {
+      // Arrange
+      const filters: FilterOptions = { isActive: true };
+      const mockHabitsData = [createMockPrismaData({ isActive: true })];
+      mockPrismaService.habits.findMany.mockResolvedValue(mockHabitsData);
+      mockPrismaService.habits.count.mockResolvedValue(1);
+
+      // Act
+      await repository.findAll(paginationParams, filters);
+
+      // Assert
+      expect(mockPrismaService.habits.findMany).toHaveBeenCalledWith({
+        where: { isActive: true },
+        skip: 0,
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          globalEntityIdentifiers: true,
+        },
+      });
+      expect(mockPrismaService.habits.count).toHaveBeenCalledWith({
+        where: { isActive: true },
+      });
+    });
+
+    it('should return paginated habits with isActive false filter', async () => {
+      // Arrange
+      const filters: FilterOptions = { isActive: false };
+      const mockHabitsData = [createMockPrismaData({ isActive: false })];
+      mockPrismaService.habits.findMany.mockResolvedValue(mockHabitsData);
+      mockPrismaService.habits.count.mockResolvedValue(1);
+
+      // Act
+      await repository.findAll(paginationParams, filters);
+
+      // Assert
+      expect(mockPrismaService.habits.findMany).toHaveBeenCalledWith({
+        where: { isActive: false },
+        skip: 0,
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          globalEntityIdentifiers: true,
+        },
+      });
+    });
+
+    it('should calculate correct skip value for pagination', async () => {
+      // Arrange
+      const page2Params: PaginationParams = { page: 2, limit: 5 };
+      mockPrismaService.habits.findMany.mockResolvedValue([]);
+      mockPrismaService.habits.count.mockResolvedValue(0);
+
+      // Act
+      await repository.findAll(page2Params);
+
+      // Assert
+      expect(mockPrismaService.habits.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          skip: 5, // (page - 1) * limit = (2 - 1) * 5 = 5
+          take: 5,
+        })
+      );
+    });
+
+    it('should calculate correct total pages', async () => {
+      // Arrange
+      mockPrismaService.habits.findMany.mockResolvedValue([]);
+      mockPrismaService.habits.count.mockResolvedValue(23); // 23 total items
+
+      // Act
+      const result = await repository.findAll({ page: 1, limit: 10 });
+
+      // Assert
+      expect(result.totalPages).toBe(3); // Math.ceil(23 / 10) = 3
+    });
+
+    it('should handle empty result set', async () => {
+      // Arrange
+      mockPrismaService.habits.findMany.mockResolvedValue([]);
+      mockPrismaService.habits.count.mockResolvedValue(0);
+
+      // Act
+      const result = await repository.findAll(paginationParams);
+
+      // Assert
+      expect(result).toEqual({
+        data: [],
+        total: 0,
+        page: 1,
+        limit: 10,
+        totalPages: 0,
+      });
+    });
+
+    it('should order results by createdAt descending', async () => {
+      // Arrange
+      mockPrismaService.habits.findMany.mockResolvedValue([]);
+      mockPrismaService.habits.count.mockResolvedValue(0);
+
+      // Act
+      await repository.findAll(paginationParams);
+
+      // Assert
+      expect(mockPrismaService.habits.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          orderBy: { createdAt: 'desc' },
+        })
+      );
+    });
+  });
+
+  describe('update()', () => {
+    it('should successfully update habit with all updatable fields', async () => {
+      // Arrange - Partial<Habit> with valid Habit properties
+      const partialUpdate: Partial<Habit> = {
+        habitType: HabitComplexity.COMPLEX,
+        isActive: false,
+        totalActionsCount: 5,
+        lastActionDate: new Date('2024-01-02T00:00:00.000Z'),
+      };
+      const mockUpdatedData = createMockPrismaData({
+        habitType: HabitComplexity.COMPLEX,
+        isActive: false,
+        totalActionsCount: 5,
+        lastActionDate: new Date('2024-01-02T00:00:00.000Z'),
+      });
+      mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
+
+      // Act
+      const result = await repository.update(mockHabitId, partialUpdate);
+
+      // Assert
+      expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        data: {
+          habitType: HabitComplexity.COMPLEX,
+          isActive: false,
+          totalActionsCount: 5,
+          lastActionDate: new Date('2024-01-02T00:00:00.000Z'),
+        },
+      });
+      expect(result).toBeInstanceOf(Habit);
+      expect(result.habitType).toBe(HabitComplexity.COMPLEX);
+      expect(result.isActive).toBe(false);
+      expect(result.totalActionsCount).toBe(5);
+    });
+
+    it('should update only provided fields', async () => {
+      // Arrange - Only update habitType
+      const partialUpdate: Partial<Habit> = {
+        habitType: HabitComplexity.COMPLEX,
+      };
+      const mockUpdatedData = createMockPrismaData({
+        habitType: HabitComplexity.COMPLEX,
+      });
+      mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
+
+      // Act
+      const result = await repository.update(mockHabitId, partialUpdate);
+
+      // Assert
+      expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        data: { habitType: HabitComplexity.COMPLEX },
+      });
+      expect(result.habitType).toBe(HabitComplexity.COMPLEX);
+    });
+
+    it('should handle updating isActive to false', async () => {
+      // Arrange
+      const partialUpdate = { isActive: false };
+      const mockUpdatedData = createMockPrismaData({ isActive: false });
+      mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
+
+      // Act
+      await repository.update(mockHabitId, partialUpdate);
+
+      // Assert
+      expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        data: { isActive: false },
+      });
+    });
+
+    it('should handle updating totalActionsCount to 0', async () => {
+      // Arrange
+      const partialUpdate = { totalActionsCount: 0 };
+      const mockUpdatedData = createMockPrismaData({ totalActionsCount: 0 });
+      mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
+
+      // Act
+      await repository.update(mockHabitId, partialUpdate);
+
+      // Assert
+      expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        data: { totalActionsCount: 0 },
+      });
+    });
+
+    it('should handle updating lastActionDate to null', async () => {
+      // Arrange
+      const partialUpdate = { lastActionDate: null };
+      const mockUpdatedData = createMockPrismaData({ lastActionDate: null });
+      mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
+
+      // Act
+      await repository.update(mockHabitId, partialUpdate);
+
+      // Assert
+      expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        data: { lastActionDate: null },
+      });
+    });
+
+    it('should throw NotFoundError when habit does not exist', async () => {
+      // Arrange
+      const partialUpdate: Partial<Habit> = {
+        isActive: false,
+      };
+      const prismaError = { code: 'P2025', message: 'Record not found' };
+      mockPrismaService.habits.update.mockRejectedValue(prismaError);
+
+      // Act & Assert
+      await expect(repository.update(mockHabitId, partialUpdate)).rejects.toThrow(NotFoundError);
+      await expect(repository.update(mockHabitId, partialUpdate)).rejects.toThrow('Habit');
+    });
+
+    it('should propagate other database errors', async () => {
+      // Arrange
+      const partialUpdate: Partial<Habit> = {
+        totalActionsCount: 10,
+      };
+      const dbError = new Error('Database constraint violation');
+      mockPrismaService.habits.update.mockRejectedValue(dbError);
+
+      // Act & Assert
+      await expect(repository.update(mockHabitId, partialUpdate)).rejects.toThrow(
+        'Database constraint violation'
+      );
+    });
+
+    it('should not update when no fields provided', async () => {
+      // Arrange
+      const emptyUpdate = {};
+      const mockUpdatedData = createMockPrismaData();
+      mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
+
+      // Act
+      await repository.update(mockHabitId, emptyUpdate);
+
+      // Assert
+      expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        data: {},
+      });
+    });
+  });
+
+  describe('delete()', () => {
+    it('should perform soft delete by setting isActive to false', async () => {
+      // Arrange
+      mockPrismaService.habits.update.mockResolvedValue(createMockPrismaData({ isActive: false }));
+
+      // Act
+      await repository.delete(mockHabitId);
+
+      // Assert
+      expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
+        where: { id: mockHabitId },
+        data: { isActive: false },
+      });
+    });
+
+    it('should throw NotFoundError when habit does not exist', async () => {
+      // Arrange
+      const prismaError = { code: 'P2025', message: 'Record not found' };
+      mockPrismaService.habits.update.mockRejectedValue(prismaError);
+
+      // Act & Assert
+      await expect(repository.delete(mockHabitId)).rejects.toThrow(NotFoundError);
+      await expect(repository.delete(mockHabitId)).rejects.toThrow('Habit');
+    });
+
+    it('should propagate other database errors', async () => {
+      // Arrange
+      const dbError = new Error('Database error');
+      mockPrismaService.habits.update.mockRejectedValue(dbError);
+
+      // Act & Assert
+      await expect(repository.delete(mockHabitId)).rejects.toThrow('Database error');
+    });
+  });
+
+  describe('findByName()', () => {
+    it('should return habit when found by name and active', async () => {
+      // Arrange
+      const mockPrismaData = createMockPrismaData();
+      mockPrismaService.habits.findFirst.mockResolvedValue(mockPrismaData);
+
+      // Act
+      const result = await repository.findByName(mockHabitName);
+
+      // Assert - Should query via JOIN with globalEntityIdentifiers table
+      expect(mockPrismaService.habits.findFirst).toHaveBeenCalledWith({
+        where: {
+          globalEntityIdentifiers: {
+            name: mockHabitName,
+          },
+          isActive: true,
+        },
+        include: {
+          globalEntityIdentifiers: true,
+        },
+      });
+      expect(result).toBeInstanceOf(Habit);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe(mockHabitName);
+    });
+
+    it('should return null when habit not found', async () => {
+      // Arrange
+      mockPrismaService.habits.findFirst.mockResolvedValue(null);
+
+      // Act
+      const result = await repository.findByName('Non-existent Habit');
+
+      // Assert
+      expect(mockPrismaService.habits.findFirst).toHaveBeenCalledWith({
+        where: {
+          globalEntityIdentifiers: {
+            name: 'Non-existent Habit',
+          },
+          isActive: true,
+        },
+        include: {
+          globalEntityIdentifiers: true,
+        },
+      });
+      expect(result).toBeNull();
+    });
+
+    it('should only find active habits', async () => {
+      // Arrange
+      mockPrismaService.habits.findFirst.mockResolvedValue(null);
+
+      // Act
+      await repository.findByName(mockHabitName);
+
+      // Assert
+      expect(mockPrismaService.habits.findFirst).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            isActive: true,
+          }),
+        })
+      );
+    });
+
+    it('should handle case-sensitive name matching via JOIN', async () => {
+      // Arrange
+      const caseSensitiveName = 'Morning EXERCISE';
+      mockPrismaService.habits.findFirst.mockResolvedValue(null);
+
+      // Act
+      await repository.findByName(caseSensitiveName);
+
+      // Assert - Query through globalEntityIdentifiers relation
+      expect(mockPrismaService.habits.findFirst).toHaveBeenCalledWith({
+        where: {
+          globalEntityIdentifiers: {
+            name: caseSensitiveName,
+          },
+          isActive: true,
+        },
+        include: {
+          globalEntityIdentifiers: true,
+        },
+      });
+    });
+  });
+
+  describe('mapToDomain() - domain mapping verification', () => {
+    it('should correctly map all Prisma data with JOIN to domain entity', async () => {
+      // Arrange - Prisma data with globalEntityIdentifiers JOIN
+      const complexPrismaData = createMockPrismaData({
+        habitType: HabitComplexity.WITHOUT_INTERVALS,
+        isActive: false,
+        totalActionsCount: 10,
+        lastActionDate: new Date('2024-01-01T12:00:00.000Z'),
+        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+        updatedAt: new Date('2024-01-01T12:00:00.000Z'),
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: 'Complex Habit',
+          icon: 'https://example.com/complex-icon.png',
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+      });
+      mockPrismaService.habits.findUnique.mockResolvedValue(complexPrismaData);
+
+      // Act
+      const result = await repository.findById(mockHabitId);
+
+      // Assert
+      expect(result).toBeInstanceOf(Habit);
+      expect(result!.id).toBe(mockHabitId);
+      expect(result!.globalEntityIdentifier).toBeInstanceOf(GlobalEntityIdentifier);
+      expect(result!.globalEntityIdentifier.name).toBeInstanceOf(IdentifierName);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe('Complex Habit');
+      expect(result!.globalEntityIdentifier.icon).toBeInstanceOf(IdentifierIcon);
+      expect(result!.globalEntityIdentifier.icon.getValue()).toBe(
+        'https://example.com/complex-icon.png'
+      );
+      expect(result!.habitType).toBe(HabitComplexity.WITHOUT_INTERVALS);
+      expect(result!.isActive).toBe(false);
+      expect(result!.totalActionsCount).toBe(10);
+      expect(result!.lastActionDate).toEqual(new Date('2024-01-01T12:00:00.000Z'));
+      expect(result!.createdAt).toEqual(new Date('2024-01-01T00:00:00.000Z'));
+      expect(result!.updatedAt).toEqual(new Date('2024-01-01T12:00:00.000Z'));
+    });
+
+    it('should handle null lastActionDate in domain mapping', async () => {
+      // Arrange
+      const prismaDataWithNullDate = createMockPrismaData({ lastActionDate: null });
+      mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithNullDate);
+
+      // Act
+      const result = await repository.findById(mockHabitId);
+
+      // Assert
+      expect(result!.lastActionDate).toBeNull();
+    });
+
+    it('should correctly map all habit complexity types', async () => {
+      // Test each habit complexity type
+      const complexityTypes = [
+        HabitComplexity.SIMPLE,
+        HabitComplexity.COMPLEX,
+        HabitComplexity.WITHOUT_INTERVALS,
+      ];
+
+      for (const complexity of complexityTypes) {
+        const prismaData = createMockPrismaData({ habitType: complexity });
+        mockPrismaService.habits.findUnique.mockResolvedValue(prismaData);
+
+        const result = await repository.findById(mockHabitId);
+
+        expect(result!.habitType).toBe(complexity);
+      }
+    });
+
+    it('should create valid IdentifierName value object during mapping from JOIN', async () => {
+      // Arrange - Name comes from globalEntityIdentifiers JOIN
+      const prismaData = createMockPrismaData({
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: 'Valid Habit Name',
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+      });
+      mockPrismaService.habits.findUnique.mockResolvedValue(prismaData);
+
+      // Act
+      const result = await repository.findById(mockHabitId);
+
+      // Assert
+      expect(result!.globalEntityIdentifier).toBeInstanceOf(GlobalEntityIdentifier);
+      expect(result!.globalEntityIdentifier.name).toBeInstanceOf(IdentifierName);
+      expect(result!.globalEntityIdentifier.name.getValue()).toBe('Valid Habit Name');
+      expect(result!.globalEntityIdentifier.icon).toBeInstanceOf(IdentifierIcon);
+      expect(() => result!.globalEntityIdentifier.name.getValue()).not.toThrow();
+    });
+  });
+
+  describe('error handling and edge cases', () => {
+    it('should handle concurrent database operations', async () => {
+      // Arrange
+      const mockPrismaData = createMockPrismaData();
+      mockPrismaService.habits.findUnique.mockResolvedValue(mockPrismaData);
+      mockPrismaService.habits.update.mockResolvedValue(mockPrismaData);
+
+      // Act - Simulate concurrent operations
+      const promises = [repository.findById(mockHabitId), repository.findById(mockHabitId)];
+
+      const results = await Promise.all(promises);
+
+      // Assert
+      expect(results).toHaveLength(2);
+      results.forEach(result => {
+        expect(result).toBeInstanceOf(Habit);
+      });
+    });
+
+    it('should handle empty habit name from JOIN during domain mapping', async () => {
+      // Arrange - Empty name in globalEntityIdentifiers JOIN
+      const prismaDataWithEmptyName = createMockPrismaData({
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: '',
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+      });
+      mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithEmptyName);
+
+      // Act & Assert - Should throw during IdentifierName creation from JOIN data
+      await expect(repository.findById(mockHabitId)).rejects.toThrow(
+        'Identifier name cannot be empty'
+      );
+    });
+
+    it('should handle very long habit names from JOIN during domain mapping', async () => {
+      // Arrange - Very long name in globalEntityIdentifiers JOIN
+      const veryLongName = 'a'.repeat(51); // Exceeds max length
+      const prismaDataWithLongName = createMockPrismaData({
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: veryLongName,
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+      });
+      mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithLongName);
+
+      // Act & Assert - Should throw during IdentifierName creation from JOIN data
+      await expect(repository.findById(mockHabitId)).rejects.toThrow(
+        'Identifier name cannot exceed 50 characters'
+      );
+    });
+
+    it('should handle database connection timeouts', async () => {
+      // Arrange
+      const timeoutError = new Error('Connection timeout');
+      mockPrismaService.habits.findUnique.mockRejectedValue(timeoutError);
+
+      // Act & Assert
+      await expect(repository.findById(mockHabitId)).rejects.toThrow('Connection timeout');
+    });
+  });
+});

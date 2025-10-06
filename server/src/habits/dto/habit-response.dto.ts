@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 import { HabitComplexity, UUID } from '../../domain/shared/types/common';
 
 export class HabitResponseDto {
@@ -23,7 +24,8 @@ export class HabitResponseDto {
 
   @ApiProperty({
     description: 'Base64 encoded logo for the habit',
-    example: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+    example:
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   })
   logo!: string;
 

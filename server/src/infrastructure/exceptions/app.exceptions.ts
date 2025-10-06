@@ -19,9 +19,22 @@ export class AppException extends HttpException {
 }
 
 export class ValidationException extends AppException {
-  constructor(message: string, details?: unknown) {
-    super(message, HttpStatus.BAD_REQUEST, details);
+  constructor(message: string | string[], details?: unknown) {
+    super(Array.isArray(message) ? message.join(', ') : message, HttpStatus.BAD_REQUEST, details);
     this.name = 'ValidationException';
+
+    // Override the response to include the message as array when it was passed as array
+    if (Array.isArray(message)) {
+      Object.defineProperty(this, 'getResponse', {
+        value: () => ({
+          error: this.name,
+          message,
+          statusCode: HttpStatus.BAD_REQUEST,
+          ...(details ? { details } : {}),
+        }),
+        writable: false,
+      });
+    }
   }
 }
 

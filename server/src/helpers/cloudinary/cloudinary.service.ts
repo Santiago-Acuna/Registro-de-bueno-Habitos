@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { v2 as cloudinary, UploadApiResponse} from 'cloudinary';
+import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
+
 import {
   CloudinaryConfig,
   CloudinaryUploadOptions,
@@ -22,7 +23,7 @@ export class CloudinaryService {
       apiKey: this.configService.get<string>('CLOUDINARY_API_KEY') || '',
       apiSecret: this.configService.get<string>('CLOUDINARY_API_SECRET') || '',
       secure: true,
-      folder: "habits"
+      folder: 'habits',
     };
 
     this.validateConfiguration();
@@ -62,27 +63,30 @@ export class CloudinaryService {
    * @param options - Upload options
    * @returns Promise<UploadResult>
    */
-    async uploadImage(file: Express.Multer.File, uploadOptions: CloudinaryUploadOptions): Promise<UploadResult> {
+  async uploadImage(
+    file: Express.Multer.File,
+    uploadOptions: CloudinaryUploadOptions
+  ): Promise<UploadResult> {
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         this.buildUploadOptions(uploadOptions),
         (error, result) => {
-                 if (error) {
-          return reject(this.handleUploadError(error));
-        }
-        // Check if the result is valid before resolving
-        if (!result) {
-          return reject(new Error('Cloudinary upload failed: no result returned'));
-        }
-        const response = this.mapCloudinaryResponse(result);
-              this.logger.log(`Image uploaded successfully. URL: ${response.secureUrl}`);
+          if (error) {
+            return reject(this.handleUploadError(error));
+          }
+          // Check if the result is valid before resolving
+          if (!result) {
+            return reject(new Error('Cloudinary upload failed: no result returned'));
+          }
+          const response = this.mapCloudinaryResponse(result);
+          this.logger.log(`Image uploaded successfully. URL: ${response.secureUrl}`);
 
-        resolve({
-        success: true,
-        data: response,
-        url: response.secureUrl,
-      });
-        },
+          resolve({
+            success: true,
+            data: response,
+            url: response.secureUrl,
+          });
+        }
       );
 
       stream.end(file.buffer);
@@ -103,11 +107,11 @@ export class CloudinaryService {
       const fileOptions: CloudinaryUploadOptions = {
         ...options,
       };
-      
+
       if (options.publicId) {
         fileOptions.publicId = `${options.publicId}_${index}`;
       }
-      
+
       return this.uploadImage(file, fileOptions);
     });
 
@@ -127,14 +131,14 @@ export class CloudinaryService {
   async deleteImage(publicId: string): Promise<boolean> {
     try {
       this.logger.log(`Deleting image with public ID: ${publicId}`);
-      
+
       const result = await cloudinary.uploader.destroy(publicId);
-      
+
       if (result.result === 'ok') {
         this.logger.log(`Image deleted successfully: ${publicId}`);
         return true;
       }
-      
+
       this.logger.warn(`Failed to delete image: ${publicId}. Result: ${result.result}`);
       return false;
     } catch (error) {
@@ -164,13 +168,13 @@ export class CloudinaryService {
 
     // Convert camelCase to snake_case for Cloudinary API
     if (options.publicId) {
-      uploadOptions["public_id"] = options.publicId;
-      delete uploadOptions["publicId"];
+      uploadOptions['public_id'] = options.publicId;
+      delete uploadOptions['publicId'];
     }
 
     if (options.resourceType) {
-      uploadOptions["resource_type"] = options.resourceType;
-      delete uploadOptions["resourceType"];
+      uploadOptions['resource_type'] = options.resourceType;
+      delete uploadOptions['resourceType'];
     }
 
     return uploadOptions;
@@ -196,7 +200,7 @@ export class CloudinaryService {
       placeholder: result.placeholder || false,
       url: result.url,
       secureUrl: result.secure_url,
-      folder: result["folder"],
+      folder: result['folder'],
       originalFilename: result.original_filename,
     };
   }
@@ -235,7 +239,14 @@ export class CloudinaryService {
    */
   isFormatSupported(format: string): boolean {
     const supportedFormats: SupportedImageFormat[] = [
-      'jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'tiff', 'svg'
+      'jpg',
+      'jpeg',
+      'png',
+      'webp',
+      'gif',
+      'bmp',
+      'tiff',
+      'svg',
     ];
     return supportedFormats.includes(format.toLowerCase() as SupportedImageFormat);
   }
@@ -243,10 +254,7 @@ export class CloudinaryService {
   /**
    * Generates a transformation URL for an existing image
    */
-  generateTransformationUrl(
-    publicId: string, 
-    transformations: Record<string, any> = {}
-  ): string {
+  generateTransformationUrl(publicId: string, transformations: Record<string, any> = {}): string {
     return cloudinary.url(publicId, transformations);
   }
 }

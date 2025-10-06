@@ -12,50 +12,39 @@ import {
   HttpStatus,
   UseGuards,
   UseInterceptors,
-  UploadedFile
-
+  UploadedFile,
+  ParseUUIDPipe,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-  ApiBody,
-
-} from '@nestjs/swagger';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { HabitsService } from '../services/habits.service';
-import { CreateHabitDto } from '../dto/create-habit.dto';
-import { UpdateHabitDto } from '../dto/update-habit.dto';
-import { HabitResponseDto } from '../dto/habit-response.dto';
-import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
-import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery, ApiBody } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import { validate } from 'class-validator';
+
 import { UUID } from '../../domain/shared/types/common';
 import { UploadImageDto } from '../../helpers/cloudinary';
-import { validate } from 'class-validator';
-import {
-  ValidationException
-} from '../../infrastructure/exceptions/app.exceptions';
-
-
-
+import { ApiFile } from '../../infrastructure/decorators';
+import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
+import { ValidationException } from '../../infrastructure/exceptions/app.exceptions';
+import { CreateHabitDto } from '../dto/create-habit.dto';
+import { HabitResponseDto } from '../dto/habit-response.dto';
+import { HabitsQueryDto } from '../dto/habits-query.dto';
+import { UpdateHabitDto } from '../dto/update-habit.dto';
+import { HabitsService } from '../services/habits.service';
 
 @ApiTags('habits')
 @Controller('habits')
 @UseGuards(ThrottlerGuard)
 export class HabitsController {
-  constructor(private readonly habitsService: HabitsService,
-  ) { }
+  constructor(private readonly habitsService: HabitsService) {}
   @Post()
-  @UseInterceptors(FileInterceptor('logo'))
+  @UseInterceptors(FileInterceptor('icon'))
   @Version('1')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Create a new habit',
     description: 'Creates a new habit with the provided information. Habit names must be unique.',
   })
+  @ApiFile('icon')
   @ApiBody({ type: CreateHabitDto })
   @ApiResponse({
     status: 201,
@@ -78,20 +67,22 @@ export class HabitsController {
     status: 409,
     description: 'Habit with the same name already exists',
   })
-  async create(@Body() createHabitDto: CreateHabitDto,
-    @UploadedFile() logo: Express.Multer.File,
+  async create(
+    @Body() createHabitDto: CreateHabitDto,
+    @UploadedFile() logo: Express.Multer.File
   ): Promise<HabitResponseDto> {
-
     const uploadImageDto = new UploadImageDto();
     uploadImageDto.image = logo;
 
     const errors = await validate(uploadImageDto);
     if (errors.length > 0) {
-      const message = errors
-        .map(err => Object.values(err.constraints || {}).join(', '))
-        .join('; ');
-
-      throw new ValidationException(message || 'Uncontrolled error with the image you sent');
+      const errorGroups = errors.map(err => Object.values(err.constraints || {}));
+      const nonEmptyGroups = errorGroups.filter(group => group.length > 0);
+      const message =
+        nonEmptyGroups.length > 0
+          ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
+          : 'Uncontrolled error with the image you sent';
+      throw new ValidationException(message);
     }
 
     return this.habitsService.create(createHabitDto, logo);
@@ -141,10 +132,9 @@ export class HabitsController {
       },
     },
   })
-  async findAll(
-    @Query() paginationQuery: PaginationQueryDto,
-    @Query('isActive') isActive?: boolean
-  ): Promise<PaginatedResponseDto<HabitResponseDto>> {
+  async findAll(@Query() query: HabitsQueryDto): Promise<PaginatedResponseDto<HabitResponseDto>> {
+    const { page = 1, limit = 10, isActive } = query;
+    const paginationQuery = { page, limit };
     const filters = isActive !== undefined ? { isActive } : undefined;
     return this.habitsService.findAll(paginationQuery, filters);
   }
@@ -171,15 +161,17 @@ export class HabitsController {
     status: 404,
     description: 'Habit not found',
   })
-  async findOne(@Param('id') id: UUID): Promise<HabitResponseDto> {
+  async findOne(@Param('id', ParseUUIDPipe) id: UUID): Promise<HabitResponseDto> {
     return this.habitsService.findOne(id);
   }
 
   @Patch(':id')
+  @UseInterceptors(FileInterceptor('logo'))
   @Version('1')
   @ApiOperation({
     summary: 'Update habit',
-    description: 'Updates a habit with the provided information. Only provided fields will be updated.',
+    description:
+      'Updates a habit with the provided information. Only provided fields will be updated.',
   })
   @ApiParam({
     name: 'id',
@@ -188,6 +180,7 @@ export class HabitsController {
     description: 'Unique identifier of the habit',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
+  @ApiFile('logo')
   @ApiBody({ type: UpdateHabitDto })
   @ApiResponse({
     status: 200,
@@ -207,10 +200,30 @@ export class HabitsController {
     description: 'Habit with the same name already exists',
   })
   async update(
-    @Param('id') id: UUID,
-    @Body() updateHabitDto: UpdateHabitDto
+    @Param('id', ParseUUIDPipe) id: UUID,
+    @Body() updateHabitDto: UpdateHabitDto,
+    @UploadedFile() logo?: Express.Multer.File
   ): Promise<HabitResponseDto> {
-    return this.habitsService.update(id, updateHabitDto);
+    // Validate logo if provided
+    if (logo) {
+      const uploadImageDto = new UploadImageDto();
+      uploadImageDto.image = logo;
+
+      const errors = await validate(uploadImageDto);
+      if (errors.length > 0) {
+        const errorGroups = errors.map(err => Object.values(err.constraints || {}));
+        const nonEmptyGroups = errorGroups.filter(group => group.length > 0);
+        const message =
+          nonEmptyGroups.length > 0
+            ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
+            : 'Uncontrolled error with the image you sent';
+        throw new ValidationException(message);
+      }
+    }
+
+    return logo
+      ? this.habitsService.update(id, updateHabitDto, logo)
+      : this.habitsService.update(id, updateHabitDto);
   }
 
   @Delete(':id')
@@ -235,33 +248,7 @@ export class HabitsController {
     status: 404,
     description: 'Habit not found',
   })
-  async remove(@Param('id') id: UUID): Promise<void> {
+  async remove(@Param('id', ParseUUIDPipe) id: UUID): Promise<void> {
     return this.habitsService.remove(id);
-  }
-
-  @Post(':id/increment-action')
-  @Version('1')
-  @ApiOperation({
-    summary: 'Increment habit action count',
-    description: 'Increments the action count for a habit and updates the last action date.',
-  })
-  @ApiParam({
-    name: 'id',
-    type: 'string',
-    format: 'uuid',
-    description: 'Unique identifier of the habit',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Action count incremented successfully',
-    type: HabitResponseDto,
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Habit not found',
-  })
-  async incrementActionCount(@Param('id') id: UUID): Promise<HabitResponseDto> {
-    return this.habitsService.incrementActionCount(id);
   }
 }

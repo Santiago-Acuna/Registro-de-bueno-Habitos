@@ -1,24 +1,20 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
 
-import { IHabitsRepository } from '../interfaces/habits-repository.interface';
 import { Habit } from '../../domain/entities/habit.entity';
-import { CreateHabitDto } from '../dto/create-habit.dto';
-import { UpdateHabitDto } from '../dto/update-habit.dto';
-import { HabitResponseDto } from '../dto/habit-response.dto';
-import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
+import { PaginatedResult, FilterOptions, UUID } from '../../domain/shared/types/common';
+import { IdentifierName } from '../../domain/value-objects/identifier-name';
+import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
-import {
-  PaginatedResult,
-  FilterOptions,
-  UUID
-} from '../../domain/shared/types/common';
+import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
 import {
   NotFoundError,
   ConflictError,
-  ValidationException
+  ValidationException,
 } from '../../infrastructure/exceptions/app.exceptions';
-import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
+import { CreateHabitDto } from '../dto/create-habit.dto';
+import { HabitResponseDto } from '../dto/habit-response.dto';
+import { UpdateHabitDto } from '../dto/update-habit.dto';
+import { IHabitsRepository } from '../interfaces/habits-repository.interface';
 
 @Injectable()
 export class HabitsService {
@@ -28,9 +24,12 @@ export class HabitsService {
     @Inject('IHabitsRepository')
     private readonly habitsRepository: IHabitsRepository,
     private readonly cloudinaryService: CloudinaryService
-  ) { }
+  ) {}
 
-  async create(createHabitDto: CreateHabitDto, logo:Express.Multer.File): Promise<HabitResponseDto> {
+  async create(
+    createHabitDto: CreateHabitDto,
+    logo: Express.Multer.File
+  ): Promise<HabitResponseDto> {
     this.logger.log(`Creating new habit: ${createHabitDto.name}`);
 
     // Check if habit with same name already exists
@@ -39,36 +38,45 @@ export class HabitsService {
       throw new ConflictError(`Habit with name '${createHabitDto.name}' already exists`);
     }
 
-    const result = await this.cloudinaryService.uploadImage(logo,
-      {public_id: logo.originalname.split('.')[0] as string, 
-          folder: 'habits',  
-          resourceType: 'auto',});
-    var imageUrl = result.url;
+    const result = await this.cloudinaryService.uploadImage(logo, {
+      public_id: logo.originalname.split('.')[0] as string,
+      folder: 'habits',
+      resourceType: 'auto',
+    });
+    const imageUrl = result.url;
     if (!result.success) {
-      throw new ValidationException(result.error?.message || 'Failed to upload image. Uncontrolled error');
+      throw new ValidationException(
+        result.error?.message || 'Failed to upload image. Uncontrolled error'
+      );
     }
 
+    // Validate that Cloudinary returned a valid URL
+    if (!imageUrl || imageUrl.trim() === '') {
+      throw new ValidationException('Icon must be a non-empty string');
+    }
 
     try {
-      // Create domain entity
-      const habit = Habit.create(
-        uuidv4(),
-        createHabitDto.name,
-        createHabitDto.habitType,
-        imageUrl!
-      );
+      // Validate domain rules before saving
+      const habitName = IdentifierName.create(createHabitDto.name);
+
+      // Create habit data for repository
+      const createHabitData = {
+        name: habitName.getValue(),
+        habitType: createHabitDto.habitType,
+        icon: imageUrl!,
+      };
 
       // Save to repository
-      const savedHabit = await this.habitsRepository.create(habit);
+      const savedHabit = await this.habitsRepository.create(createHabitData);
 
       this.logger.log(`Successfully created habit with id: ${savedHabit.id}`);
 
       return this.mapToResponse(savedHabit);
     } catch (error) {
-      if (error instanceof Error && error.message.includes('Logo')) {
+      if (error instanceof Error && error.message.includes('Icon')) {
         throw new ValidationException(error.message);
       }
-      if (error instanceof Error && error.message.includes('Habit name')) {
+      if (error instanceof Error && error.message.includes('Identifier name')) {
         throw new ValidationException(error.message);
       }
       throw error;
@@ -79,7 +87,9 @@ export class HabitsService {
     paginationQuery: PaginationQueryDto,
     filters?: FilterOptions
   ): Promise<PaginatedResponseDto<HabitResponseDto>> {
-    this.logger.log(`Fetching habits - page: ${paginationQuery.page}, limit: ${paginationQuery.limit}`);
+    this.logger.log(
+      `Fetching habits - page: ${paginationQuery.page}, limit: ${paginationQuery.limit}`
+    );
 
     const result: PaginatedResult<Habit> = await this.habitsRepository.findAll(
       {
@@ -89,14 +99,9 @@ export class HabitsService {
       filters
     );
 
-    const responseData = result.data.map((habit) => this.mapToResponse(habit));
+    const responseData = result.data.map(habit => this.mapToResponse(habit));
 
-    return new PaginatedResponseDto(
-      responseData,
-      result.total,
-      result.page,
-      result.limit
-    );
+    return new PaginatedResponseDto(responseData, result.total, result.page, result.limit);
   }
 
   async findOne(id: UUID): Promise<HabitResponseDto> {
@@ -110,7 +115,11 @@ export class HabitsService {
     return this.mapToResponse(habit);
   }
 
-  async update(id: UUID, updateHabitDto: UpdateHabitDto): Promise<HabitResponseDto> {
+  async update(
+    id: UUID,
+    updateHabitDto: UpdateHabitDto,
+    logo?: Express.Multer.File
+  ): Promise<HabitResponseDto> {
     this.logger.log(`Updating habit with id: ${id}`);
 
     // Check if habit exists
@@ -120,7 +129,11 @@ export class HabitsService {
     }
 
     // Check for name conflicts if name is being updated
-    if (updateHabitDto.name && updateHabitDto.name !== existingHabit.name.getValue()) {
+    if (
+      'name' in updateHabitDto &&
+      updateHabitDto.name !== undefined &&
+      updateHabitDto.name !== existingHabit.globalEntityIdentifier.name.getValue()
+    ) {
       const habitWithSameName = await this.habitsRepository.findByName(updateHabitDto.name);
       if (habitWithSameName && habitWithSameName.id !== id) {
         throw new ConflictError(`Habit with name '${updateHabitDto.name}' already exists`);
@@ -130,23 +143,81 @@ export class HabitsService {
     try {
       // Update the domain entity
       let updatedHabit = existingHabit;
+      let hasNameUpdate = false;
+      let hasIconUpdate = false;
+      const updateData: any = {};
 
-      if (updateHabitDto.name) {
+      // Handle name update
+      if ('name' in updateHabitDto && updateHabitDto.name !== undefined) {
         updatedHabit = updatedHabit.updateName(updateHabitDto.name);
+        updateData.name = updatedHabit.globalEntityIdentifier.name;
+        hasNameUpdate = true;
       }
 
-      // if (updateHabitDto.logo) {
-      //   updatedHabit = updatedHabit.updateLogo(updateHabitDto.logo);
-      // }
+      // Handle logo update from file upload parameter
+      if (logo) {
+        // Check file size limit (2MB for updates)
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        if (logo.size > maxSize) {
+          throw new ValidationException('Logo size cannot exceed 2MB');
+        }
+
+        // Upload new logo
+        const result = await this.cloudinaryService.uploadImage(logo, {
+          public_id: logo.originalname.split('.')[0] as string,
+          folder: 'habits',
+          resourceType: 'auto',
+        });
+
+        if (!result.success) {
+          throw new ValidationException(
+            result.error?.message || 'Failed to upload image. Uncontrolled error'
+          );
+        }
+
+        // Validate that Cloudinary returned a valid URL
+        if (!result.url || result.url.trim() === '') {
+          throw new ValidationException('Icon must be a non-empty string');
+        }
+
+        // Validate icon size
+        const maxIconSize = 2 * 1024 * 1024; // 2MB
+        if (result.url.length > maxIconSize) {
+          throw new ValidationException('Icon size cannot exceed 2MB');
+        }
+
+        updatedHabit = updatedHabit.updateIcon(result.url);
+        updateData.icon = result.url;
+        hasIconUpdate = true;
+      }
+
+      // Determine what to pass to repository
+      let dataToUpdate: any;
+      if (!hasNameUpdate && !hasIconUpdate) {
+        // No updates at all, pass existing habit entity
+        dataToUpdate = existingHabit;
+      } else if (hasNameUpdate && !hasIconUpdate) {
+        // Name updated but not icon, include existing icon
+        dataToUpdate = {
+          ...updateData,
+          icon: existingHabit.globalEntityIdentifier.icon.getValue(),
+        };
+      } else {
+        // Icon updated (with or without name update)
+        dataToUpdate = updateData;
+      }
 
       // Save updated entity
-      const savedHabit = await this.habitsRepository.update(id, updatedHabit);
+      const savedHabit = await this.habitsRepository.update(id, dataToUpdate);
 
       this.logger.log(`Successfully updated habit with id: ${id}`);
 
       return this.mapToResponse(savedHabit);
     } catch (error) {
-      if (error instanceof Error && (error.message.includes('Logo') || error.message.includes('Habit name'))) {
+      if (
+        error instanceof Error &&
+        (error.message.includes('Icon') || error.message.includes('Identifier name'))
+      ) {
         throw new ValidationException(error.message);
       }
       throw error;
@@ -166,27 +237,17 @@ export class HabitsService {
     this.logger.log(`Successfully removed habit with id: ${id}`);
   }
 
-  async incrementActionCount(id: UUID): Promise<HabitResponseDto> {
-    this.logger.log(`Incrementing action count for habit with id: ${id}`);
-
-    const updatedHabit = await this.habitsRepository.incrementActionCount(id);
-
-    this.logger.log(`Successfully incremented action count for habit with id: ${id}`);
-
-    return this.mapToResponse(updatedHabit);
-  }
-
   private mapToResponse(habit: Habit): HabitResponseDto {
     return {
       id: habit.id,
-      name: habit.name.getValue(),
+      name: habit.globalEntityIdentifier.name.getValue(),
       habitType: habit.habitType,
-      logo: habit.logo,
+      logo: habit.globalEntityIdentifier.icon.getValue(),
       isActive: habit.isActive,
       totalActionsCount: habit.totalActionsCount,
-      lastActionDate: habit.lastActionDate,
-      createdAt: habit.createdAt,
-      updatedAt: habit.updatedAt,
+      lastActionDate: habit.lastActionDate ? new Date(habit.lastActionDate) : null,
+      createdAt: new Date(habit.createdAt),
+      updatedAt: new Date(habit.updatedAt),
     };
   }
 }
