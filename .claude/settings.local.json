@@ -15,7 +15,8 @@
       "Bash(node:*)",
       "Bash(cat:*)",
       "Bash(npx prettier:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npm run test:run:*)"
     ],
     "deny": []
   }
