@@ -12,7 +12,7 @@ const enable = ({ accumulatedErrors, setDisabled }: EnableProps): void => {
 const validate = ({ e, errors, setErrors, setDisabled }: ValidateProps): void => {
   let accumulatedErrors = errors;
   if (e.target.value.length === 0 || e.target.value === undefined) {
-    let address = e.target.name === "logo" ? "address " : "";
+    let address = e.target.name === "icon" ? "address " : "";
     setErrors({
       ...errors,
       [e.target.name]: `${e.target.name} ${address}is empty`
@@ -81,10 +81,10 @@ const checkBeforeSubmit = (
     });
     setDisabled(true);
     return false;
-  } else if (habit.logo === "") {
+  } else if (habit.icon === "") {
     setErrors({
       ...errors,
-      logo: "logo address is empty"
+      icon: "icon address is empty"
     });
     setDisabled(true);
     return false;

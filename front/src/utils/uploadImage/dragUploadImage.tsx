@@ -53,7 +53,7 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
           result !== undefined &&
             setHabit({
               ...habit,
-              logo: result
+              icon: result
             });
         } catch (e) {
           console.log(e);
@@ -66,7 +66,7 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
     e.preventDefault();
     setHabit({
       ...habit,
-      logo: ""
+      icon: ""
     });
   };
   const handleUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -80,7 +80,7 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
       setIsImageValid(null);
       setHabit({
         ...habit,
-        logo: imageUrl
+        icon: imageUrl
       });
       return undefined;
     }
@@ -103,14 +103,14 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
     // Update the input state
     setHabit({
       ...habit,
-      logo: imageUrl
+      icon: imageUrl
     });
   };
 
-  if (habit.logo !== "" && isImageValid === true) {
+  if (habit.icon !== "" && isImageValid === true) {
     return (
       <div className={styles.urlImgDiv}>
-        <img className={styles.urlImg} src={habit.logo} alt="invalid img" />
+        <img className={styles.urlImg} src={habit.icon} alt="invalid img" />
         <button
           className={styles.cancelBtn}
           onClick={(e) => {
@@ -174,15 +174,15 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
       <input
         className={styles.urlImgInput}
         type="text"
-        value={habit.logo}
-        name={"logo"}
+        value={habit.icon}
+        name={"icon"}
         autoComplete="off"
         onChange={(e) => {
           handleUrlInputChange(e);
         }}
       />
       {isImageValid === false && <p className={styles.danger}>Image url is not valid</p>}
-      {errors.logo !== undefined && <p className={styles.danger}>{errors.logo}</p>}
+      {errors.icon !== undefined && <p className={styles.danger}>{errors.icon}</p>}
     </div>
   );
 };

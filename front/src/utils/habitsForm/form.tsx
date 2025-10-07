@@ -13,7 +13,7 @@ const HabitForm: FC = () => {
   // work: para quien ?: string, lenguage: string; descripcion: string:
   const [habit, setHabit] = useState<HabitBody>({
     name: "",
-    logo: "",
+    icon: "",
     habit_type: ""
   });
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
@@ -78,7 +78,7 @@ const HabitForm: FC = () => {
         setDisabled={setDisabled}
       />
       <div className={styles.subContainer}>
-        <p className={styles.subTitle}>Logo:</p>
+        <p className={styles.subTitle}>Icon:</p>
         <DragDropFiles
           File={File}
           setFile={setFile}

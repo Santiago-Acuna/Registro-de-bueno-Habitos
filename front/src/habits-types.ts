@@ -7,14 +7,14 @@ enum HabitType {
 interface HabitBody {
   name: string;
   habit_type: HabitType | string;
-  logo: string;
+  icon: string;
 }
 
 interface Habit {
   id: string;
   name: string;
   habitType: HabitType | string;
-  logo: string;
+  icon: string;
 }
 
 interface CreateHabitsProps {
