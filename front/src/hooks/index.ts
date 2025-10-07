@@ -9,3 +9,4 @@
 
 // Export custom hooks here as they are created
 // Example: export { useCustomHook } from './useCustomHook';
+export { useHabitForm } from "./useHabitForm";
