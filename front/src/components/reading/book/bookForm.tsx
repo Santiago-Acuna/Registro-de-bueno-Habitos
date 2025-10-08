@@ -4,7 +4,10 @@ import InputForm from "./inputForm";
 import { handleChange, checkBeforeSubmit } from "./formUtils";
 import DragDropFiles from "./uploadImage/dragUploadImage";
 import styles from "./form.module.css";
-import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
+import {
+  useCustomDispatch,
+  useCustomSelector,
+} from "../../../redux/hooks/hooks";
 import { useNavigate } from "react-router-dom";
 import { postBooks, patchBooks } from "../../../redux/slices/book/asyncActions";
 
@@ -14,13 +17,17 @@ const Form: FC = () => {
     image: "",
     total_pages: 0,
     average_of_characters_per_minute: 0,
-    current_page: 0 //poner default value 0
+    current_page: 0, //poner default value 0
   });
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [disabled, setDisabled] = useState<boolean>(false);
   const [File, setFile] = useState<File | null>(null);
 
-  const { formState: form, bookInfo, bookID } = useCustomSelector((state) => state.book);
+  const {
+    formState: form,
+    bookInfo,
+    bookID,
+  } = useCustomSelector((state) => state.book);
   const buttonName = form.charAt(0).toUpperCase() + form.substring(1);
 
   useEffect(() => {
@@ -45,7 +52,10 @@ const Form: FC = () => {
 
       alert("Habit Created Successfully");
       navigate("/");
-    } else if (checkBeforeSubmit(errors, book, setErrors, setDisabled) && form === "UPDATE") {
+    } else if (
+      checkBeforeSubmit(errors, book, setErrors, setDisabled) &&
+      form === "UPDATE"
+    ) {
       console.log("pre update");
       await dispatch(patchBooks({ book, bookID }));
       console.log("updated");

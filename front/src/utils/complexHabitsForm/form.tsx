@@ -1,8 +1,7 @@
-import { FC } from "react"
+import { FC } from "react";
 
-const Form: FC = ()=>{
-
-  return(<div></div>)
-}
+const Form: FC = () => {
+  return <div></div>;
+};
 
 export default Form;

@@ -1,6 +1,9 @@
 import Button from "@mui/material/Button";
 import { FC } from "react";
-import { useCustomSelector, useCustomDispatch } from "../../../redux/hooks/hooks";
+import {
+  useCustomSelector,
+  useCustomDispatch,
+} from "../../../redux/hooks/hooks";
 import { manageForm } from "../../../redux/slices/book/book";
 import styles from "./createBook.module.css";
 import Form from "./bookForm";
@@ -8,8 +11,13 @@ import Form from "./bookForm";
 const CreateHabits: FC = () => {
   const { formState: form } = useCustomSelector((state) => state.book);
   const dispatch = useCustomDispatch();
-  const display = { display: form !== "" ? "none" : "flex", justifyContent: "flex-end" };
-  const openCreateForm = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+  const display = {
+    display: form !== "" ? "none" : "flex",
+    justifyContent: "flex-end",
+  };
+  const openCreateForm = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
     e.preventDefault();
     dispatch(manageForm("CREATE"));
   };

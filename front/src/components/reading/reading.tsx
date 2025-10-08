@@ -14,9 +14,9 @@ const ReadingDashboard: FC = () => {
         </Link>
       </div>
       <div className={styles.optionCard}>
-      <Link to="/logs">
-        <img src={logs} className={styles.optionImg} />
-        <p className={styles.optionCardP}>Logs Naranja</p>
+        <Link to="/logs">
+          <img src={logs} className={styles.optionImg} />
+          <p className={styles.optionCardP}>Logs Naranja</p>
         </Link>
       </div>
     </div>

@@ -1,22 +1,22 @@
 .mainContainer {
   display: flex;
   flex-direction: column;
-  justify-content: space-around ;
+  justify-content: space-around;
   width: 33%;
   height: 90%;
   border-width: 0.2rem;
   border-style: outset;
-  background-size:cover;
+  background-size: cover;
   border-radius: 10px;
   border-color: rgba(48, 0, 78, 0.87);
-  transition: transform .5s;
+  transition: transform 0.5s;
   margin-top: 5px;
   margin-bottom: 5px;
   background-color: rgba(228, 231, 12, 0.5);
   text-decoration: none;
 }
 
-.mainContainer:hover{
+.mainContainer:hover {
   transform: scale(1.1);
 }
 
@@ -27,9 +27,9 @@
   text-decoration: none;
   padding-right: 15px;
   padding-left: 15px;
-  color: rgba(203, 75, 207, 1)
+  color: rgba(203, 75, 207, 1);
 }
-.link{
+.link {
   width: 30%;
   height: 90%;
   text-decoration: none;
@@ -43,7 +43,7 @@
   text-align: center;
   padding-right: 15px;
   padding-left: 15px;
-  color: rgba(48, 0, 78, 0.87)
+  color: rgba(48, 0, 78, 0.87);
 }
 
 .image {
@@ -63,15 +63,15 @@
 .button24 {
   align-self: center;
   width: 50%;
-  background: #FF4742;
-  border: 1px solid #FF4742;
+  background: #ff4742;
+  border: 1px solid #ff4742;
   border-radius: 6px;
   box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
   box-sizing: border-box;
-  color: #FFFFFF;
+  color: #ffffff;
   cursor: pointer;
   display: inline-block;
-  font-family: nunito,roboto,proxima-nova,"proxima nova",sans-serif;
+  font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
   font-size: 16px;
   font-weight: 800;
   line-height: 16px;
@@ -91,15 +91,12 @@
 .button-24:active {
   background-color: initial;
   background-position: 0 0;
-  color: #FF4742;
+  color: #ff4742;
 }
 
 .button-24:active {
-  opacity: .5;
+  opacity: 0.5;
 }
-
-
-
 
 @keyframes fadeIn {
   from {
@@ -166,8 +163,6 @@
   /* align-items: center;
   justify-content: end; */
   flex-direction: column;
-
-
 }
 
 .flipCard {
@@ -235,34 +230,33 @@
   border-radius: 80px;
 }
 
-.technologiesGridSide{
+.technologiesGridSide {
   display: flex;
   grid-column: 3/4;
-    height: 100%;
+  height: 100%;
   width: 100%;
   align-items: center;
 
   /* justify-content: center; */
 }
-.technologiesContainer{
+.technologiesContainer {
   display: flex;
   flex-direction: column;
 }
 
 @media only screen and (max-width: 800px) {
-  .container{
+  .container {
     display: flex;
     flex-direction: column;
   }
-  .flipCard{
+  .flipCard {
     align-self: center;
     margin-top: 5%;
   }
-
 }
 .button {
   margin-left: 2%;
-  margin-top: 2% ;
+  margin-top: 2%;
   background-color: rgb(0, 0, 0);
   color: rgb(255, 255, 255);
   border: rgb(0, 0, 0) solid 3px;
@@ -280,15 +274,14 @@
   transition-delay: 0.2s;
   transition: 0.8s;
 }
-.backButton{
+.backButton {
   display: flex;
   align-self: flex-start;
   justify-self: flex-start;
-
 }
 a {
-  text-decoration:none;
-  color:#FFF;
+  text-decoration: none;
+  color: #fff;
 }
 .buttonA {
   display: flex;
@@ -297,44 +290,50 @@ a {
 }
 .portfolioBtn {
   justify-self: center;
-  color:#FFF;
+  color: #fff;
   font-size: 1.5rem;
   height: 110%;
   width: 100%;
-  background-image: linear-gradient(90deg, #00C0FF 0%, #FFCF00 49%, #FC4F4F 80%, #00C0FF 100%);
-border-radius:5px;
-display:flex;
-align-items:center;
-justify-content:center;
-text-transform:uppercase;
+  background-image: linear-gradient(
+    90deg,
+    #00c0ff 0%,
+    #ffcf00 49%,
+    #fc4f4f 80%,
+    #00c0ff 100%
+  );
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
 
-font-weight:bold;
+  font-weight: bold;
 }
 
 .portfolioBtn:after {
-  content:attr(alt);
+  content: attr(alt);
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .portfolioBtn:hover {
-  animation:slidebg 1.5s linear infinite;
+  animation: slidebg 1.5s linear infinite;
   animation-iteration-count: infinite;
 }
 
 @keyframes slidebg {
   to {
-    background-position:20vw;
+    background-position: 20vw;
   }
 }
 
-.cardbackSection{
-  border-bottom: #FFF solid 1px;
+.cardbackSection {
+  border-bottom: #fff solid 1px;
 }
 
-.namep{
-font-size: 2rem;
-padding-top:0px ;
-margin-top: 5%;
+.namep {
+  font-size: 2rem;
+  padding-top: 0px;
+  margin-top: 5%;
 }

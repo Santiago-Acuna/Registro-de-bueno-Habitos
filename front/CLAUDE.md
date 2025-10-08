@@ -5,6 +5,7 @@ This file provides guidance for working with the React frontend of the habit tra
 ## Frontend Architecture
 
 **Technology Stack:**
+
 - React 19 with TypeScript
 - Vite for build tooling and development server
 - Redux Toolkit for state management
@@ -81,19 +82,12 @@ npm run type-check
 2. user-story-creator: User Stories - USE for create new tasks
 3. git-workflow-manager: Commit - USE after each phase
 
-**Phase 2: Test-Driven Development**
-4. react-tdd-test-first: Create tests - USE for each task
-5. git-workflow-manager: Commit RED phase
-6. react-test-implementer: Implement - USE after tests fail
-7. git-workflow-manager: Commit GREEN phase
+**Phase 2: Test-Driven Development** 4. react-tdd-test-first: Create tests - USE for each task 5. git-workflow-manager: Commit RED phase 6. react-test-implementer: Implement - USE after tests fail 7. git-workflow-manager: Commit GREEN phase
 
-**Phase 3: Quality & Security**
-8. security-auditor: Audit - USE before main merge
-9. git-workflow-manager: Commit fixes
-10. accessibility-auditor: WCAG - USE after UI complete
-11. git-workflow-manager: Commit improvements
+**Phase 3: Quality & Security** 8. security-auditor: Audit - USE before main merge 9. git-workflow-manager: Commit fixes 10. accessibility-auditor: WCAG - USE after UI complete 11. git-workflow-manager: Commit improvements
 
 **Git Strategy (NO Claude mentions)**
+
 - Architecture: "feat: add [feature] architecture"
 - Tests: "test: add [feature] tests (RED)"
 - Implementation: "feat: implement [feature] (GREEN)"
@@ -101,6 +95,7 @@ npm run type-check
 - A11Y: "feat: improve accessibility"
 
 **RULES**
+
 - NEVER write code without concrete functionality
 - NEVER implement without failing tests
 - NEVER mention Claude in commits

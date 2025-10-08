@@ -1,5 +1,4 @@
-
-import './styles.modules.css'; // This imports the CSS file
+import "./styles.modules.css"; // This imports the CSS file
 
 interface SpaceBackgroundProps {
   children: React.ReactNode;

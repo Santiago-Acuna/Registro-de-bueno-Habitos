@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import styles from "./app.module.css"
+import styles from "./app.module.css";
 import HabitsSelection from "./components/habitsSelection/habitsSelection";
 import CreateHabits from "./components/createHabit/createHabit";
 import ComplexHabits from "./components/complex habits/complex-habits";
@@ -11,13 +11,13 @@ const App: React.FC = () => {
   return (
     <BrowserRouter basename="/">
       <div className={styles.container}>
-      <Routes>
-        <Route path="/Complex" element={<ComplexHabits />} />
-        <Route path="/Reading/" element={<ReadingDashboard/>}/>
-        <Route path="/Reading" element={<ReadingDashboard/>}/>
-        <Route path="/books" element={<Books/>}/>
-        <Route path="/" element={[<CreateHabits/>, <HabitsSelection />]} />
-      </Routes>
+        <Routes>
+          <Route path="/Complex" element={<ComplexHabits />} />
+          <Route path="/Reading/" element={<ReadingDashboard />} />
+          <Route path="/Reading" element={<ReadingDashboard />} />
+          <Route path="/books" element={<Books />} />
+          <Route path="/" element={[<CreateHabits />, <HabitsSelection />]} />
+        </Routes>
       </div>
     </BrowserRouter>
   );

@@ -42,27 +42,31 @@ const Books: FC = () => {
         </div>
       )}
       {formState !== "" && (
-         <div className={styles.formContainer}>
-         <div className={styles.closeDiv} onClick={closeCreateForm}>
-           <div className={styles.close}>
-             <span></span>
-             <span></span>
-             <span></span>
-             <span></span>
-             <svg viewBox="0 0 36 36" className={styles.circle}>
-               <path
-                 stroke-dasharray="100, 100"
-                 d="M18 2.0845
+        <div className={styles.formContainer}>
+          <div className={styles.closeDiv} onClick={closeCreateForm}>
+            <div className={styles.close}>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <svg viewBox="0 0 36 36" className={styles.circle}>
+                <path
+                  stroke-dasharray="100, 100"
+                  d="M18 2.0845
          a 15.9155 15.9155 0 0 1 0 31.831
          a 15.9155 15.9155 0 0 1 0 -31.831"
-               />
-             </svg>
-           </div>
-           </div><Form />
-           </div>)}
+                />
+              </svg>
+            </div>
+          </div>
+          <Form />
+        </div>
+      )}
       {books.length > 0 && (
         <div className={styles.cardsContainers}>
-          {books?.map((b) => <BookCard book={b} key={b.id} />)}
+          {books?.map((b) => (
+            <BookCard book={b} key={b.id} />
+          ))}
         </div>
       )}
     </div>

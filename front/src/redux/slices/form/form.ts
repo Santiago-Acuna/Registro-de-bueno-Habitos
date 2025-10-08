@@ -11,7 +11,7 @@ interface State {
 const initialState: State = {
   formState: "",
   habitInfo: { name: "", icon: "", habit_type: "" },
-  habitID: ""
+  habitID: "",
 };
 const formSlice = createSlice({
   name: "form",
@@ -25,7 +25,7 @@ const formSlice = createSlice({
       state.habitID = id;
       state.habitInfo = { name, habit_type, icon };
     },
-  }
+  },
 });
 
 const formReducer = formSlice.reducer;

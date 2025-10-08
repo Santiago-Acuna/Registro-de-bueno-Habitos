@@ -5,9 +5,9 @@
   text-decoration: none;
   padding-right: 15px;
   padding-left: 15px;
-  color: rgba(203, 75, 207, 1)
+  color: rgba(203, 75, 207, 1);
 }
-.link{
+.link {
   width: 30%;
   height: 90%;
   text-decoration: none;
@@ -21,7 +21,7 @@
   text-align: center;
   padding-right: 15px;
   padding-left: 15px;
-  color: rgba(48, 0, 78, 0.87)
+  color: rgba(48, 0, 78, 0.87);
 }
 
 .image {
@@ -41,15 +41,15 @@
 .button24 {
   align-self: center;
   width: 50%;
-  background: #FF4742;
-  border: 1px solid #FF4742;
+  background: #ff4742;
+  border: 1px solid #ff4742;
   border-radius: 6px;
   box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
   box-sizing: border-box;
-  color: #FFFFFF;
+  color: #ffffff;
   cursor: pointer;
   display: inline-block;
-  font-family: nunito,roboto,proxima-nova,"proxima nova",sans-serif;
+  font-family: nunito, roboto, proxima-nova, "proxima nova", sans-serif;
   font-size: 16px;
   font-weight: 800;
   line-height: 16px;
@@ -69,13 +69,12 @@
 .button-24:active {
   background-color: initial;
   background-position: 0 0;
-  color: #FF4742;
+  color: #ff4742;
 }
 
 .button-24:active {
-  opacity: .5;
+  opacity: 0.5;
 }
-
 
 @property --rotate {
   syntax: "<angle>";
@@ -83,12 +82,10 @@
   inherits: false;
 }
 
-
-
 .card {
-    display: flex;
+  display: flex;
   flex-direction: column;
-  justify-content: space-around ;
+  justify-content: space-around;
   background: #191c29;
   width: 100%;
 
@@ -103,18 +100,16 @@
   color: rgb(88 199 250 / 0%);
   cursor: pointer;
   font-family: cursive;
-  
 }
 
 .card:hover {
   color: rgb(88 199 250 / 100%);
   transition: color 1s;
 }
- .card:hover:after {
+.card:hover:after {
   animation: none;
   opacity: 0;
 }
-
 
 .card::before {
   content: "";
@@ -122,13 +117,16 @@
   height: 102%;
   border-radius: 8px;
   background-image: linear-gradient(
-    var(--rotate)
-    , #5ddcff, #3c67e3 43%, #4e00c2);
-    position: absolute;
-    z-index: -1;
-    top: -1%;
-    left: -2%;
-    animation: spin 2.5s linear infinite;
+    var(--rotate),
+    #5ddcff,
+    #3c67e3 43%,
+    #4e00c2
+  );
+  position: absolute;
+  z-index: -1;
+  top: -1%;
+  left: -2%;
+  animation: spin 2.5s linear infinite;
 }
 
 .card::after {
@@ -144,10 +142,13 @@
   transform: scale(0.8);
   filter: blur(calc(var(--card-height) / 6));
   background-image: linear-gradient(
-    var(--rotate)
-    , #5ddcff, #3c67e3 43%, #4e00c2);
-    opacity: 1;
-  transition: opacity .5s;
+    var(--rotate),
+    #5ddcff,
+    #3c67e3 43%,
+    #4e00c2
+  );
+  opacity: 1;
+  transition: opacity 0.5s;
   animation: spin 2.5s linear infinite;
 }
 
@@ -159,4 +160,3 @@
     --rotate: 360deg;
   }
 }
-

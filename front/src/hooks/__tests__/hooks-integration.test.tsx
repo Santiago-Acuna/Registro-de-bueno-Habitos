@@ -10,44 +10,44 @@
  * to seamlessly integrate with React so I can build custom hooks.
  */
 
-import { describe, it, expect } from 'vitest';
-import { render, renderHook } from '@testing-library/react';
-import { useState } from 'react';
-import * as React from 'react';
+import { describe, it, expect } from "vitest";
+import { render, renderHook } from "@testing-library/react";
+import { useState } from "react";
+import * as React from "react";
 
-describe('CH-001: Hooks Integration with React', () => {
-  describe('Barrel Export Module Integration', () => {
-    it('should import the hooks barrel export without errors', async () => {
+describe("CH-001: Hooks Integration with React", () => {
+  describe("Barrel Export Module Integration", () => {
+    it("should import the hooks barrel export without errors", async () => {
       // Arrange: Prepare to import hooks module
       const importHooks = async () => {
-        return await import('@/hooks');
+        return await import("@/hooks");
       };
 
       // Act & Assert: Should import successfully
       await expect(importHooks()).resolves.toBeDefined();
     });
 
-    it('should export an empty object initially (before hooks are added)', async () => {
+    it("should export an empty object initially (before hooks are added)", async () => {
       // Arrange: Import hooks barrel
-      const hooks = await import('@/hooks');
+      const hooks = await import("@/hooks");
 
       // Act: Get exportable keys (excluding default module properties)
       const exportedKeys = Object.keys(hooks).filter(
-        (key) => !['__esModule', 'default'].includes(key)
+        (key) => !["__esModule", "default"].includes(key)
       );
 
       // Assert: Should be an object (may be empty initially)
-      expect(typeof hooks).toBe('object');
+      expect(typeof hooks).toBe("object");
       expect(hooks).not.toBeNull();
       // Initially empty is acceptable
       expect(Array.isArray(exportedKeys)).toBe(true);
     });
 
-    it('should not cause errors when imported multiple times', async () => {
+    it("should not cause errors when imported multiple times", async () => {
       // Arrange: Import multiple times
-      const firstImport = import('@/hooks');
-      const secondImport = import('@/hooks');
-      const thirdImport = import('@/hooks');
+      const firstImport = import("@/hooks");
+      const secondImport = import("@/hooks");
+      const thirdImport = import("@/hooks");
 
       // Act & Assert: All imports should resolve
       await expect(firstImport).resolves.toBeDefined();
@@ -56,8 +56,8 @@ describe('CH-001: Hooks Integration with React', () => {
     });
   });
 
-  describe('Hook Infrastructure Testing', () => {
-    it('should support React hook testing with renderHook utility', () => {
+  describe("Hook Infrastructure Testing", () => {
+    it("should support React hook testing with renderHook utility", () => {
       // Arrange: Create a simple hook for testing infrastructure
       const useTestHook = () => {
         const [value, setValue] = useState(0);
@@ -69,10 +69,10 @@ describe('CH-001: Hooks Integration with React', () => {
 
       // Assert: Hook should work with testing infrastructure
       expect(result.current.value).toBe(0);
-      expect(typeof result.current.setValue).toBe('function');
+      expect(typeof result.current.setValue).toBe("function");
     });
 
-    it('should support hooks in React components', () => {
+    it("should support hooks in React components", () => {
       // Arrange: Create a test component that uses a hook
       const TestComponent: React.FC = () => {
         const [count, setCount] = useState(0);
@@ -86,13 +86,13 @@ describe('CH-001: Hooks Integration with React', () => {
 
       // Act: Render component
       const { getByTestId } = render(<TestComponent />);
-      const countElement = getByTestId('count');
+      const countElement = getByTestId("count");
 
       // Assert: Component should render with hook
-      expect(countElement.textContent).toBe('0');
+      expect(countElement.textContent).toBe("0");
     });
 
-    it('should allow hook composition (hooks calling other hooks)', () => {
+    it("should allow hook composition (hooks calling other hooks)", () => {
       // Arrange: Create composed hooks
       const useCounter = () => {
         const [count, setCount] = useState(0);
@@ -112,19 +112,20 @@ describe('CH-001: Hooks Integration with React', () => {
     });
   });
 
-  describe('Custom Hook Export Pattern', () => {
-    it('should support exporting a custom hook from barrel export', async () => {
+  describe("Custom Hook Export Pattern", () => {
+    it("should support exporting a custom hook from barrel export", async () => {
       // Arrange: Import hooks barrel
-      const hooksModule = await import('@/hooks');
+      const hooksModule = await import("@/hooks");
 
       // Act: Check module structure for hook exports
-      const moduleIsValid = typeof hooksModule === 'object' && hooksModule !== null;
+      const moduleIsValid =
+        typeof hooksModule === "object" && hooksModule !== null;
 
       // Assert: Module should be ready to export hooks
       expect(moduleIsValid).toBe(true);
     });
 
-    it('should follow hooks naming convention (useXxx pattern)', () => {
+    it("should follow hooks naming convention (useXxx pattern)", () => {
       // Arrange: Define a test hook following convention
       const useTestHook = () => {
         return useState(false);
@@ -137,9 +138,12 @@ describe('CH-001: Hooks Integration with React', () => {
       expect(hookName).toMatch(/^use[A-Z]/);
     });
 
-    it('should support TypeScript type inference for hooks', () => {
+    it("should support TypeScript type inference for hooks", () => {
       // Arrange: Create a typed hook
-      const useTypedHook = (): { value: number; setValue: (v: number) => void } => {
+      const useTypedHook = (): {
+        value: number;
+        setValue: (v: number) => void;
+      } => {
         const [value, setValue] = useState<number>(0);
         return { value, setValue };
       };
@@ -148,13 +152,13 @@ describe('CH-001: Hooks Integration with React', () => {
       const { result } = renderHook(() => useTypedHook());
 
       // Assert: Types should be inferred correctly
-      expect(typeof result.current.value).toBe('number');
-      expect(typeof result.current.setValue).toBe('function');
+      expect(typeof result.current.value).toBe("number");
+      expect(typeof result.current.setValue).toBe("function");
     });
   });
 
-  describe('Hook Testing Best Practices', () => {
-    it('should support testing hook state updates', () => {
+  describe("Hook Testing Best Practices", () => {
+    it("should support testing hook state updates", () => {
       // Arrange: Create a hook with state
       const useCounter = () => {
         const [count, setCount] = useState(0);
@@ -168,10 +172,10 @@ describe('CH-001: Hooks Integration with React', () => {
 
       // Assert: Initial state should be correct
       expect(initialCount).toBe(0);
-      expect(typeof result.current.increment).toBe('function');
+      expect(typeof result.current.increment).toBe("function");
     });
 
-    it('should support testing hooks with dependencies', () => {
+    it("should support testing hooks with dependencies", () => {
       // Arrange: Create a hook with external dependency
       const useValueFormatter = (value: number) => {
         const formatted = `Value: ${value}`;
@@ -184,10 +188,10 @@ describe('CH-001: Hooks Integration with React', () => {
       });
 
       // Assert: Hook should format value correctly
-      expect(result.current).toBe('Value: 42');
+      expect(result.current).toBe("Value: 42");
     });
 
-    it('should support testing hook lifecycle', () => {
+    it("should support testing hook lifecycle", () => {
       // Arrange: Create a hook that tracks renders
       let renderCount = 0;
       const useRenderCounter = () => {
@@ -204,11 +208,11 @@ describe('CH-001: Hooks Integration with React', () => {
     });
   });
 
-  describe('Hook Import Patterns', () => {
-    it('should support importing hooks with @ alias', async () => {
+  describe("Hook Import Patterns", () => {
+    it("should support importing hooks with @ alias", async () => {
       // Arrange: Test import with alias
       const testImport = async () => {
-        const hooks = await import('@/hooks');
+        const hooks = await import("@/hooks");
         return hooks;
       };
 
@@ -216,10 +220,10 @@ describe('CH-001: Hooks Integration with React', () => {
       await expect(testImport()).resolves.toBeDefined();
     });
 
-    it('should support importing hooks with relative paths', async () => {
+    it("should support importing hooks with relative paths", async () => {
       // Arrange: Test relative import
       const testImport = async () => {
-        const hooks = await import('../../hooks');
+        const hooks = await import("../../hooks");
         return hooks;
       };
 
@@ -227,10 +231,10 @@ describe('CH-001: Hooks Integration with React', () => {
       await expect(testImport()).resolves.toBeDefined();
     });
 
-    it('should maintain module singleton across different import methods', async () => {
+    it("should maintain module singleton across different import methods", async () => {
       // Arrange: Import using different methods
-      const aliasImport = await import('@/hooks');
-      const relativeImport = await import('../../hooks');
+      const aliasImport = await import("@/hooks");
+      const relativeImport = await import("../../hooks");
 
       // Act: Compare modules
       const areSame = aliasImport === relativeImport;
@@ -240,20 +244,20 @@ describe('CH-001: Hooks Integration with React', () => {
     });
   });
 
-  describe('Error Handling and Edge Cases', () => {
-    it('should not throw errors when no hooks are exported yet', async () => {
+  describe("Error Handling and Edge Cases", () => {
+    it("should not throw errors when no hooks are exported yet", async () => {
       // Arrange: Import the empty hooks module
       const importHooks = async () => {
-        return await import('@/hooks');
+        return await import("@/hooks");
       };
 
       // Act & Assert: Should not throw
       await expect(importHooks()).resolves.toBeDefined();
     });
 
-    it('should handle concurrent hook imports gracefully', async () => {
+    it("should handle concurrent hook imports gracefully", async () => {
       // Arrange: Create multiple concurrent imports
-      const imports = Array.from({ length: 5 }, () => import('@/hooks'));
+      const imports = Array.from({ length: 5 }, () => import("@/hooks"));
 
       // Act: Wait for all imports
       const results = await Promise.all(imports);
@@ -263,12 +267,12 @@ describe('CH-001: Hooks Integration with React', () => {
       expect(allSame).toBe(true);
     });
 
-    it('should support future addition of multiple hooks', async () => {
+    it("should support future addition of multiple hooks", async () => {
       // Arrange: Import hooks module
-      const hooks = await import('@/hooks');
+      const hooks = await import("@/hooks");
 
       // Act: Verify module can hold multiple exports
-      const canHoldMultipleExports = typeof hooks === 'object';
+      const canHoldMultipleExports = typeof hooks === "object";
 
       // Assert: Module structure supports multiple exports
       expect(canHoldMultipleExports).toBe(true);
@@ -276,8 +280,8 @@ describe('CH-001: Hooks Integration with React', () => {
     });
   });
 
-  describe('React 19 Compatibility', () => {
-    it('should work with React 19 features', () => {
+  describe("React 19 Compatibility", () => {
+    it("should work with React 19 features", () => {
       // Arrange: Create a hook using React 19 compatible patterns
       const useModernHook = () => {
         const [state, setState] = useState(0);
@@ -289,13 +293,13 @@ describe('CH-001: Hooks Integration with React', () => {
 
       // Assert: Should work with React 19
       expect(result.current.state).toBe(0);
-      expect(typeof result.current.setState).toBe('function');
+      expect(typeof result.current.setState).toBe("function");
     });
 
-    it('should support testing with React Testing Library', () => {
+    it("should support testing with React Testing Library", () => {
       // Arrange: Create test component
       const TestHookComponent: React.FC = () => {
-        const [value] = useState('hook-test');
+        const [value] = useState("hook-test");
         return <div data-testid="hook-value">{value}</div>;
       };
 
@@ -303,7 +307,7 @@ describe('CH-001: Hooks Integration with React', () => {
       const { getByTestId } = render(<TestHookComponent />);
 
       // Assert: Component with hook should render
-      expect(getByTestId('hook-value').textContent).toBe('hook-test');
+      expect(getByTestId("hook-value").textContent).toBe("hook-test");
     });
   });
 });

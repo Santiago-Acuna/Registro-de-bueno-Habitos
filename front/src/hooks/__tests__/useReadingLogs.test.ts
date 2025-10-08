@@ -21,12 +21,12 @@
  * 8. Cache management
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { useReadingLogs } from '@/hooks';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { useReadingLogs } from "@/hooks";
 
 // Mock dependencies
-vi.mock('axios', () => ({
+vi.mock("axios", () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
@@ -35,9 +35,9 @@ vi.mock('axios', () => ({
   },
 }));
 
-import axios from 'axios';
+import axios from "axios";
 
-describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
+describe("CH-003: useReadingLogs Hook - Reading Logs API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -46,32 +46,32 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
     vi.clearAllMocks();
   });
 
-  describe('Hook Existence and Structure', () => {
-    it('should be exportable from hooks barrel', async () => {
+  describe("Hook Existence and Structure", () => {
+    it("should be exportable from hooks barrel", async () => {
       // Arrange: Import hooks module
-      const hooksModule = await import('@/hooks');
+      const hooksModule = await import("@/hooks");
 
       // Act: Check for useReadingLogs export
-      const hasUseReadingLogs = 'useReadingLogs' in hooksModule;
+      const hasUseReadingLogs = "useReadingLogs" in hooksModule;
 
       // Assert: Hook should be exported
       expect(hasUseReadingLogs).toBe(true);
-      expect(typeof hooksModule.useReadingLogs).toBe('function');
+      expect(typeof hooksModule.useReadingLogs).toBe("function");
     });
 
-    it('should follow React hooks naming convention', async () => {
+    it("should follow React hooks naming convention", async () => {
       // Arrange: Import the hook
-      const { useReadingLogs: hook } = await import('@/hooks');
+      const { useReadingLogs: hook } = await import("@/hooks");
 
       // Act: Get hook name
       const hookName = hook.name;
 
       // Assert: Should start with 'use' and be PascalCase
       expect(hookName).toMatch(/^use[A-Z]/);
-      expect(hookName).toBe('useReadingLogs');
+      expect(hookName).toBe("useReadingLogs");
     });
 
-    it('should return an object with expected properties', () => {
+    it("should return an object with expected properties", () => {
       // Arrange: Mock successful API response
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -80,22 +80,20 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
 
       // Assert: Should return object with query properties
       expect(result.current).toBeDefined();
-      expect(result.current).toHaveProperty('data');
-      expect(result.current).toHaveProperty('isLoading');
-      expect(result.current).toHaveProperty('isError');
-      expect(result.current).toHaveProperty('error');
-      expect(result.current).toHaveProperty('refetch');
+      expect(result.current).toHaveProperty("data");
+      expect(result.current).toHaveProperty("isLoading");
+      expect(result.current).toHaveProperty("isError");
+      expect(result.current).toHaveProperty("error");
+      expect(result.current).toHaveProperty("refetch");
     });
   });
 
-  describe('Initial State and Data Fetching', () => {
-    it('should initialize with loading state', () => {
+  describe("Initial State and Data Fetching", () => {
+    it("should initialize with loading state", () => {
       // Arrange: Mock pending API call
       vi.mocked(axios.get).mockImplementation(
         () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ data: [] }), 100)
-          )
+          new Promise((resolve) => setTimeout(() => resolve({ data: [] }), 100))
       );
 
       // Act: Render hook
@@ -106,20 +104,20 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       expect(result.current.data).toBeUndefined();
     });
 
-    it('should fetch reading logs from backend API on mount', async () => {
+    it("should fetch reading logs from backend API on mount", async () => {
       // Arrange: Mock successful API response
       const mockLogs = [
         {
-          id: 'log-1',
-          habitId: 'habit-123',
+          id: "log-1",
+          habitId: "habit-123",
           pages: 25,
-          date: '2025-01-07',
+          date: "2025-01-07",
         },
         {
-          id: 'log-2',
-          habitId: 'habit-456',
+          id: "log-2",
+          habitId: "habit-456",
           pages: 30,
-          date: '2025-01-06',
+          date: "2025-01-06",
         },
       ];
 
@@ -134,12 +132,12 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       });
 
       expect(axios.get).toHaveBeenCalledWith(
-        expect.stringContaining('/reading-logs')
+        expect.stringContaining("/reading-logs")
       );
       expect(result.current.data).toEqual(mockLogs);
     });
 
-    it('should call the correct backend endpoint', async () => {
+    it("should call the correct backend endpoint", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -154,10 +152,10 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       });
     });
 
-    it('should transition from loading to success state', async () => {
+    it("should transition from loading to success state", async () => {
       // Arrange: Mock API response
       vi.mocked(axios.get).mockResolvedValue({
-        data: [{ id: 'log-1', pages: 10 }],
+        data: [{ id: "log-1", pages: 10 }],
       });
 
       // Act: Render hook
@@ -175,8 +173,8 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
     });
   });
 
-  describe('Loading States', () => {
-    it('should set isLoading to true during data fetch', () => {
+  describe("Loading States", () => {
+    it("should set isLoading to true during data fetch", () => {
       // Arrange: Mock slow API call
       vi.mocked(axios.get).mockImplementation(
         () =>
@@ -193,7 +191,7 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       expect(result.current.data).toBeUndefined();
     });
 
-    it('should set isLoading to false after successful fetch', async () => {
+    it("should set isLoading to false after successful fetch", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -206,9 +204,9 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       });
     });
 
-    it('should set isLoading to false after failed fetch', async () => {
+    it("should set isLoading to false after failed fetch", async () => {
       // Arrange: Mock API error
-      vi.mocked(axios.get).mockRejectedValue(new Error('Network error'));
+      vi.mocked(axios.get).mockRejectedValue(new Error("Network error"));
 
       // Act: Render hook
       const { result } = renderHook(() => useReadingLogs());
@@ -220,7 +218,7 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       });
     });
 
-    it('should provide loading state during refetch', async () => {
+    it("should provide loading state during refetch", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -235,16 +233,14 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       result.current.refetch();
 
       // Assert: Should show loading during refetch
-      expect(result.current.isLoading || result.current.isFetching).toBe(
-        true
-      );
+      expect(result.current.isLoading || result.current.isFetching).toBe(true);
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle network errors gracefully', async () => {
+  describe("Error Handling", () => {
+    it("should handle network errors gracefully", async () => {
       // Arrange: Mock network error
-      const networkError = new Error('Network Error');
+      const networkError = new Error("Network Error");
       vi.mocked(axios.get).mockRejectedValue(networkError);
 
       // Act: Render hook
@@ -257,10 +253,10 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       });
     });
 
-    it('should handle 404 errors from backend', async () => {
+    it("should handle 404 errors from backend", async () => {
       // Arrange: Mock 404 error
       const notFoundError = {
-        response: { status: 404, data: { message: 'Not Found' } },
+        response: { status: 404, data: { message: "Not Found" } },
       };
       vi.mocked(axios.get).mockRejectedValue(notFoundError);
 
@@ -273,12 +269,12 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       });
     });
 
-    it('should handle 500 server errors', async () => {
+    it("should handle 500 server errors", async () => {
       // Arrange: Mock 500 error
       const serverError = {
         response: {
           status: 500,
-          data: { message: 'Internal Server Error' },
+          data: { message: "Internal Server Error" },
         },
       };
       vi.mocked(axios.get).mockRejectedValue(serverError);
@@ -292,9 +288,9 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       });
     });
 
-    it('should provide error message to UI', async () => {
+    it("should provide error message to UI", async () => {
       // Arrange: Mock error with message
-      const errorMessage = 'Failed to fetch reading logs';
+      const errorMessage = "Failed to fetch reading logs";
       vi.mocked(axios.get).mockRejectedValue(new Error(errorMessage));
 
       // Act: Render hook
@@ -306,10 +302,10 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       });
     });
 
-    it('should clear error state on successful refetch', async () => {
+    it("should clear error state on successful refetch", async () => {
       // Arrange: Mock error then success
       vi.mocked(axios.get)
-        .mockRejectedValueOnce(new Error('Error'))
+        .mockRejectedValueOnce(new Error("Error"))
         .mockResolvedValueOnce({ data: [] });
 
       // Act: Render hook with error
@@ -330,12 +326,12 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
     });
   });
 
-  describe('Filtering by Habit ID', () => {
-    it('should support filtering logs by habit ID', async () => {
+  describe("Filtering by Habit ID", () => {
+    it("should support filtering logs by habit ID", async () => {
       // Arrange: Mock filtered response
-      const habitId = 'habit-123';
+      const habitId = "habit-123";
       const filteredLogs = [
-        { id: 'log-1', habitId, pages: 20, date: '2025-01-07' },
+        { id: "log-1", habitId, pages: 20, date: "2025-01-07" },
       ];
 
       vi.mocked(axios.get).mockResolvedValue({ data: filteredLogs });
@@ -354,12 +350,12 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       expect(result.current.data).toEqual(filteredLogs);
     });
 
-    it('should fetch all logs when no habitId is provided', async () => {
+    it("should fetch all logs when no habitId is provided", async () => {
       // Arrange: Mock all logs
       vi.mocked(axios.get).mockResolvedValue({
         data: [
-          { id: 'log-1', habitId: 'habit-1' },
-          { id: 'log-2', habitId: 'habit-2' },
+          { id: "log-1", habitId: "habit-1" },
+          { id: "log-2", habitId: "habit-2" },
         ],
       });
 
@@ -372,20 +368,20 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
 
       // Assert: Should not include habitId in query
       expect(axios.get).toHaveBeenCalledWith(
-        expect.not.stringContaining('habitId=')
+        expect.not.stringContaining("habitId=")
       );
     });
 
-    it('should refetch when habitId filter changes', async () => {
+    it("should refetch when habitId filter changes", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get)
-        .mockResolvedValueOnce({ data: [{ habitId: 'habit-1' }] })
-        .mockResolvedValueOnce({ data: [{ habitId: 'habit-2' }] });
+        .mockResolvedValueOnce({ data: [{ habitId: "habit-1" }] })
+        .mockResolvedValueOnce({ data: [{ habitId: "habit-2" }] });
 
       // Act: Render with initial habitId
       const { result, rerender } = renderHook(
         ({ habitId }) => useReadingLogs({ habitId }),
-        { initialProps: { habitId: 'habit-1' } }
+        { initialProps: { habitId: "habit-1" } }
       );
 
       await waitFor(() => {
@@ -395,7 +391,7 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       const firstCallCount = vi.mocked(axios.get).mock.calls.length;
 
       // Change habitId
-      rerender({ habitId: 'habit-2' });
+      rerender({ habitId: "habit-2" });
 
       // Assert: Should make new API call
       await waitFor(() => {
@@ -406,10 +402,10 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
     });
   });
 
-  describe('Date Range Filtering', () => {
-    it('should support filtering by start date', async () => {
+  describe("Date Range Filtering", () => {
+    it("should support filtering by start date", async () => {
       // Arrange: Mock filtered response
-      const startDate = '2025-01-01';
+      const startDate = "2025-01-01";
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
       // Act: Render hook with startDate
@@ -425,9 +421,9 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       );
     });
 
-    it('should support filtering by end date', async () => {
+    it("should support filtering by end date", async () => {
       // Arrange: Mock filtered response
-      const endDate = '2025-01-31';
+      const endDate = "2025-01-31";
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
       // Act: Render hook with endDate
@@ -443,10 +439,10 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       );
     });
 
-    it('should support filtering by date range', async () => {
+    it("should support filtering by date range", async () => {
       // Arrange: Mock filtered response
-      const startDate = '2025-01-01';
-      const endDate = '2025-01-07';
+      const startDate = "2025-01-01";
+      const endDate = "2025-01-07";
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
       // Act: Render hook with date range
@@ -466,7 +462,7 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       );
     });
 
-    it('should refetch when date range changes', async () => {
+    it("should refetch when date range changes", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -475,8 +471,8 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
         ({ startDate, endDate }) => useReadingLogs({ startDate, endDate }),
         {
           initialProps: {
-            startDate: '2025-01-01',
-            endDate: '2025-01-07',
+            startDate: "2025-01-01",
+            endDate: "2025-01-07",
           },
         }
       );
@@ -488,7 +484,7 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       const firstCallCount = vi.mocked(axios.get).mock.calls.length;
 
       // Change date range
-      rerender({ startDate: '2025-01-08', endDate: '2025-01-14' });
+      rerender({ startDate: "2025-01-08", endDate: "2025-01-14" });
 
       // Assert: Should make new API call
       await waitFor(() => {
@@ -499,8 +495,8 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
     });
   });
 
-  describe('Pagination Support', () => {
-    it('should support page and limit parameters', async () => {
+  describe("Pagination Support", () => {
+    it("should support page and limit parameters", async () => {
       // Arrange: Mock paginated response
       vi.mocked(axios.get).mockResolvedValue({
         data: [],
@@ -522,7 +518,7 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       );
     });
 
-    it('should provide pagination metadata', async () => {
+    it("should provide pagination metadata", async () => {
       // Arrange: Mock paginated response with meta
       const paginationMeta = {
         page: 1,
@@ -553,11 +549,11 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       ).toBeDefined();
     });
 
-    it('should handle page changes', async () => {
+    it("should handle page changes", async () => {
       // Arrange: Mock different pages
       vi.mocked(axios.get)
-        .mockResolvedValueOnce({ data: [{ id: '1' }], meta: { page: 1 } })
-        .mockResolvedValueOnce({ data: [{ id: '2' }], meta: { page: 2 } });
+        .mockResolvedValueOnce({ data: [{ id: "1" }], meta: { page: 1 } })
+        .mockResolvedValueOnce({ data: [{ id: "2" }], meta: { page: 2 } });
 
       // Act: Render with page 1
       const { result, rerender } = renderHook(
@@ -579,16 +575,16 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
     });
   });
 
-  describe('Data Transformation', () => {
-    it('should transform backend reading log data to frontend format', async () => {
+  describe("Data Transformation", () => {
+    it("should transform backend reading log data to frontend format", async () => {
       // Arrange: Mock backend response (NestJS format)
       const backendData = [
         {
-          id: 'uuid-log-1',
-          habitId: 'uuid-habit-123',
+          id: "uuid-log-1",
+          habitId: "uuid-habit-123",
           pagesRead: 25, // Backend might use different property names
-          readDate: '2025-01-07T10:00:00Z',
-          createdAt: '2025-01-07T10:00:00Z',
+          readDate: "2025-01-07T10:00:00Z",
+          createdAt: "2025-01-07T10:00:00Z",
         },
       ];
 
@@ -611,7 +607,7 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       });
     });
 
-    it('should handle empty arrays from backend', async () => {
+    it("should handle empty arrays from backend", async () => {
       // Arrange: Mock empty response
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -627,15 +623,15 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       expect(Array.isArray(result.current.data)).toBe(true);
     });
 
-    it('should preserve all required reading log fields', async () => {
+    it("should preserve all required reading log fields", async () => {
       // Arrange: Mock complete reading log data
       const completeLog = {
-        id: 'log-1',
-        habitId: 'habit-123',
+        id: "log-1",
+        habitId: "habit-123",
         pages: 25,
-        date: '2025-01-07',
-        createdAt: '2025-01-07T10:00:00Z',
-        updatedAt: '2025-01-07T10:00:00Z',
+        date: "2025-01-07",
+        createdAt: "2025-01-07T10:00:00Z",
+        updatedAt: "2025-01-07T10:00:00Z",
       };
 
       vi.mocked(axios.get).mockResolvedValue({ data: [completeLog] });
@@ -649,21 +645,21 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
 
       // Assert: All required fields should be present
       const log = result.current.data?.[0];
-      expect(log).toHaveProperty('id');
-      expect(log).toHaveProperty('habitId');
-      expect(log).toHaveProperty('pages');
-      expect(log).toHaveProperty('date');
+      expect(log).toHaveProperty("id");
+      expect(log).toHaveProperty("habitId");
+      expect(log).toHaveProperty("pages");
+      expect(log).toHaveProperty("date");
     });
   });
 
-  describe('Sorting and Ordering', () => {
-    it('should support sorting by date', async () => {
+  describe("Sorting and Ordering", () => {
+    it("should support sorting by date", async () => {
       // Arrange: Mock sorted response
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
       // Act: Render hook with sort
       const { result } = renderHook(() =>
-        useReadingLogs({ sortBy: 'date', order: 'desc' })
+        useReadingLogs({ sortBy: "date", order: "desc" })
       );
 
       await waitFor(() => {
@@ -676,13 +672,13 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       );
     });
 
-    it('should support sorting by pages read', async () => {
+    it("should support sorting by pages read", async () => {
       // Arrange: Mock sorted response
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
       // Act: Render hook with sort by pages
       const { result } = renderHook(() =>
-        useReadingLogs({ sortBy: 'pages', order: 'asc' })
+        useReadingLogs({ sortBy: "pages", order: "asc" })
       );
 
       await waitFor(() => {
@@ -691,11 +687,11 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
 
       // Assert: Should include sort params
       expect(axios.get).toHaveBeenCalledWith(
-        expect.stringContaining('sortBy=pages')
+        expect.stringContaining("sortBy=pages")
       );
     });
 
-    it('should default to descending date order', async () => {
+    it("should default to descending date order", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -711,13 +707,13 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
     });
   });
 
-  describe('Combined Filters', () => {
-    it('should support combining habitId and date range filters', async () => {
+  describe("Combined Filters", () => {
+    it("should support combining habitId and date range filters", async () => {
       // Arrange: Mock filtered response
       const filters = {
-        habitId: 'habit-123',
-        startDate: '2025-01-01',
-        endDate: '2025-01-07',
+        habitId: "habit-123",
+        startDate: "2025-01-01",
+        endDate: "2025-01-07",
       };
 
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
@@ -737,24 +733,22 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       );
     });
 
-    it('should support combining all filters with pagination', async () => {
+    it("should support combining all filters with pagination", async () => {
       // Arrange: Mock response
       const filters = {
-        habitId: 'habit-123',
-        startDate: '2025-01-01',
-        endDate: '2025-01-07',
+        habitId: "habit-123",
+        startDate: "2025-01-01",
+        endDate: "2025-01-07",
         page: 1,
         limit: 20,
-        sortBy: 'date',
-        order: 'desc',
+        sortBy: "date",
+        order: "desc",
       };
 
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
       // Act: Render hook with all filters
-      const { result } = renderHook(() =>
-        useReadingLogs(filters as any)
-      );
+      const { result } = renderHook(() => useReadingLogs(filters as any));
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -762,14 +756,14 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
 
       // Assert: Should include all params
       const callUrl = vi.mocked(axios.get).mock.calls[0][0];
-      expect(callUrl).toContain('habitId=habit-123');
-      expect(callUrl).toContain('page=1');
-      expect(callUrl).toContain('limit=20');
+      expect(callUrl).toContain("habitId=habit-123");
+      expect(callUrl).toContain("page=1");
+      expect(callUrl).toContain("limit=20");
     });
   });
 
-  describe('Cache Management', () => {
-    it('should provide refetch function', () => {
+  describe("Cache Management", () => {
+    it("should provide refetch function", () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -777,13 +771,13 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       const { result } = renderHook(() => useReadingLogs());
 
       // Assert: refetch should be a function
-      expect(typeof result.current.refetch).toBe('function');
+      expect(typeof result.current.refetch).toBe("function");
     });
 
-    it('should cache data between re-renders', async () => {
+    it("should cache data between re-renders", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({
-        data: [{ id: 'log-1' }],
+        data: [{ id: "log-1" }],
       });
 
       // Act: Render hook
@@ -802,34 +796,34 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       expect(result.current.data).toBe(firstData);
     });
 
-    it('should invalidate cache when filters change', async () => {
+    it("should invalidate cache when filters change", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get)
-        .mockResolvedValueOnce({ data: [{ id: 'log-1' }] })
-        .mockResolvedValueOnce({ data: [{ id: 'log-2' }] });
+        .mockResolvedValueOnce({ data: [{ id: "log-1" }] })
+        .mockResolvedValueOnce({ data: [{ id: "log-2" }] });
 
       // Act: Render with initial filter
       const { result, rerender } = renderHook(
         ({ habitId }) => useReadingLogs({ habitId }),
-        { initialProps: { habitId: 'habit-1' } }
+        { initialProps: { habitId: "habit-1" } }
       );
 
       await waitFor(() => {
-        expect(result.current.data?.[0].id).toBe('log-1');
+        expect(result.current.data?.[0].id).toBe("log-1");
       });
 
       // Change filter
-      rerender({ habitId: 'habit-2' });
+      rerender({ habitId: "habit-2" });
 
       // Assert: Should fetch new data
       await waitFor(() => {
-        expect(result.current.data?.[0].id).toBe('log-2');
+        expect(result.current.data?.[0].id).toBe("log-2");
       });
     });
   });
 
-  describe('Performance and Optimization', () => {
-    it('should cleanup subscriptions on unmount', async () => {
+  describe("Performance and Optimization", () => {
+    it("should cleanup subscriptions on unmount", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -847,14 +841,14 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       expect(true).toBe(true);
     });
 
-    it('should debounce rapid filter changes', async () => {
+    it("should debounce rapid filter changes", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
       // Act: Render hook
       const { result, rerender } = renderHook(
         ({ habitId }) => useReadingLogs({ habitId }),
-        { initialProps: { habitId: 'habit-1' } }
+        { initialProps: { habitId: "habit-1" } }
       );
 
       await waitFor(() => {
@@ -864,9 +858,9 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       const initialCalls = vi.mocked(axios.get).mock.calls.length;
 
       // Rapid filter changes
-      rerender({ habitId: 'habit-2' });
-      rerender({ habitId: 'habit-3' });
-      rerender({ habitId: 'habit-4' });
+      rerender({ habitId: "habit-2" });
+      rerender({ habitId: "habit-3" });
+      rerender({ habitId: "habit-4" });
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -879,16 +873,16 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
     });
   });
 
-  describe('TypeScript Type Safety', () => {
-    it('should enforce correct filter types', async () => {
+  describe("TypeScript Type Safety", () => {
+    it("should enforce correct filter types", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
       // Act: Render hook with typed filters
       const { result } = renderHook(() =>
         useReadingLogs({
-          habitId: 'habit-123',
-          startDate: '2025-01-01',
+          habitId: "habit-123",
+          startDate: "2025-01-01",
           page: 1,
           limit: 10,
         })
@@ -902,13 +896,13 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
       expect(axios.get).toHaveBeenCalled();
     });
 
-    it('should provide properly typed reading log data', async () => {
+    it("should provide properly typed reading log data", async () => {
       // Arrange: Mock typed response
       const typedLog = {
-        id: 'log-1',
-        habitId: 'habit-123',
+        id: "log-1",
+        habitId: "habit-123",
         pages: 25,
-        date: '2025-01-07',
+        date: "2025-01-07",
       };
 
       vi.mocked(axios.get).mockResolvedValue({ data: [typedLog] });
@@ -922,9 +916,9 @@ describe('CH-003: useReadingLogs Hook - Reading Logs API', () => {
 
       // Assert: Data should be properly typed
       const log = result.current.data?.[0];
-      expect(typeof log?.id).toBe('string');
-      expect(typeof log?.pages).toBe('number');
-      expect(typeof log?.date).toBe('string');
+      expect(typeof log?.id).toBe("string");
+      expect(typeof log?.pages).toBe("number");
+      expect(typeof log?.date).toBe("string");
     });
   });
 });

@@ -36,11 +36,16 @@ function mainLoop() {
     );
 
     context.lineTo(
-      (Math.cos(angle_2) * canvas.width) / (7.5 * Math.cos(time) + 2.5 * Math.sin(time)),
-      (Math.sin(angle_2) * canvas.width) / (7.5 * Math.cos(time) + 2.5 * Math.sin(time))
+      (Math.cos(angle_2) * canvas.width) /
+        (7.5 * Math.cos(time) + 2.5 * Math.sin(time)),
+      (Math.sin(angle_2) * canvas.width) /
+        (7.5 * Math.cos(time) + 2.5 * Math.sin(time))
     );
 
-    context.lineTo((Math.cos(angle_3) * canvas.width) / 1, (Math.sin(angle_3) * canvas.width) / 1);
+    context.lineTo(
+      (Math.cos(angle_3) * canvas.width) / 1,
+      (Math.sin(angle_3) * canvas.width) / 1
+    );
 
     context.closePath();
     context.stroke();

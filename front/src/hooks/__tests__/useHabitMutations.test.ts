@@ -21,13 +21,13 @@
  * 8. Integration with backend API
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
-import { useHabitMutations } from '@/hooks';
-import type { HabitBody } from '../../habits-types';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook, act, waitFor } from "@testing-library/react";
+import { useHabitMutations } from "@/hooks";
+import type { HabitBody } from "../../habits-types";
 
 // Mock dependencies
-vi.mock('axios', () => ({
+vi.mock("axios", () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
@@ -36,9 +36,9 @@ vi.mock('axios', () => ({
   },
 }));
 
-import axios from 'axios';
+import axios from "axios";
 
-describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
+describe("CH-003: useHabitMutations Hook - Create/Update/Delete", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -47,74 +47,74 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
     vi.clearAllMocks();
   });
 
-  describe('Hook Existence and Structure', () => {
-    it('should be exportable from hooks barrel', async () => {
+  describe("Hook Existence and Structure", () => {
+    it("should be exportable from hooks barrel", async () => {
       // Arrange: Import hooks module
-      const hooksModule = await import('@/hooks');
+      const hooksModule = await import("@/hooks");
 
       // Act: Check for useHabitMutations export
-      const hasUseHabitMutations = 'useHabitMutations' in hooksModule;
+      const hasUseHabitMutations = "useHabitMutations" in hooksModule;
 
       // Assert: Hook should be exported
       expect(hasUseHabitMutations).toBe(true);
-      expect(typeof hooksModule.useHabitMutations).toBe('function');
+      expect(typeof hooksModule.useHabitMutations).toBe("function");
     });
 
-    it('should follow React hooks naming convention', async () => {
+    it("should follow React hooks naming convention", async () => {
       // Arrange: Import the hook
-      const { useHabitMutations: hook } = await import('@/hooks');
+      const { useHabitMutations: hook } = await import("@/hooks");
 
       // Act: Get hook name
       const hookName = hook.name;
 
       // Assert: Should start with 'use' and be PascalCase
       expect(hookName).toMatch(/^use[A-Z]/);
-      expect(hookName).toBe('useHabitMutations');
+      expect(hookName).toBe("useHabitMutations");
     });
 
-    it('should return an object with mutation methods', () => {
+    it("should return an object with mutation methods", () => {
       // Arrange & Act: Render the hook
       const { result } = renderHook(() => useHabitMutations());
 
       // Assert: Should return object with all mutation methods
       expect(result.current).toBeDefined();
-      expect(result.current).toHaveProperty('createHabit');
-      expect(result.current).toHaveProperty('updateHabit');
-      expect(result.current).toHaveProperty('deleteHabit');
+      expect(result.current).toHaveProperty("createHabit");
+      expect(result.current).toHaveProperty("updateHabit");
+      expect(result.current).toHaveProperty("deleteHabit");
     });
 
-    it('should provide loading and error states for each mutation', () => {
+    it("should provide loading and error states for each mutation", () => {
       // Arrange & Act: Render the hook
       const { result } = renderHook(() => useHabitMutations());
 
       // Assert: Should have state properties
-      expect(result.current).toHaveProperty('isCreating');
-      expect(result.current).toHaveProperty('isUpdating');
-      expect(result.current).toHaveProperty('isDeleting');
-      expect(result.current).toHaveProperty('createError');
-      expect(result.current).toHaveProperty('updateError');
-      expect(result.current).toHaveProperty('deleteError');
+      expect(result.current).toHaveProperty("isCreating");
+      expect(result.current).toHaveProperty("isUpdating");
+      expect(result.current).toHaveProperty("isDeleting");
+      expect(result.current).toHaveProperty("createError");
+      expect(result.current).toHaveProperty("updateError");
+      expect(result.current).toHaveProperty("deleteError");
     });
   });
 
-  describe('Create Habit Mutation', () => {
-    it('should have createHabit function', () => {
+  describe("Create Habit Mutation", () => {
+    it("should have createHabit function", () => {
       // Arrange & Act: Render hook
       const { result } = renderHook(() => useHabitMutations());
 
       // Assert: createHabit should be a function
-      expect(typeof result.current.createHabit).toBe('function');
+      expect(typeof result.current.createHabit).toBe("function");
     });
 
-    it('should call POST API endpoint when creating habit', async () => {
+    it("should call POST API endpoint when creating habit", async () => {
       // Arrange: Mock successful creation
       const newHabit: HabitBody = {
-        name: 'Exercise',
-        icon: 'https://example.com/exercise.png',
-        habit_type: 'Simple',
+        name: "Exercise",
+        icon: "https://example.com/exercise.png",
+        habit_type: "Simple",
       };
 
-      const createdHabit = { id: 'new-id-123', ...newHabit };
+      const createdHabit = { id: "new-id-123", ...newHabit };
       vi.mocked(axios.post).mockResolvedValue({ data: createdHabit });
 
       // Act: Render hook and create habit
@@ -126,18 +126,16 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       // Assert: Should call POST endpoint
       expect(axios.post).toHaveBeenCalledWith(
-        expect.stringContaining('/habits'),
+        expect.stringContaining("/habits"),
         newHabit
       );
     });
 
-    it('should set isCreating to true during creation', async () => {
+    it("should set isCreating to true during creation", async () => {
       // Arrange: Mock slow creation
       vi.mocked(axios.post).mockImplementation(
         () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ data: {} }), 100)
-          )
+          new Promise((resolve) => setTimeout(() => resolve({ data: {} }), 100))
       );
 
       // Act: Render hook and start creation
@@ -145,9 +143,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       act(() => {
         result.current.createHabit({
-          name: 'Test',
-          icon: 'icon',
-          habit_type: 'Simple',
+          name: "Test",
+          icon: "icon",
+          habit_type: "Simple",
         });
       });
 
@@ -155,10 +153,10 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       expect(result.current.isCreating).toBe(true);
     });
 
-    it('should set isCreating to false after successful creation', async () => {
+    it("should set isCreating to false after successful creation", async () => {
       // Arrange: Mock successful creation
       vi.mocked(axios.post).mockResolvedValue({
-        data: { id: '1', name: 'Test' },
+        data: { id: "1", name: "Test" },
       });
 
       // Act: Render hook and create habit
@@ -166,9 +164,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       await act(async () => {
         await result.current.createHabit({
-          name: 'Test',
-          icon: 'icon',
-          habit_type: 'Simple',
+          name: "Test",
+          icon: "icon",
+          habit_type: "Simple",
         });
       });
 
@@ -178,13 +176,13 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       });
     });
 
-    it('should return created habit data', async () => {
+    it("should return created habit data", async () => {
       // Arrange: Mock creation response
       const createdHabit = {
-        id: 'habit-123',
-        name: 'Morning Run',
-        icon: 'https://example.com/run.png',
-        habit_type: 'Simple',
+        id: "habit-123",
+        name: "Morning Run",
+        icon: "https://example.com/run.png",
+        habit_type: "Simple",
       };
 
       vi.mocked(axios.post).mockResolvedValue({ data: createdHabit });
@@ -195,9 +193,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       await act(async () => {
         returnedData = await result.current.createHabit({
-          name: 'Morning Run',
-          icon: 'https://example.com/run.png',
-          habit_type: 'Simple',
+          name: "Morning Run",
+          icon: "https://example.com/run.png",
+          habit_type: "Simple",
         });
       });
 
@@ -205,9 +203,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       expect(returnedData).toEqual(createdHabit);
     });
 
-    it('should handle creation errors', async () => {
+    it("should handle creation errors", async () => {
       // Arrange: Mock creation error
-      const errorMessage = 'Failed to create habit';
+      const errorMessage = "Failed to create habit";
       vi.mocked(axios.post).mockRejectedValue(new Error(errorMessage));
 
       // Act: Attempt to create habit
@@ -216,9 +214,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       await act(async () => {
         try {
           await result.current.createHabit({
-            name: 'Test',
-            icon: 'icon',
-            habit_type: 'Simple',
+            name: "Test",
+            icon: "icon",
+            habit_type: "Simple",
           });
         } catch (error) {
           // Expected to throw
@@ -232,7 +230,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       });
     });
 
-    it('should validate habit data before sending to API', async () => {
+    it("should validate habit data before sending to API", async () => {
       // Arrange: Mock API
       vi.mocked(axios.post).mockResolvedValue({ data: {} });
 
@@ -242,9 +240,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       await act(async () => {
         try {
           await result.current.createHabit({
-            name: '',
-            icon: '',
-            habit_type: '',
+            name: "",
+            icon: "",
+            habit_type: "",
           } as HabitBody);
         } catch (error) {
           // May throw validation error
@@ -260,7 +258,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       ).toBe(true);
     });
 
-    it('should send correct headers for habit creation', async () => {
+    it("should send correct headers for habit creation", async () => {
       // Arrange: Mock API
       vi.mocked(axios.post).mockResolvedValue({ data: {} });
 
@@ -269,9 +267,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       await act(async () => {
         await result.current.createHabit({
-          name: 'Test',
-          icon: 'icon',
-          habit_type: 'Simple',
+          name: "Test",
+          icon: "icon",
+          habit_type: "Simple",
         });
       });
 
@@ -281,27 +279,27 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
         expect.any(Object),
         expect.objectContaining({
           headers: expect.objectContaining({
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           }),
         })
       );
     });
   });
 
-  describe('Update Habit Mutation', () => {
-    it('should have updateHabit function', () => {
+  describe("Update Habit Mutation", () => {
+    it("should have updateHabit function", () => {
       // Arrange & Act: Render hook
       const { result } = renderHook(() => useHabitMutations());
 
       // Assert: updateHabit should be a function
-      expect(typeof result.current.updateHabit).toBe('function');
+      expect(typeof result.current.updateHabit).toBe("function");
     });
 
-    it('should call PATCH API endpoint when updating habit', async () => {
+    it("should call PATCH API endpoint when updating habit", async () => {
       // Arrange: Mock successful update
-      const habitId = 'habit-123';
+      const habitId = "habit-123";
       const updates: Partial<HabitBody> = {
-        name: 'Updated Name',
+        name: "Updated Name",
       };
 
       vi.mocked(axios.patch).mockResolvedValue({
@@ -322,33 +320,31 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       );
     });
 
-    it('should set isUpdating to true during update', async () => {
+    it("should set isUpdating to true during update", async () => {
       // Arrange: Mock slow update
       vi.mocked(axios.patch).mockImplementation(
         () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ data: {} }), 100)
-          )
+          new Promise((resolve) => setTimeout(() => resolve({ data: {} }), 100))
       );
 
       // Act: Render hook and start update
       const { result } = renderHook(() => useHabitMutations());
 
       act(() => {
-        result.current.updateHabit('habit-1', { name: 'Updated' });
+        result.current.updateHabit("habit-1", { name: "Updated" });
       });
 
       // Assert: Should be in updating state
       expect(result.current.isUpdating).toBe(true);
     });
 
-    it('should return updated habit data', async () => {
+    it("should return updated habit data", async () => {
       // Arrange: Mock update response
       const updatedHabit = {
-        id: 'habit-123',
-        name: 'Updated Exercise',
-        icon: 'https://example.com/new-icon.png',
-        habit_type: 'Complex',
+        id: "habit-123",
+        name: "Updated Exercise",
+        icon: "https://example.com/new-icon.png",
+        habit_type: "Complex",
       };
 
       vi.mocked(axios.patch).mockResolvedValue({ data: updatedHabit });
@@ -358,9 +354,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       let returnedData;
 
       await act(async () => {
-        returnedData = await result.current.updateHabit('habit-123', {
-          name: 'Updated Exercise',
-          habit_type: 'Complex',
+        returnedData = await result.current.updateHabit("habit-123", {
+          name: "Updated Exercise",
+          habit_type: "Complex",
         });
       });
 
@@ -368,10 +364,10 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       expect(returnedData).toEqual(updatedHabit);
     });
 
-    it('should handle partial updates', async () => {
+    it("should handle partial updates", async () => {
       // Arrange: Mock partial update
-      const habitId = 'habit-456';
-      const partialUpdate = { name: 'New Name Only' };
+      const habitId = "habit-456";
+      const partialUpdate = { name: "New Name Only" };
 
       vi.mocked(axios.patch).mockResolvedValue({
         data: { id: habitId, ...partialUpdate },
@@ -391,18 +387,16 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       );
     });
 
-    it('should handle update errors', async () => {
+    it("should handle update errors", async () => {
       // Arrange: Mock update error
-      vi.mocked(axios.patch).mockRejectedValue(
-        new Error('Update failed')
-      );
+      vi.mocked(axios.patch).mockRejectedValue(new Error("Update failed"));
 
       // Act: Attempt to update habit
       const { result } = renderHook(() => useHabitMutations());
 
       await act(async () => {
         try {
-          await result.current.updateHabit('habit-1', { name: 'Test' });
+          await result.current.updateHabit("habit-1", { name: "Test" });
         } catch (error) {
           // Expected to throw
         }
@@ -415,10 +409,10 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       });
     });
 
-    it('should handle 404 errors for non-existent habits', async () => {
+    it("should handle 404 errors for non-existent habits", async () => {
       // Arrange: Mock 404 error
       vi.mocked(axios.patch).mockRejectedValue({
-        response: { status: 404, data: { message: 'Habit not found' } },
+        response: { status: 404, data: { message: "Habit not found" } },
       });
 
       // Act: Attempt to update non-existent habit
@@ -426,8 +420,8 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       await act(async () => {
         try {
-          await result.current.updateHabit('nonexistent-id', {
-            name: 'Test',
+          await result.current.updateHabit("nonexistent-id", {
+            name: "Test",
           });
         } catch (error) {
           // Expected
@@ -441,18 +435,18 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
     });
   });
 
-  describe('Delete Habit Mutation', () => {
-    it('should have deleteHabit function', () => {
+  describe("Delete Habit Mutation", () => {
+    it("should have deleteHabit function", () => {
       // Arrange & Act: Render hook
       const { result } = renderHook(() => useHabitMutations());
 
       // Assert: deleteHabit should be a function
-      expect(typeof result.current.deleteHabit).toBe('function');
+      expect(typeof result.current.deleteHabit).toBe("function");
     });
 
-    it('should call DELETE API endpoint when deleting habit', async () => {
+    it("should call DELETE API endpoint when deleting habit", async () => {
       // Arrange: Mock successful deletion
-      const habitId = 'habit-to-delete';
+      const habitId = "habit-to-delete";
       vi.mocked(axios.delete).mockResolvedValue({ data: { success: true } });
 
       // Act: Render hook and delete habit
@@ -468,27 +462,25 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       );
     });
 
-    it('should set isDeleting to true during deletion', async () => {
+    it("should set isDeleting to true during deletion", async () => {
       // Arrange: Mock slow deletion
       vi.mocked(axios.delete).mockImplementation(
         () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ data: {} }), 100)
-          )
+          new Promise((resolve) => setTimeout(() => resolve({ data: {} }), 100))
       );
 
       // Act: Render hook and start deletion
       const { result } = renderHook(() => useHabitMutations());
 
       act(() => {
-        result.current.deleteHabit('habit-1');
+        result.current.deleteHabit("habit-1");
       });
 
       // Assert: Should be in deleting state
       expect(result.current.isDeleting).toBe(true);
     });
 
-    it('should set isDeleting to false after successful deletion', async () => {
+    it("should set isDeleting to false after successful deletion", async () => {
       // Arrange: Mock successful deletion
       vi.mocked(axios.delete).mockResolvedValue({ data: {} });
 
@@ -496,7 +488,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       const { result } = renderHook(() => useHabitMutations());
 
       await act(async () => {
-        await result.current.deleteHabit('habit-1');
+        await result.current.deleteHabit("habit-1");
       });
 
       // Assert: Should not be deleting anymore
@@ -505,18 +497,16 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       });
     });
 
-    it('should handle deletion errors', async () => {
+    it("should handle deletion errors", async () => {
       // Arrange: Mock deletion error
-      vi.mocked(axios.delete).mockRejectedValue(
-        new Error('Delete failed')
-      );
+      vi.mocked(axios.delete).mockRejectedValue(new Error("Delete failed"));
 
       // Act: Attempt to delete habit
       const { result } = renderHook(() => useHabitMutations());
 
       await act(async () => {
         try {
-          await result.current.deleteHabit('habit-1');
+          await result.current.deleteHabit("habit-1");
         } catch (error) {
           // Expected to throw
         }
@@ -529,7 +519,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       });
     });
 
-    it('should handle 404 errors when deleting non-existent habit', async () => {
+    it("should handle 404 errors when deleting non-existent habit", async () => {
       // Arrange: Mock 404 error
       vi.mocked(axios.delete).mockRejectedValue({
         response: { status: 404 },
@@ -540,7 +530,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       await act(async () => {
         try {
-          await result.current.deleteHabit('nonexistent-id');
+          await result.current.deleteHabit("nonexistent-id");
         } catch (error) {
           // Expected
         }
@@ -552,7 +542,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       });
     });
 
-    it('should prevent accidental deletion without confirmation', async () => {
+    it("should prevent accidental deletion without confirmation", async () => {
       // Arrange: Mock API
       vi.mocked(axios.delete).mockResolvedValue({ data: {} });
 
@@ -565,8 +555,8 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
     });
   });
 
-  describe('Optimistic Updates', () => {
-    it('should provide option for optimistic create', async () => {
+  describe("Optimistic Updates", () => {
+    it("should provide option for optimistic create", async () => {
       // Arrange: Mock slow API
       vi.mocked(axios.post).mockImplementation(
         () =>
@@ -581,9 +571,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       await act(async () => {
         result.current.createHabit(
           {
-            name: 'Optimistic Habit',
-            icon: 'icon',
-            habit_type: 'Simple',
+            name: "Optimistic Habit",
+            icon: "icon",
+            habit_type: "Simple",
           },
           { optimistic: true }
         );
@@ -591,14 +581,13 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       // Assert: Should have optimistic data available
       expect(
-        result.current.optimisticData ||
-          result.current.pendingMutations?.length
+        result.current.optimisticData || result.current.pendingMutations?.length
       ).toBeDefined();
     });
 
-    it('should rollback optimistic update on error', async () => {
+    it("should rollback optimistic update on error", async () => {
       // Arrange: Mock failed creation after optimistic update
-      vi.mocked(axios.post).mockRejectedValue(new Error('Failed'));
+      vi.mocked(axios.post).mockRejectedValue(new Error("Failed"));
 
       // Act: Create with optimistic update
       const { result } = renderHook(() => useHabitMutations());
@@ -606,7 +595,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       await act(async () => {
         try {
           await result.current.createHabit(
-            { name: 'Test', icon: 'icon', habit_type: 'Simple' },
+            { name: "Test", icon: "icon", habit_type: "Simple" },
             { optimistic: true }
           );
         } catch (error) {
@@ -620,10 +609,10 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       });
     });
 
-    it('should support optimistic updates for habit updates', async () => {
+    it("should support optimistic updates for habit updates", async () => {
       // Arrange: Mock API
       vi.mocked(axios.patch).mockResolvedValue({
-        data: { id: '1', name: 'Updated' },
+        data: { id: "1", name: "Updated" },
       });
 
       // Act: Update with optimistic flag
@@ -631,8 +620,8 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       await act(async () => {
         await result.current.updateHabit(
-          'habit-1',
-          { name: 'Optimistic Update' },
+          "habit-1",
+          { name: "Optimistic Update" },
           { optimistic: true }
         );
       });
@@ -641,7 +630,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       expect(axios.patch).toHaveBeenCalled();
     });
 
-    it('should support optimistic deletes', async () => {
+    it("should support optimistic deletes", async () => {
       // Arrange: Mock deletion
       vi.mocked(axios.delete).mockResolvedValue({ data: {} });
 
@@ -649,7 +638,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       const { result } = renderHook(() => useHabitMutations());
 
       await act(async () => {
-        await result.current.deleteHabit('habit-1', { optimistic: true });
+        await result.current.deleteHabit("habit-1", { optimistic: true });
       });
 
       // Assert: Should handle optimistic delete
@@ -657,11 +646,11 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
     });
   });
 
-  describe('Cache Invalidation', () => {
-    it('should invalidate habits cache after successful creation', async () => {
+  describe("Cache Invalidation", () => {
+    it("should invalidate habits cache after successful creation", async () => {
       // Arrange: Mock successful creation
       vi.mocked(axios.post).mockResolvedValue({
-        data: { id: '1', name: 'New' },
+        data: { id: "1", name: "New" },
       });
 
       // Act: Create habit
@@ -669,9 +658,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       await act(async () => {
         await result.current.createHabit({
-          name: 'New Habit',
-          icon: 'icon',
-          habit_type: 'Simple',
+          name: "New Habit",
+          icon: "icon",
+          habit_type: "Simple",
         });
       });
 
@@ -683,24 +672,24 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       ).toBeDefined();
     });
 
-    it('should invalidate cache after successful update', async () => {
+    it("should invalidate cache after successful update", async () => {
       // Arrange: Mock successful update
       vi.mocked(axios.patch).mockResolvedValue({
-        data: { id: '1', name: 'Updated' },
+        data: { id: "1", name: "Updated" },
       });
 
       // Act: Update habit
       const { result } = renderHook(() => useHabitMutations());
 
       await act(async () => {
-        await result.current.updateHabit('habit-1', { name: 'Updated' });
+        await result.current.updateHabit("habit-1", { name: "Updated" });
       });
 
       // Assert: Should invalidate cache
       expect(axios.patch).toHaveBeenCalled();
     });
 
-    it('should invalidate cache after successful deletion', async () => {
+    it("should invalidate cache after successful deletion", async () => {
       // Arrange: Mock successful deletion
       vi.mocked(axios.delete).mockResolvedValue({ data: {} });
 
@@ -708,16 +697,16 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       const { result } = renderHook(() => useHabitMutations());
 
       await act(async () => {
-        await result.current.deleteHabit('habit-1');
+        await result.current.deleteHabit("habit-1");
       });
 
       // Assert: Should invalidate cache
       expect(axios.delete).toHaveBeenCalled();
     });
 
-    it('should not invalidate cache on mutation error', async () => {
+    it("should not invalidate cache on mutation error", async () => {
       // Arrange: Mock error
-      vi.mocked(axios.post).mockRejectedValue(new Error('Failed'));
+      vi.mocked(axios.post).mockRejectedValue(new Error("Failed"));
 
       // Act: Attempt creation
       const { result } = renderHook(() => useHabitMutations());
@@ -725,9 +714,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       await act(async () => {
         try {
           await result.current.createHabit({
-            name: 'Test',
-            icon: 'icon',
-            habit_type: 'Simple',
+            name: "Test",
+            icon: "icon",
+            habit_type: "Simple",
           });
         } catch (error) {
           // Expected
@@ -739,26 +728,26 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
     });
   });
 
-  describe('Concurrent Mutations', () => {
-    it('should handle multiple concurrent creates', async () => {
+  describe("Concurrent Mutations", () => {
+    it("should handle multiple concurrent creates", async () => {
       // Arrange: Mock successful creations
       vi.mocked(axios.post)
-        .mockResolvedValueOnce({ data: { id: '1' } })
-        .mockResolvedValueOnce({ data: { id: '2' } });
+        .mockResolvedValueOnce({ data: { id: "1" } })
+        .mockResolvedValueOnce({ data: { id: "2" } });
 
       // Act: Render hook and create multiple habits
       const { result } = renderHook(() => useHabitMutations());
 
       await act(async () => {
         const promise1 = result.current.createHabit({
-          name: 'Habit 1',
-          icon: 'icon1',
-          habit_type: 'Simple',
+          name: "Habit 1",
+          icon: "icon1",
+          habit_type: "Simple",
         });
         const promise2 = result.current.createHabit({
-          name: 'Habit 2',
-          icon: 'icon2',
-          habit_type: 'Complex',
+          name: "Habit 2",
+          icon: "icon2",
+          habit_type: "Complex",
         });
 
         await Promise.all([promise1, promise2]);
@@ -768,11 +757,11 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       expect(vi.mocked(axios.post).mock.calls.length).toBe(2);
     });
 
-    it('should handle create and update concurrently', async () => {
+    it("should handle create and update concurrently", async () => {
       // Arrange: Mock both operations
-      vi.mocked(axios.post).mockResolvedValue({ data: { id: 'new' } });
+      vi.mocked(axios.post).mockResolvedValue({ data: { id: "new" } });
       vi.mocked(axios.patch).mockResolvedValue({
-        data: { id: 'existing' },
+        data: { id: "existing" },
       });
 
       // Act: Execute both operations
@@ -780,12 +769,12 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       await act(async () => {
         const createPromise = result.current.createHabit({
-          name: 'New',
-          icon: 'icon',
-          habit_type: 'Simple',
+          name: "New",
+          icon: "icon",
+          habit_type: "Simple",
         });
-        const updatePromise = result.current.updateHabit('existing', {
-          name: 'Updated',
+        const updatePromise = result.current.updateHabit("existing", {
+          name: "Updated",
         });
 
         await Promise.all([createPromise, updatePromise]);
@@ -796,7 +785,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       expect(axios.patch).toHaveBeenCalled();
     });
 
-    it('should maintain separate loading states for different mutations', async () => {
+    it("should maintain separate loading states for different mutations", async () => {
       // Arrange: Mock slow operations
       vi.mocked(axios.post).mockImplementation(
         () => new Promise((resolve) => setTimeout(resolve, 100))
@@ -807,9 +796,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       act(() => {
         result.current.createHabit({
-          name: 'Test',
-          icon: 'icon',
-          habit_type: 'Simple',
+          name: "Test",
+          icon: "icon",
+          habit_type: "Simple",
         });
       });
 
@@ -820,8 +809,8 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
     });
   });
 
-  describe('TypeScript Type Safety', () => {
-    it('should enforce HabitBody type for create', async () => {
+  describe("TypeScript Type Safety", () => {
+    it("should enforce HabitBody type for create", async () => {
       // Arrange: Mock API
       vi.mocked(axios.post).mockResolvedValue({ data: {} });
 
@@ -830,9 +819,9 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       // Assert: TypeScript should enforce type
       const validHabit: HabitBody = {
-        name: 'Valid',
-        icon: 'icon',
-        habit_type: 'Simple',
+        name: "Valid",
+        icon: "icon",
+        habit_type: "Simple",
       };
 
       await act(async () => {
@@ -842,7 +831,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       expect(axios.post).toHaveBeenCalled();
     });
 
-    it('should accept partial updates with correct typing', async () => {
+    it("should accept partial updates with correct typing", async () => {
       // Arrange: Mock API
       vi.mocked(axios.patch).mockResolvedValue({ data: {} });
 
@@ -850,14 +839,14 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
       const { result } = renderHook(() => useHabitMutations());
 
       await act(async () => {
-        await result.current.updateHabit('habit-1', { name: 'New Name' });
+        await result.current.updateHabit("habit-1", { name: "New Name" });
       });
 
       // Assert: Should accept partial type
       expect(axios.patch).toHaveBeenCalled();
     });
 
-    it('should enforce string type for habitId parameters', async () => {
+    it("should enforce string type for habitId parameters", async () => {
       // Arrange: Mock API
       vi.mocked(axios.delete).mockResolvedValue({ data: {} });
 
@@ -866,7 +855,7 @@ describe('CH-003: useHabitMutations Hook - Create/Update/Delete', () => {
 
       // Assert: Should accept string ID
       await act(async () => {
-        await result.current.deleteHabit('valid-id-string');
+        await result.current.deleteHabit("valid-id-string");
       });
 
       expect(axios.delete).toHaveBeenCalled();

@@ -1,6 +1,5 @@
-
-
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   background-color: black;
@@ -15,7 +14,7 @@ canvas {
   left: 0;
 }
 
-#root{
+#root {
   position: relative;
   z-index: 1;
 }

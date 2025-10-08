@@ -1,9 +1,11 @@
 # Testing Setup Guide - CH-001
 
 ## Overview
+
 This document describes the testing infrastructure setup for the habit tracking frontend application, specifically for user story CH-001: Create hooks directory structure.
 
 ## Testing Framework
+
 - **Vitest**: Fast, Vite-native testing framework
 - **React Testing Library**: User-centric component testing
 - **Happy-DOM**: Lightweight DOM implementation
@@ -17,6 +19,7 @@ npm install
 ```
 
 This will install all testing dependencies defined in `package.json`:
+
 - `vitest`: Core testing framework
 - `@testing-library/react`: React component testing utilities
 - `@testing-library/jest-dom`: Custom Jest matchers
@@ -42,7 +45,9 @@ npm run test:coverage
 ## Configuration Files
 
 ### `vitest.config.ts`
+
 Main Vitest configuration with:
+
 - React plugin integration
 - Happy-DOM environment
 - Global test APIs
@@ -50,14 +55,18 @@ Main Vitest configuration with:
 - Coverage settings
 
 ### `tsconfig.vitest.json`
+
 TypeScript configuration for tests:
+
 - Extends `tsconfig.app.json`
 - Includes Vitest global types
 - Includes @testing-library/jest-dom types
 - Covers all test files
 
 ### `src/test/setup.ts`
+
 Global test setup:
+
 - Imports @testing-library/jest-dom matchers
 - Configures cleanup after each test
 - Runs before each test file
@@ -77,11 +86,13 @@ src/hooks/__tests__/
 All tests are currently **FAILING** as expected in TDD RED phase. This is intentional and correct.
 
 ### Why Tests Fail
+
 - `src/hooks/` directory does NOT exist yet
 - `src/hooks/index.ts` file does NOT exist yet
 - TypeScript paths NOT configured yet
 
 ### Expected Failures
+
 1. **Directory Structure Tests**: Directory not found
 2. **Barrel Export Tests**: File not found, import failures
 3. **TypeScript Config Tests**: Import resolution failures
@@ -98,6 +109,7 @@ npm run test:run
 ## Next Steps (GREEN Phase)
 
 After verifying RED phase, the implementation phase will:
+
 1. Create `src/hooks/` directory
 2. Create `src/hooks/index.ts` barrel export file
 3. Update TypeScript configuration if needed
@@ -106,6 +118,7 @@ After verifying RED phase, the implementation phase will:
 ## Test Coverage
 
 Current test suite covers:
+
 - File system structure and permissions
 - Barrel export functionality
 - TypeScript configuration and module resolution
@@ -125,6 +138,7 @@ Current test suite covers:
 ## Troubleshooting
 
 ### Tests not found
+
 ```bash
 # Ensure you're in the front directory
 cd front
@@ -133,18 +147,21 @@ npm test
 ```
 
 ### Module resolution errors
+
 ```bash
 # Check that vitest.config.ts has path aliases configured
 # Check that tsconfig files are properly referenced
 ```
 
 ### Happy-DOM errors
+
 ```bash
 # Ensure happy-dom is installed
 npm install --save-dev happy-dom
 ```
 
 ## References
+
 - [Vitest Documentation](https://vitest.dev/)
 - [React Testing Library](https://testing-library.com/react)
 - [Testing Library Best Practices](https://kentcdodds.com/blog/common-mistakes-with-react-testing-library)

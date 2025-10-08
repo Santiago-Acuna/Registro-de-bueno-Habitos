@@ -7,15 +7,19 @@ interface HandleChangeParams {
   setBook: React.Dispatch<React.SetStateAction<BookBody>>;
   errors: Record<string, string | undefined>;
   setDisabled: React.Dispatch<React.SetStateAction<boolean>>;
-  setErrors: React.Dispatch<React.SetStateAction<Record<string, string | undefined>>>;
+  setErrors: React.Dispatch<
+    React.SetStateAction<Record<string, string | undefined>>
+  >;
 }
 
-interface inputFormProps{
+interface inputFormProps {
   inputName: keyof BookBody;
   book: BookBody;
-  setBook:React.Dispatch<React.SetStateAction<BookBody>>;
+  setBook: React.Dispatch<React.SetStateAction<BookBody>>;
   handleChange: (params: HandleChangeParams) => void;
-  setErrors: React.Dispatch<React.SetStateAction<Record<string, string | undefined>>>;
+  setErrors: React.Dispatch<
+    React.SetStateAction<Record<string, string | undefined>>
+  >;
   errors: Record<string, string | undefined>;
   setDisabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -27,9 +31,9 @@ const InputForm: React.FC<inputFormProps> = ({
   handleChange,
   setErrors,
   setDisabled,
-  errors
+  errors,
 }) => {
-  const displayName = String(inputName).replace(/_/g, ' ');
+  const displayName = String(inputName).replace(/_/g, " ");
   const firstLetter = displayName.charAt(0).toUpperCase();
   const inputNameCapitalLetter = firstLetter + displayName.slice(1);
   return (
@@ -46,11 +50,12 @@ const InputForm: React.FC<inputFormProps> = ({
         autoComplete="off"
         placeholder={inputNameCapitalLetter}
         onChange={(e) => {
-          handleChange({ e, book,
-            setBook, errors, setErrors, setDisabled });
+          handleChange({ e, book, setBook, errors, setErrors, setDisabled });
         }}
       />
-      {errors[String(inputName)] !== undefined && <p className={styles.danger}>{errors[String(inputName)]}</p>}
+      {errors[String(inputName)] !== undefined && (
+        <p className={styles.danger}>{errors[String(inputName)]}</p>
+      )}
     </div>
   );
 };

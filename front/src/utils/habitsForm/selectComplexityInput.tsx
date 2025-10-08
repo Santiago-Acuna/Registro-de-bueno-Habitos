@@ -9,23 +9,25 @@ const SelectComplexityInput: React.FC<inputFormProps> = ({
   handleChange,
   setErrors,
   setDisabled,
-  errors
+  errors,
 }) => {
   enum HabitType {
     complex = "Complex",
     simple = "Simple",
-    without_intervals = "Without Intervals"
+    without_intervals = "Without Intervals",
   }
   const options = Object.values(HabitType);
 
   return (
     <div className={styles.subContainer}>
       <label className={styles.subTitle} htmlFor={"habit_type"}>
-      Complexity:
+        Complexity:
       </label>
       <select
         className={styles.select}
-        onChange={(e) => handleChange({ e, setHabit, habit, errors, setErrors, setDisabled })}
+        onChange={(e) =>
+          handleChange({ e, setHabit, habit, errors, setErrors, setDisabled })
+        }
         name={inputName}
         value={habit.habit_type}
       >
@@ -36,7 +38,9 @@ const SelectComplexityInput: React.FC<inputFormProps> = ({
           </option>
         ))}
       </select>
-      {errors[inputName] !== undefined && <p className={styles.danger}>{errors[inputName]}</p>}
+      {errors[inputName] !== undefined && (
+        <p className={styles.danger}>{errors[inputName]}</p>
+      )}
     </div>
   );
 };

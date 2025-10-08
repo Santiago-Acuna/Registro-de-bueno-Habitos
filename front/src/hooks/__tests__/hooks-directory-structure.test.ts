@@ -10,18 +10,18 @@
  * so that custom React hooks can be organized and easily imported.
  */
 
-import { describe, it, expect } from 'vitest';
-import { existsSync, statSync, accessSync, constants } from 'fs';
-import { resolve } from 'path';
+import { describe, it, expect } from "vitest";
+import { existsSync, statSync, accessSync, constants } from "fs";
+import { resolve } from "path";
 
-describe('CH-001: Hooks Directory Structure', () => {
+describe("CH-001: Hooks Directory Structure", () => {
   // Define absolute paths for the hooks directory
-  const PROJECT_ROOT = resolve(__dirname, '../../..');
-  const HOOKS_DIR = resolve(PROJECT_ROOT, 'src/hooks');
-  const HOOKS_INDEX = resolve(HOOKS_DIR, 'index.ts');
+  const PROJECT_ROOT = resolve(__dirname, "../../..");
+  const HOOKS_DIR = resolve(PROJECT_ROOT, "src/hooks");
+  const HOOKS_INDEX = resolve(HOOKS_DIR, "index.ts");
 
-  describe('Directory Existence', () => {
-    it('should have a hooks directory at src/hooks/', () => {
+  describe("Directory Existence", () => {
+    it("should have a hooks directory at src/hooks/", () => {
       // Arrange: Get the expected directory path
       const hooksPath = HOOKS_DIR;
 
@@ -32,7 +32,7 @@ describe('CH-001: Hooks Directory Structure', () => {
       expect(directoryExists).toBe(true);
     });
 
-    it('should ensure src/hooks/ is actually a directory, not a file', () => {
+    it("should ensure src/hooks/ is actually a directory, not a file", () => {
       // Arrange: Get the hooks path
       const hooksPath = HOOKS_DIR;
 
@@ -48,8 +48,8 @@ describe('CH-001: Hooks Directory Structure', () => {
     });
   });
 
-  describe('Directory Permissions', () => {
-    it('should have read permissions on hooks directory', () => {
+  describe("Directory Permissions", () => {
+    it("should have read permissions on hooks directory", () => {
       // Arrange: Get the hooks directory path
       const hooksPath = HOOKS_DIR;
 
@@ -59,7 +59,7 @@ describe('CH-001: Hooks Directory Structure', () => {
       }).not.toThrow();
     });
 
-    it('should have write permissions on hooks directory', () => {
+    it("should have write permissions on hooks directory", () => {
       // Arrange: Get the hooks directory path
       const hooksPath = HOOKS_DIR;
 
@@ -70,8 +70,8 @@ describe('CH-001: Hooks Directory Structure', () => {
     });
   });
 
-  describe('Index File Existence', () => {
-    it('should have an index.ts file in the hooks directory', () => {
+  describe("Index File Existence", () => {
+    it("should have an index.ts file in the hooks directory", () => {
       // Arrange: Get the expected index file path
       const indexPath = HOOKS_INDEX;
 
@@ -82,7 +82,7 @@ describe('CH-001: Hooks Directory Structure', () => {
       expect(fileExists).toBe(true);
     });
 
-    it('should ensure index.ts is a file, not a directory', () => {
+    it("should ensure index.ts is a file, not a directory", () => {
       // Arrange: Get the index.ts path
       const indexPath = HOOKS_INDEX;
 
@@ -97,7 +97,7 @@ describe('CH-001: Hooks Directory Structure', () => {
       }
     });
 
-    it('should have read permissions on index.ts file', () => {
+    it("should have read permissions on index.ts file", () => {
       // Arrange: Get the index file path
       const indexPath = HOOKS_INDEX;
 
@@ -108,12 +108,12 @@ describe('CH-001: Hooks Directory Structure', () => {
     });
   });
 
-  describe('Directory Organization', () => {
-    it('should be located directly under src/ directory', () => {
+  describe("Directory Organization", () => {
+    it("should be located directly under src/ directory", () => {
       // Arrange: Get parent directory of hooks
       const hooksPath = HOOKS_DIR;
-      const parentDir = resolve(hooksPath, '..');
-      const srcDir = resolve(PROJECT_ROOT, 'src');
+      const parentDir = resolve(hooksPath, "..");
+      const srcDir = resolve(PROJECT_ROOT, "src");
 
       // Act: Compare parent directory with src directory
       const isDirectlyUnderSrc = parentDir === srcDir;
@@ -122,7 +122,7 @@ describe('CH-001: Hooks Directory Structure', () => {
       expect(isDirectlyUnderSrc).toBe(true);
     });
 
-    it('should follow the same naming convention as other directories (lowercase)', () => {
+    it("should follow the same naming convention as other directories (lowercase)", () => {
       // Arrange: Get the directory name
       const hooksPath = HOOKS_DIR;
       const dirName = hooksPath.split(/[\\/]/).pop();
@@ -132,12 +132,12 @@ describe('CH-001: Hooks Directory Structure', () => {
 
       // Assert: Directory name should be lowercase
       expect(isLowercase).toBe(true);
-      expect(dirName).toBe('hooks');
+      expect(dirName).toBe("hooks");
     });
   });
 
-  describe('Infrastructure Readiness', () => {
-    it('should have the necessary structure to export custom hooks', () => {
+  describe("Infrastructure Readiness", () => {
+    it("should have the necessary structure to export custom hooks", () => {
       // Arrange: Check for both directory and index file
       const hooksPath = HOOKS_DIR;
       const indexPath = HOOKS_INDEX;
@@ -151,7 +151,7 @@ describe('CH-001: Hooks Directory Structure', () => {
       expect(indexExists).toBe(true);
     });
 
-    it('should allow creation of new hook files in the directory', () => {
+    it("should allow creation of new hook files in the directory", () => {
       // Arrange: Get the hooks directory
       const hooksPath = HOOKS_DIR;
 

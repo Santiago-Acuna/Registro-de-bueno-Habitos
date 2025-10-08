@@ -3,10 +3,9 @@ import { BookType, BookBody } from "../../../components/reading/reading types";
 import {
   type PayloadAction,
   type ActionReducerMapBuilder,
-  createAsyncThunk
+  createAsyncThunk,
 } from "@reduxjs/toolkit";
 import axios from "axios";
-
 
 const fetchBooks = createAsyncThunk("book/fetchAllbooks", async () => {
   let bookData: BookType[] = [];
@@ -17,7 +16,7 @@ const fetchBooks = createAsyncThunk("book/fetchAllbooks", async () => {
     const fetchData = async (): Promise<boolean> => {
       const response = await axios.get("http://localhost:3000/api/v1/books/");
       const bookDataIsThere: BookType[] = response.data.data;
-      console.log(bookDataIsThere)
+      console.log(bookDataIsThere);
 
       if (bookDataIsThere.length !== 0) {
         bookData = bookDataIsThere;
@@ -32,7 +31,7 @@ const fetchBooks = createAsyncThunk("book/fetchAllbooks", async () => {
 
     while (retryCount < maxRetries) {
       const dataReceived = await fetchData();
-      console.log("not recived")
+      console.log("not recived");
       if (dataReceived) {
         break; // Exit the loop if data is received
       }
@@ -52,7 +51,10 @@ const postBooks = createAsyncThunk(
   async (book: BookBody) => {
     console.log("post dispached");
     try {
-      const response = await axios.post("http://localhost:3000/api/v1/books/", book);
+      const response = await axios.post(
+        "http://localhost:3000/api/v1/books/",
+        book
+      );
       console.log(response.data);
       return response.data;
     } catch (e) {
@@ -67,7 +69,10 @@ const patchBooks = createAsyncThunk(
   async (payload: { book: BookBody; bookID: string }) => {
     const { book, bookID } = payload;
     try {
-      const response = await axios.patch(`http://localhost:3000/api/v1/books/${bookID}`, book);
+      const response = await axios.patch(
+        `http://localhost:3000/api/v1/books/${bookID}`,
+        book
+      );
       console.log(response.data);
       return response.data;
     } catch (e) {
@@ -78,11 +83,14 @@ const patchBooks = createAsyncThunk(
 
 const asyncActions = (builder: ActionReducerMapBuilder<State>): void => {
   builder
-    .addCase(fetchBooks.fulfilled, (state, action: PayloadAction<BookType[] | []>) => {
-      if (action.payload !== undefined && action.payload !== null) {
-        state.books = action.payload;
+    .addCase(
+      fetchBooks.fulfilled,
+      (state, action: PayloadAction<BookType[] | []>) => {
+        if (action.payload !== undefined && action.payload !== null) {
+          state.books = action.payload;
+        }
       }
-    })
+    )
     .addCase(postBooks.fulfilled, () => {})
     .addCase(patchBooks.fulfilled, () => {});
 };

@@ -14,7 +14,7 @@
   align-self: start;
   margin: 3% 3% 0% 2%;
 }
-.cardsContainers{
+.cardsContainers {
   display: flex;
   flex-direction: row;
   justify-content: center;

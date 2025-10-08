@@ -5,7 +5,10 @@ import { handleChange, checkBeforeSubmit } from "./formUtils";
 import { HabitBody } from "../../habits-types";
 import SelectComplexityInput from "./selectComplexityInput";
 import { useNavigate } from "react-router-dom";
-import { postHabits, patchHabits } from "../../redux/slices/habits/asyncActions";
+import {
+  postHabits,
+  patchHabits,
+} from "../../redux/slices/habits/asyncActions";
 import { useCustomDispatch, useCustomSelector } from "../../redux/hooks/hooks";
 import DragDropFiles from "../uploadImage/dragUploadImage";
 
@@ -14,7 +17,7 @@ const HabitForm: FC = () => {
   const [habit, setHabit] = useState<HabitBody>({
     name: "",
     icon: "",
-    habit_type: ""
+    habit_type: "",
   });
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [disabled, setDisabled] = useState<boolean>(false);
@@ -22,7 +25,7 @@ const HabitForm: FC = () => {
   const {
     formState: form,
     habitInfo: habitInfo,
-    habitID: habitID
+    habitID: habitID,
   } = useCustomSelector((state) => state.form);
 
   const navigate = useNavigate();
@@ -37,9 +40,9 @@ const HabitForm: FC = () => {
     e: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ): Promise<void> => {
     e.preventDefault();
-    console.log("handle submit")
-    let check = checkBeforeSubmit(errors, habit, setErrors, setDisabled)
-    console.log(check)
+    console.log("handle submit");
+    let check = checkBeforeSubmit(errors, habit, setErrors, setDisabled);
+    console.log(check);
 
     if (check && form === "CREATE") {
       console.log("pre submit");
@@ -48,9 +51,12 @@ const HabitForm: FC = () => {
 
       alert("Habit Created Successfully");
       navigate("/");
-    } else if (checkBeforeSubmit(errors, habit, setErrors, setDisabled) && form === "UPDATE") {
+    } else if (
+      checkBeforeSubmit(errors, habit, setErrors, setDisabled) &&
+      form === "UPDATE"
+    ) {
       console.log("pre update");
-      await dispatch(patchHabits( {habit, habitID} ));
+      await dispatch(patchHabits({ habit, habitID }));
       console.log("updated");
       alert("Habit Updated Successfully");
       navigate("/");

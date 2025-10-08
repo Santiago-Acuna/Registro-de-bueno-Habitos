@@ -8,7 +8,7 @@ const InputForm: React.FC<inputFormProps> = ({
   handleChange,
   setErrors,
   setDisabled,
-  errors
+  errors,
 }) => {
   const isHabit_type = inputName === "habit_type" ? "habit type" : inputName;
   const firstLetter = isHabit_type.charAt(0).toUpperCase();
@@ -30,7 +30,9 @@ const InputForm: React.FC<inputFormProps> = ({
           handleChange({ e, setHabit, habit, errors, setErrors, setDisabled });
         }}
       />
-      {errors[inputName] !== undefined && <p className={styles.danger}>{errors[inputName]}</p>}
+      {errors[inputName] !== undefined && (
+        <p className={styles.danger}>{errors[inputName]}</p>
+      )}
     </div>
   );
 };

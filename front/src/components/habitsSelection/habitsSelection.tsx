@@ -13,31 +13,43 @@ const HabitsSelection: React.FC = () => {
   const display = { display: form !== "" ? "none" : "flex" };
   return (
     <div className={styles["container"]} style={display}>
-      <Link to="/Complex" className={styles.link} >
-      <div className={`${styles["habitOptionCard"]}`}>
-
+      <Link to="/Complex" className={styles.link}>
+        <div className={`${styles["habitOptionCard"]}`}>
           <img src={complex} className={styles["habitImg"]} alt="complex img" />
           <button className={`${styles["habitBtn"]} ${styles["button-85"]}`}>
             Complex Habit
-            </button>
-
-      </div>
+          </button>
+        </div>
       </Link>
-      <Link to="/Complex" className={styles.link} >
-      <div className={`${styles["habitOptionCard"]}`}>
-        <img src={simple} className={`${styles["habitImg"]}`} alt="simple img" />
-        <button className={`${styles["habitBtn"]} ${styles["button-85"]}`} role="button">
-          Simple Habit
-        </button>
-      </div>
+      <Link to="/Complex" className={styles.link}>
+        <div className={`${styles["habitOptionCard"]}`}>
+          <img
+            src={simple}
+            className={`${styles["habitImg"]}`}
+            alt="simple img"
+          />
+          <button
+            className={`${styles["habitBtn"]} ${styles["button-85"]}`}
+            role="button"
+          >
+            Simple Habit
+          </button>
+        </div>
       </Link>
-      <Link to="/Complex" className={styles.link} >
-      <div className={`${styles["habitOptionCard"]}`}>
-        <img src={eternety} className={`${styles["habitImg"]}`} alt="simple img" />
-        <button className={`${styles["habitBtn"]} ${styles["button-85"]}`} role="button">
-          Habits Without Intervals
-        </button>
-      </div>
+      <Link to="/Complex" className={styles.link}>
+        <div className={`${styles["habitOptionCard"]}`}>
+          <img
+            src={eternety}
+            className={`${styles["habitImg"]}`}
+            alt="simple img"
+          />
+          <button
+            className={`${styles["habitBtn"]} ${styles["button-85"]}`}
+            role="button"
+          >
+            Habits Without Intervals
+          </button>
+        </div>
       </Link>
     </div>
   );

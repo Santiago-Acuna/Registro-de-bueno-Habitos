@@ -6,9 +6,9 @@ import { booksReducer } from "./slices/book/book";
 export const store = configureStore({
   reducer: {
     habit: habitsReducer,
-    form : formReducer,
-    book :booksReducer
-  }
+    form: formReducer,
+    book: booksReducer,
+  },
 });
 
 export type RootState = ReturnType<typeof store.getState>;

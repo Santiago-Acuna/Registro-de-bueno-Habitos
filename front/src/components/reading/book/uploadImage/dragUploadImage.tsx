@@ -10,8 +10,17 @@ interface DragDropFilesProps {
   book: BookBody;
   setBook: React.Dispatch<React.SetStateAction<BookBody>>;
   errors: Record<string, string | undefined>;
-  setErrors: React.Dispatch<React.SetStateAction<Record<string, string | undefined>>>;
-  handleChange: ({ e, book, setBook, errors, setDisabled, setErrors }:HandleChangeProps) => void;
+  setErrors: React.Dispatch<
+    React.SetStateAction<Record<string, string | undefined>>
+  >;
+  handleChange: ({
+    e,
+    book,
+    setBook,
+    errors,
+    setDisabled,
+    setErrors,
+  }: HandleChangeProps) => void;
   setDisabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -23,22 +32,23 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
   errors,
   setErrors,
   handleChange,
-  setDisabled
+  setDisabled,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [isImageValid, setIsImageValid] = useState<boolean | null>(null);
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement | HTMLParagraphElement>): void => {
+  const handleDragOver = (
+    event: React.DragEvent<HTMLDivElement | HTMLParagraphElement>
+  ): void => {
     event.preventDefault();
-    console.log("drag over")
+    console.log("drag over");
   };
 
   const handleDrop = async (
-
     event: React.DragEvent<HTMLDivElement | HTMLParagraphElement>
   ): Promise<void> => {
     event.preventDefault();
-    console.log("dropped")
+    console.log("dropped");
     const droppedFiles = event.dataTransfer.files;
 
     if (droppedFiles.length > 0) {
@@ -52,9 +62,9 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
           let result = await UploadImage(droppedFile);
           console.log(result);
           result !== undefined &&
-          setBook({
+            setBook({
               ...book,
-              image: result
+              image: result,
             });
         } catch (e) {
           console.log(e);
@@ -67,10 +77,12 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
     e.preventDefault();
     setBook({
       ...book,
-      image: ""
+      image: "",
     });
   };
-  const handleUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleUrlInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ): void => {
     const imageUrl = e.target.value;
     console.log(typeof e.target.value);
 
@@ -81,7 +93,7 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
       setIsImageValid(null);
       setBook({
         ...book,
-        image: imageUrl
+        image: imageUrl,
       });
       return undefined;
     }
@@ -104,7 +116,7 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
     // Update the input state
     setBook({
       ...book,
-      image: imageUrl
+      image: imageUrl,
     });
   };
 
@@ -127,7 +139,11 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
   if (File?.name !== null && File?.name !== undefined)
     return (
       <div className={styles.urlImgDiv}>
-        <img className={styles.urlImg} src={URL.createObjectURL(File)} alt="a ver si esta" />
+        <img
+          className={styles.urlImg}
+          src={URL.createObjectURL(File)}
+          alt="a ver si esta"
+        />
         <p className={styles.urlImgP}>{`${File.name}`}</p>
         <div className="actions">
           <button
@@ -142,7 +158,11 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
     );
   return (
     <div className={styles.imageContainer}>
-      <div className={styles.dropzone} onDragOver={handleDragOver} onDrop={handleDrop}>
+      <div
+        className={styles.dropzone}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
         <p onDragOver={handleDragOver} onDrop={handleDrop}>
           Drag and Drop Files to Upload
         </p>
@@ -182,8 +202,12 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
           handleUrlInputChange(e);
         }}
       />
-      {isImageValid === false && <p className={styles.danger}>Image url is not valid</p>}
-      {errors.logo !== undefined && <p className={styles.danger}>{errors.logo}</p>}
+      {isImageValid === false && (
+        <p className={styles.danger}>Image url is not valid</p>
+      )}
+      {errors.logo !== undefined && (
+        <p className={styles.danger}>{errors.logo}</p>
+      )}
     </div>
   );
 };

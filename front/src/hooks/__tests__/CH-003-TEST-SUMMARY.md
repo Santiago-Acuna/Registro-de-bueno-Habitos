@@ -7,9 +7,11 @@ All tests have been created and are currently **FAILING** as expected in the Tes
 ## Test Files Created
 
 ### 1. hooksDirectoryStructure.test.ts
+
 **Purpose**: Validates the overall hooks directory structure and organization
 
 **Test Coverage**:
+
 - Directory existence and organization (3 tests)
 - Barrel export pattern validation (6 tests)
 - Naming conventions enforcement (4 tests)
@@ -23,9 +25,11 @@ All tests have been created and are currently **FAILING** as expected in the Tes
 **Total Tests**: 30
 
 ### 2. useHabits.test.ts
+
 **Purpose**: Tests the useHabits hook for fetching habits from the backend API
 
 **Test Coverage**:
+
 - Hook existence and structure (3 tests)
 - Initial state and data fetching (4 tests)
 - Loading states (4 tests)
@@ -39,9 +43,11 @@ All tests have been created and are currently **FAILING** as expected in the Tes
 **Total Tests**: 34
 
 ### 3. useHabitMutations.test.ts
+
 **Purpose**: Tests the useHabitMutations hook for creating, updating, and deleting habits
 
 **Test Coverage**:
+
 - Hook existence and structure (4 tests)
 - Create habit mutation (8 tests)
 - Update habit mutation (7 tests)
@@ -54,9 +60,11 @@ All tests have been created and are currently **FAILING** as expected in the Tes
 **Total Tests**: 39
 
 ### 4. useReadingLogs.test.ts
+
 **Purpose**: Tests the useReadingLogs hook for fetching reading logs data
 
 **Test Coverage**:
+
 - Hook existence and structure (3 tests)
 - Initial state and data fetching (4 tests)
 - Loading states (4 tests)
@@ -105,15 +113,17 @@ front/src/hooks/
 ### 2. Update index.ts Barrel Exports
 
 Add the following exports:
+
 ```typescript
-export { useHabits } from './useHabits';
-export { useHabitMutations } from './useHabitMutations';
-export { useReadingLogs } from './useReadingLogs';
+export { useHabits } from "./useHabits";
+export { useHabitMutations } from "./useHabitMutations";
+export { useReadingLogs } from "./useReadingLogs";
 ```
 
 ### 3. Implement useHabits Hook
 
 **Requirements**:
+
 - Fetch habits from `/api/habits` endpoint
 - Use React Query or similar for server state
 - Support filtering by habit type
@@ -126,6 +136,7 @@ export { useReadingLogs } from './useReadingLogs';
 ### 4. Implement useHabitMutations Hook
 
 **Requirements**:
+
 - `createHabit`: POST to `/api/habits`
 - `updateHabit`: PATCH to `/api/habits/:id`
 - `deleteHabit`: DELETE to `/api/habits/:id`
@@ -138,6 +149,7 @@ export { useReadingLogs } from './useReadingLogs';
 ### 5. Implement useReadingLogs Hook
 
 **Requirements**:
+
 - Fetch reading logs from `/api/reading-logs` endpoint
 - Support filtering by habitId
 - Support date range filtering (startDate, endDate)
@@ -152,14 +164,18 @@ export { useReadingLogs } from './useReadingLogs';
 Based on the test specifications, the following libraries are recommended:
 
 ### Option 1: React Query (TanStack Query)
+
 **Recommended** - Best fit based on test patterns
+
 - `@tanstack/react-query`: Server state management
 - Built-in caching, refetching, loading states
 - Optimistic updates support
 - Perfect match for test expectations
 
 ### Option 2: SWR
+
 Alternative if React Query is not preferred
+
 - Similar features
 - Simpler API
 - Good caching strategies
@@ -175,6 +191,7 @@ npm install @tanstack/react-query
 Based on the tests, the hooks should integrate with these NestJS endpoints:
 
 ### Habits API
+
 - `GET /api/habits` - Fetch all habits
 - `GET /api/habits?habitType=Simple` - Filter by type
 - `GET /api/habits?page=1&limit=10` - Pagination
@@ -183,6 +200,7 @@ Based on the tests, the hooks should integrate with these NestJS endpoints:
 - `DELETE /api/habits/:id` - Delete habit
 
 ### Reading Logs API
+
 - `GET /api/reading-logs` - Fetch all logs
 - `GET /api/reading-logs?habitId=xxx` - Filter by habit
 - `GET /api/reading-logs?startDate=xxx&endDate=xxx` - Date range
@@ -194,6 +212,7 @@ Based on the tests, the hooks should integrate with these NestJS endpoints:
 ### Backend Format (NestJS) → Frontend Format
 
 **Habit**:
+
 ```typescript
 // Backend (NestJS)
 {
@@ -215,6 +234,7 @@ Based on the tests, the hooks should integrate with these NestJS endpoints:
 ```
 
 **Reading Log**:
+
 ```typescript
 // Backend (NestJS)
 {
@@ -284,6 +304,7 @@ npm run test:run -- hooks/__tests__/hooksDirectoryStructure.test.ts
 ## Files Modified/Created
 
 ### Created
+
 - `front/src/hooks/__tests__/hooksDirectoryStructure.test.ts`
 - `front/src/hooks/__tests__/useHabits.test.ts`
 - `front/src/hooks/__tests__/useHabitMutations.test.ts`
@@ -291,11 +312,13 @@ npm run test:run -- hooks/__tests__/hooksDirectoryStructure.test.ts
 - `front/src/hooks/__tests__/CH-003-TEST-SUMMARY.md` (this file)
 
 ### To Be Created (GREEN Phase)
+
 - `front/src/hooks/useHabits.ts`
 - `front/src/hooks/useHabitMutations.ts`
 - `front/src/hooks/useReadingLogs.ts`
 
 ### To Be Modified (GREEN Phase)
+
 - `front/src/hooks/index.ts` (add new exports)
 
 ---

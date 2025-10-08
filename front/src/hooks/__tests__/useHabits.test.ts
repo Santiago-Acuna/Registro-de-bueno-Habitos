@@ -19,12 +19,12 @@
  * 6. Integration with React Query or similar library
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { useHabits } from '@/hooks';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { useHabits } from "@/hooks";
 
 // Mock dependencies
-vi.mock('axios', () => ({
+vi.mock("axios", () => ({
   default: {
     get: vi.fn(),
     post: vi.fn(),
@@ -33,9 +33,9 @@ vi.mock('axios', () => ({
   },
 }));
 
-import axios from 'axios';
+import axios from "axios";
 
-describe('CH-003: useHabits Hook - API Communication', () => {
+describe("CH-003: useHabits Hook - API Communication", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -44,32 +44,32 @@ describe('CH-003: useHabits Hook - API Communication', () => {
     vi.clearAllMocks();
   });
 
-  describe('Hook Existence and Structure', () => {
-    it('should be exportable from hooks barrel', async () => {
+  describe("Hook Existence and Structure", () => {
+    it("should be exportable from hooks barrel", async () => {
       // Arrange: Import hooks module
-      const hooksModule = await import('@/hooks');
+      const hooksModule = await import("@/hooks");
 
       // Act: Check for useHabits export
-      const hasUseHabits = 'useHabits' in hooksModule;
+      const hasUseHabits = "useHabits" in hooksModule;
 
       // Assert: Hook should be exported
       expect(hasUseHabits).toBe(true);
-      expect(typeof hooksModule.useHabits).toBe('function');
+      expect(typeof hooksModule.useHabits).toBe("function");
     });
 
-    it('should follow React hooks naming convention', async () => {
+    it("should follow React hooks naming convention", async () => {
       // Arrange: Import the hook
-      const { useHabits: hook } = await import('@/hooks');
+      const { useHabits: hook } = await import("@/hooks");
 
       // Act: Get hook name
       const hookName = hook.name;
 
       // Assert: Should start with 'use' and be PascalCase
       expect(hookName).toMatch(/^use[A-Z]/);
-      expect(hookName).toBe('useHabits');
+      expect(hookName).toBe("useHabits");
     });
 
-    it('should return an object with expected properties', () => {
+    it("should return an object with expected properties", () => {
       // Arrange: Mock successful API response
       vi.mocked(axios.get).mockResolvedValue({
         data: [],
@@ -80,22 +80,20 @@ describe('CH-003: useHabits Hook - API Communication', () => {
 
       // Assert: Should return object with query properties
       expect(result.current).toBeDefined();
-      expect(result.current).toHaveProperty('data');
-      expect(result.current).toHaveProperty('isLoading');
-      expect(result.current).toHaveProperty('isError');
-      expect(result.current).toHaveProperty('error');
-      expect(result.current).toHaveProperty('refetch');
+      expect(result.current).toHaveProperty("data");
+      expect(result.current).toHaveProperty("isLoading");
+      expect(result.current).toHaveProperty("isError");
+      expect(result.current).toHaveProperty("error");
+      expect(result.current).toHaveProperty("refetch");
     });
   });
 
-  describe('Initial State and Data Fetching', () => {
-    it('should initialize with loading state', () => {
+  describe("Initial State and Data Fetching", () => {
+    it("should initialize with loading state", () => {
       // Arrange: Mock pending API call
       vi.mocked(axios.get).mockImplementation(
         () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ data: [] }), 100)
-          )
+          new Promise((resolve) => setTimeout(() => resolve({ data: [] }), 100))
       );
 
       // Act: Render hook
@@ -106,20 +104,20 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       expect(result.current.data).toBeUndefined();
     });
 
-    it('should fetch habits data from backend API on mount', async () => {
+    it("should fetch habits data from backend API on mount", async () => {
       // Arrange: Mock successful API response
       const mockHabits = [
         {
-          id: '1',
-          name: 'Exercise',
-          icon: 'https://example.com/exercise.png',
-          habit_type: 'Simple',
+          id: "1",
+          name: "Exercise",
+          icon: "https://example.com/exercise.png",
+          habit_type: "Simple",
         },
         {
-          id: '2',
-          name: 'Reading',
-          icon: 'https://example.com/reading.png',
-          habit_type: 'Complex',
+          id: "2",
+          name: "Reading",
+          icon: "https://example.com/reading.png",
+          habit_type: "Complex",
         },
       ];
 
@@ -134,12 +132,12 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
 
       expect(axios.get).toHaveBeenCalledWith(
-        expect.stringContaining('/habits')
+        expect.stringContaining("/habits")
       );
       expect(result.current.data).toEqual(mockHabits);
     });
 
-    it('should call the correct backend endpoint', async () => {
+    it("should call the correct backend endpoint", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -154,10 +152,10 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should transition from loading to success state', async () => {
+    it("should transition from loading to success state", async () => {
       // Arrange: Mock API response
       vi.mocked(axios.get).mockResolvedValue({
-        data: [{ id: '1', name: 'Test' }],
+        data: [{ id: "1", name: "Test" }],
       });
 
       // Act: Render hook
@@ -175,8 +173,8 @@ describe('CH-003: useHabits Hook - API Communication', () => {
     });
   });
 
-  describe('Loading States', () => {
-    it('should set isLoading to true during data fetch', () => {
+  describe("Loading States", () => {
+    it("should set isLoading to true during data fetch", () => {
       // Arrange: Mock slow API call
       vi.mocked(axios.get).mockImplementation(
         () =>
@@ -193,7 +191,7 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       expect(result.current.data).toBeUndefined();
     });
 
-    it('should set isLoading to false after successful fetch', async () => {
+    it("should set isLoading to false after successful fetch", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -206,9 +204,9 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should set isLoading to false after failed fetch', async () => {
+    it("should set isLoading to false after failed fetch", async () => {
       // Arrange: Mock API error
-      vi.mocked(axios.get).mockRejectedValue(new Error('Network error'));
+      vi.mocked(axios.get).mockRejectedValue(new Error("Network error"));
 
       // Act: Render hook
       const { result } = renderHook(() => useHabits());
@@ -220,7 +218,7 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should provide loading state during refetch', async () => {
+    it("should provide loading state during refetch", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -235,16 +233,14 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       result.current.refetch();
 
       // Assert: Should show loading during refetch
-      expect(result.current.isLoading || result.current.isFetching).toBe(
-        true
-      );
+      expect(result.current.isLoading || result.current.isFetching).toBe(true);
     });
   });
 
-  describe('Error Handling', () => {
-    it('should handle network errors gracefully', async () => {
+  describe("Error Handling", () => {
+    it("should handle network errors gracefully", async () => {
       // Arrange: Mock network error
-      const networkError = new Error('Network Error');
+      const networkError = new Error("Network Error");
       vi.mocked(axios.get).mockRejectedValue(networkError);
 
       // Act: Render hook
@@ -257,10 +253,10 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should handle 404 errors from backend', async () => {
+    it("should handle 404 errors from backend", async () => {
       // Arrange: Mock 404 error
       const notFoundError = {
-        response: { status: 404, data: { message: 'Not Found' } },
+        response: { status: 404, data: { message: "Not Found" } },
       };
       vi.mocked(axios.get).mockRejectedValue(notFoundError);
 
@@ -274,12 +270,12 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should handle 500 server errors', async () => {
+    it("should handle 500 server errors", async () => {
       // Arrange: Mock 500 error
       const serverError = {
         response: {
           status: 500,
-          data: { message: 'Internal Server Error' },
+          data: { message: "Internal Server Error" },
         },
       };
       vi.mocked(axios.get).mockRejectedValue(serverError);
@@ -293,9 +289,9 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should handle timeout errors', async () => {
+    it("should handle timeout errors", async () => {
       // Arrange: Mock timeout
-      const timeoutError = new Error('timeout of 5000ms exceeded');
+      const timeoutError = new Error("timeout of 5000ms exceeded");
       vi.mocked(axios.get).mockRejectedValue(timeoutError);
 
       // Act: Render hook
@@ -308,9 +304,9 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should provide error message to UI', async () => {
+    it("should provide error message to UI", async () => {
       // Arrange: Mock error with message
-      const errorMessage = 'Failed to fetch habits';
+      const errorMessage = "Failed to fetch habits";
       vi.mocked(axios.get).mockRejectedValue(new Error(errorMessage));
 
       // Act: Render hook
@@ -319,14 +315,14 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       // Assert: Error should be accessible
       await waitFor(() => {
         expect(result.current.error).toBeDefined();
-        expect(result.current.error?.message).toContain('fetch');
+        expect(result.current.error?.message).toContain("fetch");
       });
     });
 
-    it('should clear error state on successful refetch', async () => {
+    it("should clear error state on successful refetch", async () => {
       // Arrange: Mock error then success
       vi.mocked(axios.get)
-        .mockRejectedValueOnce(new Error('Error'))
+        .mockRejectedValueOnce(new Error("Error"))
         .mockResolvedValueOnce({ data: [] });
 
       // Act: Render hook with error
@@ -347,17 +343,17 @@ describe('CH-003: useHabits Hook - API Communication', () => {
     });
   });
 
-  describe('Data Transformation (Backend to Frontend)', () => {
-    it('should transform backend habit data to frontend format', async () => {
+  describe("Data Transformation (Backend to Frontend)", () => {
+    it("should transform backend habit data to frontend format", async () => {
       // Arrange: Mock backend response (NestJS format)
       const backendData = [
         {
-          id: 'uuid-123',
-          name: 'Exercise',
-          iconUrl: 'https://example.com/exercise.png',
-          habitType: 'SIMPLE', // Backend uses different casing
-          createdAt: '2025-01-01T00:00:00Z',
-          updatedAt: '2025-01-01T00:00:00Z',
+          id: "uuid-123",
+          name: "Exercise",
+          iconUrl: "https://example.com/exercise.png",
+          habitType: "SIMPLE", // Backend uses different casing
+          createdAt: "2025-01-01T00:00:00Z",
+          updatedAt: "2025-01-01T00:00:00Z",
         },
       ];
 
@@ -380,7 +376,7 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should handle empty arrays from backend', async () => {
+    it("should handle empty arrays from backend", async () => {
       // Arrange: Mock empty response
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -396,7 +392,7 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       expect(Array.isArray(result.current.data)).toBe(true);
     });
 
-    it('should handle null or undefined from backend', async () => {
+    it("should handle null or undefined from backend", async () => {
       // Arrange: Mock null response
       vi.mocked(axios.get).mockResolvedValue({ data: null });
 
@@ -415,15 +411,15 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       ).toBe(true);
     });
 
-    it('should preserve all required habit fields', async () => {
+    it("should preserve all required habit fields", async () => {
       // Arrange: Mock complete habit data
       const completeHabit = {
-        id: '1',
-        name: 'Exercise',
-        icon: 'https://example.com/icon.png',
-        habit_type: 'Simple',
-        createdAt: '2025-01-01',
-        updatedAt: '2025-01-01',
+        id: "1",
+        name: "Exercise",
+        icon: "https://example.com/icon.png",
+        habit_type: "Simple",
+        createdAt: "2025-01-01",
+        updatedAt: "2025-01-01",
       };
 
       vi.mocked(axios.get).mockResolvedValue({ data: [completeHabit] });
@@ -437,15 +433,15 @@ describe('CH-003: useHabits Hook - API Communication', () => {
 
       // Assert: All fields should be present
       const habit = result.current.data?.[0];
-      expect(habit).toHaveProperty('id');
-      expect(habit).toHaveProperty('name');
-      expect(habit).toHaveProperty('icon');
-      expect(habit).toHaveProperty('habit_type');
+      expect(habit).toHaveProperty("id");
+      expect(habit).toHaveProperty("name");
+      expect(habit).toHaveProperty("icon");
+      expect(habit).toHaveProperty("habit_type");
     });
   });
 
-  describe('Caching and Refetching', () => {
-    it('should provide refetch function', () => {
+  describe("Caching and Refetching", () => {
+    it("should provide refetch function", () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -453,10 +449,10 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       const { result } = renderHook(() => useHabits());
 
       // Assert: refetch should be a function
-      expect(typeof result.current.refetch).toBe('function');
+      expect(typeof result.current.refetch).toBe("function");
     });
 
-    it('should refetch data when refetch is called', async () => {
+    it("should refetch data when refetch is called", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -480,10 +476,10 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should cache data between re-renders', async () => {
+    it("should cache data between re-renders", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({
-        data: [{ id: '1', name: 'Test' }],
+        data: [{ id: "1", name: "Test" }],
       });
 
       // Act: Render hook
@@ -502,10 +498,10 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       expect(result.current.data).toBe(firstData);
     });
 
-    it('should support stale-while-revalidate pattern', async () => {
+    it("should support stale-while-revalidate pattern", async () => {
       // Arrange: Mock API with changing data
-      const oldData = [{ id: '1', name: 'Old' }];
-      const newData = [{ id: '1', name: 'New' }];
+      const oldData = [{ id: "1", name: "Old" }];
+      const newData = [{ id: "1", name: "New" }];
 
       vi.mocked(axios.get)
         .mockResolvedValueOnce({ data: oldData })
@@ -528,17 +524,15 @@ describe('CH-003: useHabits Hook - API Communication', () => {
     });
   });
 
-  describe('Query Parameters and Filtering', () => {
-    it('should support filtering habits by type', async () => {
+  describe("Query Parameters and Filtering", () => {
+    it("should support filtering habits by type", async () => {
       // Arrange: Mock filtered response
       vi.mocked(axios.get).mockResolvedValue({
-        data: [{ id: '1', habit_type: 'Simple' }],
+        data: [{ id: "1", habit_type: "Simple" }],
       });
 
       // Act: Render hook with filter
-      const { result } = renderHook(() =>
-        useHabits({ habitType: 'Simple' })
-      );
+      const { result } = renderHook(() => useHabits({ habitType: "Simple" }));
 
       await waitFor(() => {
         expect(result.current.data).toBeDefined();
@@ -546,11 +540,11 @@ describe('CH-003: useHabits Hook - API Communication', () => {
 
       // Assert: Should call API with query params
       expect(axios.get).toHaveBeenCalledWith(
-        expect.stringContaining('habitType=Simple')
+        expect.stringContaining("habitType=Simple")
       );
     });
 
-    it('should support pagination parameters', async () => {
+    it("should support pagination parameters", async () => {
       // Arrange: Mock paginated response
       vi.mocked(axios.get).mockResolvedValue({
         data: [],
@@ -558,9 +552,7 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
 
       // Act: Render hook with pagination
-      const { result } = renderHook(() =>
-        useHabits({ page: 1, limit: 10 })
-      );
+      const { result } = renderHook(() => useHabits({ page: 1, limit: 10 }));
 
       await waitFor(() => {
         expect(result.current.isLoading).toBe(false);
@@ -572,13 +564,13 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       );
     });
 
-    it('should support sorting options', async () => {
+    it("should support sorting options", async () => {
       // Arrange: Mock sorted response
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
       // Act: Render hook with sort
       const { result } = renderHook(() =>
-        useHabits({ sortBy: 'name', order: 'asc' })
+        useHabits({ sortBy: "name", order: "asc" })
       );
 
       await waitFor(() => {
@@ -592,8 +584,8 @@ describe('CH-003: useHabits Hook - API Communication', () => {
     });
   });
 
-  describe('Integration with React Query or State Management', () => {
-    it('should use React Query for server state management', () => {
+  describe("Integration with React Query or State Management", () => {
+    it("should use React Query for server state management", () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -601,13 +593,13 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       const { result } = renderHook(() => useHabits());
 
       // Assert: Should have React Query-like interface
-      expect(result.current).toHaveProperty('isLoading');
-      expect(result.current).toHaveProperty('isError');
-      expect(result.current).toHaveProperty('data');
-      expect(result.current).toHaveProperty('refetch');
+      expect(result.current).toHaveProperty("isLoading");
+      expect(result.current).toHaveProperty("isError");
+      expect(result.current).toHaveProperty("data");
+      expect(result.current).toHaveProperty("refetch");
     });
 
-    it('should provide query key for cache management', async () => {
+    it("should provide query key for cache management", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -615,12 +607,10 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       const { result } = renderHook(() => useHabits());
 
       // Assert: Should expose query key or identifier
-      expect(
-        result.current.queryKey || result.current.cacheKey
-      ).toBeDefined();
+      expect(result.current.queryKey || result.current.cacheKey).toBeDefined();
     });
 
-    it('should support optimistic updates through cache', async () => {
+    it("should support optimistic updates through cache", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -633,14 +623,14 @@ describe('CH-003: useHabits Hook - API Communication', () => {
 
       // Assert: Should provide method for cache updates
       expect(
-        typeof result.current.updateCache === 'function' ||
-          typeof result.current.setQueryData === 'function'
+        typeof result.current.updateCache === "function" ||
+          typeof result.current.setQueryData === "function"
       ).toBe(true);
     });
   });
 
-  describe('Performance and Optimization', () => {
-    it('should not refetch on window focus by default', async () => {
+  describe("Performance and Optimization", () => {
+    it("should not refetch on window focus by default", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -654,7 +644,7 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       const callCount = vi.mocked(axios.get).mock.calls.length;
 
       // Simulate window focus
-      window.dispatchEvent(new Event('focus'));
+      window.dispatchEvent(new Event("focus"));
 
       // Wait a bit
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -663,7 +653,7 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       expect(vi.mocked(axios.get).mock.calls.length).toBe(callCount);
     });
 
-    it('should debounce rapid refetch calls', async () => {
+    it("should debounce rapid refetch calls", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
@@ -689,7 +679,7 @@ describe('CH-003: useHabits Hook - API Communication', () => {
       });
     });
 
-    it('should cleanup subscriptions on unmount', async () => {
+    it("should cleanup subscriptions on unmount", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({ data: [] });
 
