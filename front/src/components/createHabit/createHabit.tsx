@@ -3,11 +3,16 @@ import { FC } from "react";
 import HabitForm from "../../utils/habitsForm/form";
 import { useCustomSelector, useCustomDispatch } from "../../redux/hooks/hooks";
 import { manageForm } from "../../redux/slices/form/form";
+import { useHabitForm } from "@/hooks";
 import styles from "./createHabit.module.css";
 
 const CreateHabits: FC = () => {
   const { formState: form } = useCustomSelector((state) => state.form);
   const dispatch = useCustomDispatch();
+
+  // Use the useHabitForm hook for CREATE mode
+  useHabitForm({ formType: "CREATE" });
+
   const display = {
     display: form !== "" ? "none" : "flex",
     justifyContent: "flex-end",
@@ -42,7 +47,7 @@ const CreateHabits: FC = () => {
               <span></span>
               <svg viewBox="0 0 36 36" className={styles.circle}>
                 <path
-                  stroke-dasharray="100, 100"
+                  strokeDasharray="100, 100"
                   d="M18 2.0845
         a 15.9155 15.9155 0 0 1 0 31.831
         a 15.9155 15.9155 0 0 1 0 -31.831"

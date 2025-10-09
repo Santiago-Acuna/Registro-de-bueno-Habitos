@@ -506,6 +506,7 @@ describe("CH-004: Refactor createHabit.tsx to use useHabitForm hook", () => {
       // Assert: preventDefault should be called (via manageForm dispatch)
       expect(mockDispatch).toHaveBeenCalled();
     });
+  });
 
   describe("Style and Display Tests", () => {
     it("should apply correct CSS module classes to main container", () => {
