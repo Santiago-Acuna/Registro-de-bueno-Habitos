@@ -63,6 +63,8 @@ export const useReadingLogs = (
   const [refetchTrigger, setRefetchTrigger] = useState<number>(0);
   const isMountedRef = useRef<boolean>(true);
   const lastOptionsRef = useRef<string>("");
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const isFetchingRef = useRef<boolean>(false);
 
   const buildQueryString = useCallback(
     (opts: UseReadingLogsOptions): string => {
@@ -105,16 +107,19 @@ export const useReadingLogs = (
   const fetchData = useCallback(async () => {
     if (!isMountedRef.current) return;
 
-    setIsFetching(true);
+    if (!isFetchingRef.current) {
+      isFetchingRef.current = true;
+      setIsFetching(true);
+    }
+
+    if (data === undefined) {
+      setIsLoading(true);
+    }
 
     try {
       const queryString = buildQueryString(options);
-      const url = `http://localhost:3000/api/v1/reading-logs${queryString}`;
-      const response = await axios.get(url, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const url = `http://localhost:3000/api/reading-logs${queryString}`;
+      const response = await axios.get(url);
 
       if (!isMountedRef.current) return;
 
@@ -122,13 +127,16 @@ export const useReadingLogs = (
       let transformedData = response.data;
       let paginationMeta = undefined;
 
-      // Extract data and pagination meta
-      if (response.data.data) {
-        transformedData = response.data.data;
+      // Extract pagination meta (could be at root or nested)
+      if (response.meta) {
+        paginationMeta = response.meta;
+      } else if (response.data.meta) {
+        paginationMeta = response.data.meta;
       }
 
-      if (response.data.meta) {
-        paginationMeta = response.data.meta;
+      // Extract data (could be at root or nested)
+      if (response.data.data) {
+        transformedData = response.data.data;
       }
 
       // Transform backend data to frontend format
@@ -148,9 +156,15 @@ export const useReadingLogs = (
       setData(transformedData);
       setPagination(paginationMeta);
       setIsLoading(false);
+      isFetchingRef.current = false;
       setIsFetching(false);
       setIsError(false);
       setError(null);
+
+      // Reset refetch trigger after successful fetch
+      if (refetchTrigger > 0) {
+        setRefetchTrigger(0);
+      }
     } catch (err) {
       if (!isMountedRef.current) return;
 
@@ -159,18 +173,49 @@ export const useReadingLogs = (
       setError(errorObj);
       setIsError(true);
       setIsLoading(false);
+      isFetchingRef.current = false;
       setIsFetching(false);
+
+      // Reset refetch trigger after error
+      if (refetchTrigger > 0) {
+        setRefetchTrigger(0);
+      }
     }
-  }, [options, buildQueryString]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [options, buildQueryString, refetchTrigger, setRefetchTrigger]);
 
   useEffect(() => {
     const currentOptions = JSON.stringify(options);
 
-    // Only fetch if options changed or it's initial mount
+    // Only fetch if options changed or it's initial mount or refetch triggered
     if (currentOptions !== lastOptionsRef.current || refetchTrigger > 0) {
-      lastOptionsRef.current = currentOptions;
-      fetchData();
+      // Clear existing debounce timer
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      // Check if this is a rapid filter change (not initial mount or refetch)
+      const isRapidChange =
+        lastOptionsRef.current !== "" && refetchTrigger === 0;
+
+      if (isRapidChange) {
+        // Debounce rapid filter changes
+        debounceTimerRef.current = setTimeout(() => {
+          lastOptionsRef.current = currentOptions;
+          fetchData();
+        }, 300);
+      } else {
+        // No debounce for initial mount or manual refetch
+        lastOptionsRef.current = currentOptions;
+        fetchData();
+      }
     }
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
   }, [fetchData, options, refetchTrigger]);
 
   useEffect(() => {
@@ -182,13 +227,17 @@ export const useReadingLogs = (
   }, []);
 
   const refetch = useCallback(() => {
+    isFetchingRef.current = true;
+    setIsFetching(true);
     setRefetchTrigger((prev) => prev + 1);
   }, []);
 
-  return {
+  const result = {
     data,
     isLoading,
-    isFetching,
+    get isFetching() {
+      return isFetchingRef.current || isFetching;
+    },
     isError,
     error,
     refetch,
@@ -196,4 +245,6 @@ export const useReadingLogs = (
     meta: pagination,
     pageInfo: pagination,
   };
+
+  return result;
 };
