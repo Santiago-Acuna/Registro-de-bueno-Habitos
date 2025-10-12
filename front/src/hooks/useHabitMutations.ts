@@ -92,12 +92,7 @@ export const useHabitMutations = (): UseHabitMutationsReturn => {
       try {
         const response = await axios.post(
           "http://localhost:3000/api/v1/habits",
-          data,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
+          data
         );
 
         setIsCreating(false);
@@ -150,12 +145,7 @@ export const useHabitMutations = (): UseHabitMutationsReturn => {
       try {
         const response = await axios.patch(
           `http://localhost:3000/api/v1/habits/${id}`,
-          data,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
+          data
         );
 
         setIsUpdating(false);
@@ -188,49 +178,51 @@ export const useHabitMutations = (): UseHabitMutationsReturn => {
   );
 
   const deleteHabit = useCallback(
-    async (id: string, options: MutationOptions = {}): Promise<void> => {
+    (id: string, options: MutationOptions = {}): Promise<void> => {
       if (!id) {
         throw new Error("Habit ID is required");
       }
 
-      setIsDeleting(true);
-      setDeleteError(null);
-
-      if (options.optimistic) {
-        setOptimisticData({ id, deleted: true });
-        setPendingMutations((prev) => [...prev, { type: "delete", id }]);
-      }
-
-      try {
-        await axios.delete(`http://localhost:3000/api/v1/habits/${id}`, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        setIsDeleting(false);
+      const performDelete = async () => {
+        setIsDeleting(true);
+        setDeleteError(null);
 
         if (options.optimistic) {
-          setOptimisticData(undefined);
-          setPendingMutations((prev) =>
-            prev.filter((m) => m.type !== "delete" || m.id !== id)
-          );
-        }
-      } catch (error) {
-        const err =
-          error instanceof Error ? error : new Error("Failed to delete habit");
-        setDeleteError(err);
-        setIsDeleting(false);
-
-        if (options.optimistic) {
-          setOptimisticData(undefined);
-          setPendingMutations((prev) =>
-            prev.filter((m) => m.type !== "delete" || m.id !== id)
-          );
+          setOptimisticData({ id, deleted: true });
+          setPendingMutations((prev) => [...prev, { type: "delete", id }]);
         }
 
-        throw err;
-      }
+        try {
+          await axios.delete(`http://localhost:3000/api/v1/habits/${id}`);
+
+          setIsDeleting(false);
+
+          if (options.optimistic) {
+            setOptimisticData(undefined);
+            setPendingMutations((prev) =>
+              prev.filter((m) => m.type !== "delete" || m.id !== id)
+            );
+          }
+        } catch (error) {
+          const err =
+            error instanceof Error
+              ? error
+              : new Error("Failed to delete habit");
+          setDeleteError(err);
+          setIsDeleting(false);
+
+          if (options.optimistic) {
+            setOptimisticData(undefined);
+            setPendingMutations((prev) =>
+              prev.filter((m) => m.type !== "delete" || m.id !== id)
+            );
+          }
+
+          throw err;
+        }
+      };
+
+      return performDelete();
     },
     []
   );
