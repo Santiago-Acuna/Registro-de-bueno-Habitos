@@ -163,6 +163,7 @@ export const useHabits = (options: UseHabitsOptions = {}): UseHabitsReturn => {
   const refetch = useCallback(() => {
     isFetchingRef.current = true;
     setIsFetching(true);
+    setIsLoading(true);
     setRefetchTrigger((prev) => prev + 1);
   }, []);
 
@@ -177,10 +178,12 @@ export const useHabits = (options: UseHabitsOptions = {}): UseHabitsReturn => {
     setData(newData);
   }, []);
 
-  return {
+  const result = {
     data,
     isLoading,
-    isFetching: isFetchingRef.current || isFetching,
+    get isFetching() {
+      return isFetchingRef.current || isFetching;
+    },
     isError,
     error,
     refetch,
@@ -189,4 +192,6 @@ export const useHabits = (options: UseHabitsOptions = {}): UseHabitsReturn => {
     updateCache,
     setQueryData,
   };
+
+  return result;
 };
