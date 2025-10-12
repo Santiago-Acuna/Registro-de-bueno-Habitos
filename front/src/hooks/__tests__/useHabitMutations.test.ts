@@ -124,10 +124,11 @@ describe("CH-003: useHabitMutations Hook - Create/Update/Delete", () => {
         await result.current.createHabit(newHabit);
       });
 
-      // Assert: Should call POST endpoint
+      // Assert: Should call POST endpoint with correct arguments
       expect(axios.post).toHaveBeenCalledWith(
         expect.stringContaining("/habits"),
-        newHabit
+        newHabit,
+        expect.any(Object)
       );
     });
 
