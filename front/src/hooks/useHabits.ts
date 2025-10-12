@@ -49,12 +49,12 @@ export const useHabits = (options: UseHabitsOptions = {}): UseHabitsReturn => {
   const [error, setError] = useState<Error | null>(null);
   const [refetchTrigger, setRefetchTrigger] = useState<number>(0);
   const isMountedRef = useRef<boolean>(true);
-  const lastOptionsRef = useRef<string>("");
+  const isFetchingRef = useRef<boolean>(false);
 
   const queryKey = ["habits", JSON.stringify(options)];
   const cacheKey = queryKey;
 
-  const buildQueryString = useCallback((opts: UseHabitsOptions): string => {
+  const buildQueryString = (opts: UseHabitsOptions): string => {
     const params = new URLSearchParams();
 
     if (opts.habitType) {
@@ -79,71 +79,78 @@ export const useHabits = (options: UseHabitsOptions = {}): UseHabitsReturn => {
 
     const queryString = params.toString();
     return queryString ? `?${queryString}` : "";
-  }, []);
-
-  const fetchData = useCallback(async () => {
-    if (!isMountedRef.current) return;
-
-    setIsFetching(true);
-    if (isLoading === false) {
-      setIsLoading(true);
-    }
-
-    try {
-      const queryString = buildQueryString(options);
-      const url = `http://localhost:3000/api/v1/habits${queryString}`;
-      const response = await axios.get(url);
-
-      if (!isMountedRef.current) return;
-
-      // Transform backend data to frontend format if needed
-      let transformedData = response.data;
-
-      // Handle different response structures
-      if (response.data.data) {
-        transformedData = response.data.data;
-      }
-
-      // Normalize data structure
-      if (Array.isArray(transformedData)) {
-        transformedData = transformedData.map((habit: any) => ({
-          id: habit.id,
-          name: habit.name,
-          icon: habit.icon || habit.iconUrl,
-          habit_type: habit.habit_type || habit.habitType,
-          createdAt: habit.createdAt,
-          updatedAt: habit.updatedAt,
-        }));
-      } else if (transformedData === null || transformedData === undefined) {
-        transformedData = [];
-      }
-
-      setData(transformedData);
-      setIsLoading(false);
-      setIsFetching(false);
-      setIsError(false);
-      setError(null);
-    } catch (err) {
-      if (!isMountedRef.current) return;
-
-      const errorObj =
-        err instanceof Error ? err : new Error("Failed to fetch habits");
-      setError(errorObj);
-      setIsError(true);
-      setIsLoading(false);
-      setIsFetching(false);
-    }
-  }, [options, buildQueryString, isLoading]);
+  };
 
   useEffect(() => {
-    const currentOptions = JSON.stringify(options);
+    let isCurrentEffect = true;
 
-    // Only fetch if options changed or it's initial mount
-    if (currentOptions !== lastOptionsRef.current || refetchTrigger > 0) {
-      lastOptionsRef.current = currentOptions;
-      fetchData();
-    }
-  }, [fetchData, options, refetchTrigger]);
+    const fetchData = async () => {
+      if (!isCurrentEffect || !isMountedRef.current) return;
+
+      if (!isFetchingRef.current) {
+        isFetchingRef.current = true;
+        setIsFetching(true);
+      }
+
+      if (data === undefined) {
+        setIsLoading(true);
+      }
+
+      try {
+        const queryString = buildQueryString(options);
+        const url = `http://localhost:3000/api/habits${queryString}`;
+        const response = await axios.get(url);
+
+        if (!isCurrentEffect || !isMountedRef.current) return;
+
+        // Transform backend data to frontend format if needed
+        let transformedData = response.data;
+
+        // Handle different response structures
+        if (response.data.data) {
+          transformedData = response.data.data;
+        }
+
+        // Normalize data structure
+        if (Array.isArray(transformedData)) {
+          transformedData = transformedData.map((habit: any) => ({
+            id: habit.id,
+            name: habit.name,
+            icon: habit.icon || habit.iconUrl,
+            habit_type: habit.habit_type || habit.habitType,
+            createdAt: habit.createdAt,
+            updatedAt: habit.updatedAt,
+          }));
+        } else if (transformedData === null || transformedData === undefined) {
+          transformedData = [];
+        }
+
+        setData(transformedData);
+        setIsLoading(false);
+        isFetchingRef.current = false;
+        setIsFetching(false);
+        setIsError(false);
+        setError(null);
+      } catch (err) {
+        if (!isCurrentEffect || !isMountedRef.current) return;
+
+        const errorObj =
+          err instanceof Error ? err : new Error("Failed to fetch habits");
+        setError(errorObj);
+        setIsError(true);
+        setIsLoading(false);
+        isFetchingRef.current = false;
+        setIsFetching(false);
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      isCurrentEffect = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(options), refetchTrigger]);
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -154,6 +161,8 @@ export const useHabits = (options: UseHabitsOptions = {}): UseHabitsReturn => {
   }, []);
 
   const refetch = useCallback(() => {
+    isFetchingRef.current = true;
+    setIsFetching(true);
     setRefetchTrigger((prev) => prev + 1);
   }, []);
 
@@ -171,7 +180,7 @@ export const useHabits = (options: UseHabitsOptions = {}): UseHabitsReturn => {
   return {
     data,
     isLoading,
-    isFetching,
+    isFetching: isFetchingRef.current || isFetching,
     isError,
     error,
     refetch,
