@@ -13,3 +13,4 @@ export { useHabitForm } from "./useHabitForm";
 export { useHabits } from "./useHabits";
 export { useHabitMutations } from "./useHabitMutations";
 export { useReadingLogs } from "./useReadingLogs";
+export { useHabitsFilter } from "./useHabitsFilter";
