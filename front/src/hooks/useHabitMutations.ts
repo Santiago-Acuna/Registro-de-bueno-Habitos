@@ -92,7 +92,12 @@ export const useHabitMutations = (): UseHabitMutationsReturn => {
       try {
         const response = await axios.post(
           "http://localhost:3000/api/v1/habits",
-          data
+          data,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         setIsCreating(false);
