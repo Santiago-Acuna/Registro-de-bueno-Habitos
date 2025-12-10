@@ -11,7 +11,7 @@ export class UpdateHabitDto extends PartialType(CreateHabitDto) {
     format: 'binary',
     required: false,
   })
-  logo?: Express.Multer.File | null;
+  icon?: Express.Multer.File | null;
 
   @ApiProperty({
     description: 'Set to "true" to remove the current logo',
@@ -20,5 +20,5 @@ export class UpdateHabitDto extends PartialType(CreateHabitDto) {
   })
   @IsOptional()
   @IsString()
-  removeLogo?: string;
+  removeICon?: string;
 }
