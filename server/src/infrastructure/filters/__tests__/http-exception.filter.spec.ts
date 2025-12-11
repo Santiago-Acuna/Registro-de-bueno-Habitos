@@ -392,14 +392,11 @@ describe('HttpExceptionFilter', () => {
 
     it('should map P2014 (required relation violation) to 400 Bad Request', () => {
       // Arrange
-      const prismaError = new Prisma.PrismaClientKnownRequestError(
-        'Required relation violation',
-        {
-          code: 'P2014',
-          clientVersion: '5.0.0',
-          meta: { relation_name: 'UserToPost' },
-        }
-      );
+      const prismaError = new Prisma.PrismaClientKnownRequestError('Required relation violation', {
+        code: 'P2014',
+        clientVersion: '5.0.0',
+        meta: { relation_name: 'UserToPost' },
+      });
 
       // Act
       const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -545,7 +542,8 @@ describe('HttpExceptionFilter', () => {
 
     it('should include validation error message in details', () => {
       // Arrange
-      const errorMessage = 'Argument name: Invalid value provided. Expected String, received undefined';
+      const errorMessage =
+        'Argument name: Invalid value provided. Expected String, received undefined';
       const validationError = new Prisma.PrismaClientValidationError(errorMessage, {
         clientVersion: '5.0.0',
       });
@@ -884,7 +882,7 @@ describe('HttpExceptionFilter', () => {
         new Error('Unknown'),
       ];
 
-      testCases.forEach((exception) => {
+      testCases.forEach(exception => {
         // Reset mocks
         jest.clearAllMocks();
         mockResponse = createMockResponse();
@@ -925,7 +923,7 @@ describe('HttpExceptionFilter', () => {
         HttpStatus.INTERNAL_SERVER_ERROR,
       ];
 
-      statusCodes.forEach((statusCode) => {
+      statusCodes.forEach(statusCode => {
         // Reset mocks
         jest.clearAllMocks();
         mockResponse = createMockResponse();

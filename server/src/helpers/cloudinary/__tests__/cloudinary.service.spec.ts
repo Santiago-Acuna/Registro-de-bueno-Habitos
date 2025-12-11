@@ -48,28 +48,29 @@ describe('CloudinaryService', () => {
   // Helper to create mock Cloudinary response
   const createMockCloudinaryResponse = (
     overrides: Partial<UploadApiResponse> = {}
-  ): UploadApiResponse => ({
-    public_id: 'test-public-id',
-    version: 1234567890,
-    signature: 'test-signature',
-    width: 800,
-    height: 600,
-    format: 'jpg',
-    resource_type: 'image',
-    created_at: '2024-01-01T00:00:00Z',
-    tags: [],
-    bytes: 1024,
-    type: 'upload',
-    etag: 'test-etag',
-    placeholder: false,
-    url: 'http://res.cloudinary.com/test/image/upload/test-public-id.jpg',
-    secure_url: 'https://res.cloudinary.com/test/image/upload/test-public-id.jpg',
-    folder: 'habits',
-    original_filename: 'test-image',
-    api_key: 'test-key',
-    pages: undefined,
-    ...overrides,
-  } as UploadApiResponse);
+  ): UploadApiResponse =>
+    ({
+      public_id: 'test-public-id',
+      version: 1234567890,
+      signature: 'test-signature',
+      width: 800,
+      height: 600,
+      format: 'jpg',
+      resource_type: 'image',
+      created_at: '2024-01-01T00:00:00Z',
+      tags: [],
+      bytes: 1024,
+      type: 'upload',
+      etag: 'test-etag',
+      placeholder: false,
+      url: 'http://res.cloudinary.com/test/image/upload/test-public-id.jpg',
+      secure_url: 'https://res.cloudinary.com/test/image/upload/test-public-id.jpg',
+      folder: 'habits',
+      original_filename: 'test-image',
+      api_key: 'test-key',
+      pages: undefined,
+      ...overrides,
+    }) as UploadApiResponse;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -218,12 +219,10 @@ describe('CloudinaryService', () => {
       };
 
       const mockStream = { end: jest.fn() };
-      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation(
-        (_options, callback) => {
-          callback(null, mockCloudinaryResponse);
-          return mockStream;
-        }
-      );
+      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation((_options, callback) => {
+        callback(null, mockCloudinaryResponse);
+        return mockStream;
+      });
 
       const result = await service.uploadImage(mockFile, uploadOptions);
 
@@ -271,12 +270,10 @@ describe('CloudinaryService', () => {
       };
 
       const mockStream = { end: jest.fn() };
-      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation(
-        (_options, callback) => {
-          callback(mockError, null);
-          return mockStream;
-        }
-      );
+      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation((_options, callback) => {
+        callback(mockError, null);
+        return mockStream;
+      });
 
       const result = await service.uploadImage(mockFile, uploadOptions);
 
@@ -295,12 +292,10 @@ describe('CloudinaryService', () => {
       };
 
       const mockStream = { end: jest.fn() };
-      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation(
-        (_options, callback) => {
-          callback(mockError, null);
-          return mockStream;
-        }
-      );
+      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation((_options, callback) => {
+        callback(mockError, null);
+        return mockStream;
+      });
 
       const result = await service.uploadImage(mockFile, uploadOptions);
 
@@ -315,12 +310,10 @@ describe('CloudinaryService', () => {
       const uploadOptions: CloudinaryUploadOptions = {};
 
       const mockStream = { end: jest.fn() };
-      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation(
-        (_options, callback) => {
-          callback(null, null);
-          return mockStream;
-        }
-      );
+      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation((_options, callback) => {
+        callback(null, null);
+        return mockStream;
+      });
 
       await expect(service.uploadImage(mockFile, uploadOptions)).rejects.toThrow(
         'Cloudinary upload failed: no result returned'
@@ -361,17 +354,15 @@ describe('CloudinaryService', () => {
       const mockCloudinaryResponse = createMockCloudinaryResponse();
       const mockStream = { end: jest.fn() };
 
-      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation(
-        (_options, callback) => {
-          callback(null, mockCloudinaryResponse);
-          return mockStream;
-        }
-      );
+      (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation((_options, callback) => {
+        callback(null, mockCloudinaryResponse);
+        return mockStream;
+      });
 
       const results = await service.uploadMultipleImages(mockFiles, {});
 
       expect(results).toHaveLength(3);
-      results.forEach((result) => {
+      results.forEach(result => {
         expect(result.success).toBe(true);
         expect(result.data).toBeDefined();
       });
@@ -386,7 +377,7 @@ describe('CloudinaryService', () => {
       const mockCloudinaryResponse = createMockCloudinaryResponse();
       const mockStream = { end: jest.fn() };
 
-      let capturedOptions: any[] = [];
+      const capturedOptions: any[] = [];
 
       (cloudinary.uploader.upload_stream as jest.Mock).mockImplementation(
         (options: any, callback: any) => {
