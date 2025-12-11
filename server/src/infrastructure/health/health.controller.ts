@@ -49,11 +49,14 @@ export class HealthController {
   async healthCheck(): Promise<HealthCheckResponse> {
     const isDatabaseConnected = await this.prismaService.healthCheck();
 
+    const version = this.configService.get('API_VERSION', 'v1') || 'v1';
+    const environment = this.configService.get('NODE_ENV', 'development') || 'development';
+
     return {
       status: isDatabaseConnected ? 'ok' : 'error',
       timestamp: new Date().toISOString(),
-      version: this.configService.get('API_VERSION', 'v1'),
-      environment: this.configService.get('NODE_ENV', 'development'),
+      version,
+      environment,
       database: {
         connected: isDatabaseConnected,
       },
