@@ -2,13 +2,19 @@
 import * as Joi from 'joi';
 
 export const configValidation = Joi.object({
-  NODE_ENV: Joi.string().valid('development', 'production', 'test').required(),
+  NODE_ENV: Joi.string()
+    .valid('development', 'staging', 'production', 'test')
+    .default('development'),
 
-  PORT: Joi.number().default(3000),
+  PORT: Joi.number().integer().min(1).max(65535).default(3000),
 
-  API_VERSION: Joi.string().default('v1'),
+  API_VERSION: Joi.string()
+    .pattern(/^v\d+$/)
+    .default('v1'),
 
-  DATABASE_URL: Joi.string().required(),
+  DATABASE_URL: Joi.string()
+    .pattern(/^postgres(ql)?:\/\//)
+    .required(),
 
   CORS_ORIGIN: Joi.string().default('http://localhost:5173'),
 
@@ -22,4 +28,4 @@ export const configValidation = Joi.object({
   CLOUDINARY_CLOUD_NAME: Joi.string().required(),
   CLOUDINARY_API_KEY: Joi.string().required(),
   CLOUDINARY_API_SECRET: Joi.string().required(),
-});
+}).unknown(true);
