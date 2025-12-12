@@ -133,16 +133,18 @@ describe('Infrastructure DTOs (RED PHASE)', () => {
         expect(errors.length).toBeGreaterThan(0);
         const pageErrors = errors.find(err => err.property === 'page');
         expect(pageErrors).toBeDefined();
-        expect(pageErrors?.constraints).toHaveProperty('isNumber');
+        expect(pageErrors?.constraints).toHaveProperty('isInt');
       });
 
-      it('should accept decimal page values (converted to number)', async () => {
+      it('should reject decimal page values', async () => {
         const dto = plainToClass(PaginationQueryDto, { page: '1.5' });
 
         const errors = await validate(dto);
 
-        expect(errors).toHaveLength(0);
-        expect(dto.page).toBe(1.5);
+        expect(errors.length).toBeGreaterThan(0);
+        const pageErrors = errors.find(err => err.property === 'page');
+        expect(pageErrors).toBeDefined();
+        expect(pageErrors?.constraints).toHaveProperty('isInt');
       });
 
       it('should accept page value of 1 (boundary)', async () => {
@@ -225,16 +227,18 @@ describe('Infrastructure DTOs (RED PHASE)', () => {
         expect(errors.length).toBeGreaterThan(0);
         const limitErrors = errors.find(err => err.property === 'limit');
         expect(limitErrors).toBeDefined();
-        expect(limitErrors?.constraints).toHaveProperty('isNumber');
+        expect(limitErrors?.constraints).toHaveProperty('isInt');
       });
 
-      it('should accept decimal limit values (converted to number)', async () => {
+      it('should reject decimal limit values', async () => {
         const dto = plainToClass(PaginationQueryDto, { limit: '10.5' });
 
         const errors = await validate(dto);
 
-        expect(errors).toHaveLength(0);
-        expect(dto.limit).toBe(10.5);
+        expect(errors.length).toBeGreaterThan(0);
+        const limitErrors = errors.find(err => err.property === 'limit');
+        expect(limitErrors).toBeDefined();
+        expect(limitErrors?.constraints).toHaveProperty('isInt');
       });
 
       it('should accept limit value of 1 (minimum boundary)', async () => {
