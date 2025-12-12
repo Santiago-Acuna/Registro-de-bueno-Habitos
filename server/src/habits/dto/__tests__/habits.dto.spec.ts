@@ -330,7 +330,7 @@ describe('Habits DTOs (RED PHASE)', () => {
         const dto = new UpdateHabitDto();
         dto.name = 'Updated Habit';
         dto.habitType = HabitComplexity.COMPLEX;
-        dto.removeICon = 'true';
+        dto.removeICon = true;
 
         const errors = await validate(dto);
 
@@ -357,7 +357,7 @@ describe('Habits DTOs (RED PHASE)', () => {
 
       it('should validate successfully with only removeICon', async () => {
         const dto = new UpdateHabitDto();
-        dto.removeICon = 'true';
+        dto.removeICon = true;
 
         const errors = await validate(dto);
 
@@ -372,13 +372,59 @@ describe('Habits DTOs (RED PHASE)', () => {
         expect(errors).toHaveLength(0);
       });
 
-      it('should accept valid removeICon string', async () => {
+      it('should accept removeICon as false', async () => {
         const dto = new UpdateHabitDto();
-        dto.removeICon = 'remove';
+        dto.removeICon = false;
 
         const errors = await validate(dto);
 
         expect(errors).toHaveLength(0);
+      });
+    });
+
+    describe('removeICon transformation', () => {
+      it('should transform string "true" to boolean true', () => {
+        const plain = { removeICon: 'true' };
+        const dto = plainToClass(UpdateHabitDto, plain);
+
+        expect(dto.removeICon).toBe(true);
+        expect(typeof dto.removeICon).toBe('boolean');
+      });
+
+      it('should transform string "false" to boolean false', () => {
+        const plain = { removeICon: 'false' };
+        const dto = plainToClass(UpdateHabitDto, plain);
+
+        expect(dto.removeICon).toBe(false);
+        expect(typeof dto.removeICon).toBe('boolean');
+      });
+
+      it('should keep boolean true as true', () => {
+        const plain = { removeICon: true };
+        const dto = plainToClass(UpdateHabitDto, plain);
+
+        expect(dto.removeICon).toBe(true);
+      });
+
+      it('should keep boolean false as false', () => {
+        const plain = { removeICon: false };
+        const dto = plainToClass(UpdateHabitDto, plain);
+
+        expect(dto.removeICon).toBe(false);
+      });
+
+      it('should keep undefined as undefined', () => {
+        const plain = {};
+        const dto = plainToClass(UpdateHabitDto, plain);
+
+        expect(dto.removeICon).toBeUndefined();
+      });
+
+      it('should keep invalid values as-is for validation to catch', () => {
+        const plain = { removeICon: 'invalid' };
+        const dto = plainToClass(UpdateHabitDto, plain);
+
+        expect(dto.removeICon).toBe('invalid');
       });
     });
 
@@ -479,7 +525,27 @@ describe('Habits DTOs (RED PHASE)', () => {
     });
 
     describe('removeICon validation', () => {
-      it('should fail when removeICon is not a string', async () => {
+      it('should accept boolean true', async () => {
+        const dto = new UpdateHabitDto();
+        dto.removeICon = true;
+
+        const errors = await validate(dto);
+
+        expect(errors).toHaveLength(0);
+        expect(dto.removeICon).toBe(true);
+      });
+
+      it('should accept boolean false', async () => {
+        const dto = new UpdateHabitDto();
+        dto.removeICon = false;
+
+        const errors = await validate(dto);
+
+        expect(errors).toHaveLength(0);
+        expect(dto.removeICon).toBe(false);
+      });
+
+      it('should fail when removeICon is a number', async () => {
         const dto = new UpdateHabitDto();
         (dto as any).removeICon = 123;
 
@@ -488,21 +554,22 @@ describe('Habits DTOs (RED PHASE)', () => {
         expect(errors.length).toBeGreaterThan(0);
         const removeIconErrors = errors.find(err => err.property === 'removeICon');
         expect(removeIconErrors).toBeDefined();
-        expect(removeIconErrors?.constraints).toHaveProperty('isString');
+        expect(removeIconErrors?.constraints).toHaveProperty('isBoolean');
       });
 
-      it('should fail when removeICon is boolean', async () => {
+      it('should fail when removeICon is a string (not transformed)', async () => {
         const dto = new UpdateHabitDto();
-        (dto as any).removeICon = true;
+        (dto as any).removeICon = 'remove';
 
         const errors = await validate(dto);
 
         expect(errors.length).toBeGreaterThan(0);
         const removeIconErrors = errors.find(err => err.property === 'removeICon');
         expect(removeIconErrors).toBeDefined();
+        expect(removeIconErrors?.constraints).toHaveProperty('isBoolean');
       });
 
-      it('should fail when removeICon is object', async () => {
+      it('should fail when removeICon is an object', async () => {
         const dto = new UpdateHabitDto();
         (dto as any).removeICon = { remove: true };
 
@@ -511,6 +578,7 @@ describe('Habits DTOs (RED PHASE)', () => {
         expect(errors.length).toBeGreaterThan(0);
         const removeIconErrors = errors.find(err => err.property === 'removeICon');
         expect(removeIconErrors).toBeDefined();
+        expect(removeIconErrors?.constraints).toHaveProperty('isBoolean');
       });
 
       it('should accept removeICon as undefined (optional)', async () => {
