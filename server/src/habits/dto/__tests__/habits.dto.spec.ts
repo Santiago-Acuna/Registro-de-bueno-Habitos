@@ -198,15 +198,17 @@ describe('Habits DTOs (RED PHASE)', () => {
         expect(nameErrors?.constraints).toHaveProperty('isNotEmpty');
       });
 
-      it('should accept name with only whitespace (no trimming in validator)', async () => {
+      it('should fail when name contains only whitespace', async () => {
         const dto = new CreateHabitDto();
         dto.name = '   ';
         dto.habitType = HabitComplexity.SIMPLE;
 
         const errors = await validate(dto);
 
-        // class-validator does not trim by default, so '   ' passes MinLength(1)
-        expect(errors).toHaveLength(0);
+        expect(errors.length).toBeGreaterThan(0);
+        const nameErrors = errors.find(err => err.property === 'name');
+        expect(nameErrors).toBeDefined();
+        expect(nameErrors?.constraints).toHaveProperty('matches');
       });
     });
 
@@ -412,6 +414,18 @@ describe('Habits DTOs (RED PHASE)', () => {
         expect(errors.length).toBeGreaterThan(0);
         const nameErrors = errors.find(err => err.property === 'name');
         expect(nameErrors).toBeDefined();
+      });
+
+      it('should fail when name contains only whitespace', async () => {
+        const dto = new UpdateHabitDto();
+        dto.name = '   ';
+
+        const errors = await validate(dto);
+
+        expect(errors.length).toBeGreaterThan(0);
+        const nameErrors = errors.find(err => err.property === 'name');
+        expect(nameErrors).toBeDefined();
+        expect(nameErrors?.constraints).toHaveProperty('matches');
       });
 
       it('should accept valid name with 50 characters', async () => {

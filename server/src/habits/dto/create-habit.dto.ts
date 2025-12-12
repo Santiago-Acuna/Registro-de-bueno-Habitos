@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEnum, IsNotEmpty, MaxLength, MinLength } from 'class-validator';
+import { IsString, IsEnum, IsNotEmpty, MaxLength, MinLength, Matches } from 'class-validator';
 
 import { HabitComplexity } from '../../domain/shared/types/common';
 
@@ -14,6 +14,7 @@ export class CreateHabitDto {
   @IsNotEmpty()
   @MinLength(1)
   @MaxLength(50)
+  @Matches(/\S/, { message: 'name must contain at least one non-whitespace character' })
   name!: string;
 
   @ApiProperty({
