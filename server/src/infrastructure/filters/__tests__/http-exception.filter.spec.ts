@@ -797,6 +797,508 @@ describe('HttpExceptionFilter', () => {
     });
   });
 
+  describe('handlePrismaException() - Enhanced P2002 User-Friendly Messages (US-001)', () => {
+    describe('Single field unique constraint violations', () => {
+      it('should return user-friendly message for single field "name" violation', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the fields: (`name`)',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('The name is already in use. Please choose a different name.');
+        expect(result.statusCode).toBe(HttpStatus.CONFLICT);
+      });
+
+      it('should return user-friendly message for single field "icon" violation', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the fields: (`icon`)',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['icon'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('The icon is already in use. Please choose a different icon.');
+        expect(result.statusCode).toBe(HttpStatus.CONFLICT);
+      });
+
+      it('should return user-friendly message for single field "email" violation', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the fields: (`email`)',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['email'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('The email is already in use. Please choose a different email.');
+        expect(result.statusCode).toBe(HttpStatus.CONFLICT);
+      });
+
+      it('should include field name in details object for single field violation', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the fields: (`name`)',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.details).toHaveProperty('field', 'name');
+        expect(result.details).toHaveProperty('code', 'P2002');
+        expect(result.details).toHaveProperty('meta', { target: ['name'] });
+      });
+
+      it('should maintain 409 CONFLICT status code for P2002 errors', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.statusCode).toBe(409);
+      });
+    });
+
+    describe('Composite unique constraint violations', () => {
+      it('should return user-friendly message for two-field composite constraint', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the fields: (`name`,`icon`)',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name', 'icon'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('A record with this name and icon combination already exists.');
+        expect(result.statusCode).toBe(HttpStatus.CONFLICT);
+      });
+
+      it('should return user-friendly message for three-field composite constraint', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the fields: (`userId`,`habitId`,`date`)',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['userId', 'habitId', 'date'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe(
+          'A record with this userId and habitId and date combination already exists.'
+        );
+      });
+
+      it('should include fields array in details object for composite constraint', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the fields: (`name`,`icon`)',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name', 'icon'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.details).toHaveProperty('fields', ['name', 'icon']);
+        expect(result.details).not.toHaveProperty('field');
+        expect(result.details).toHaveProperty('code', 'P2002');
+      });
+    });
+
+    describe('Edge cases for P2002 error handling', () => {
+      it('should handle P2002 with missing meta gracefully', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            // meta is undefined
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('A record with this unique field already exists.');
+        expect(result.statusCode).toBe(HttpStatus.CONFLICT);
+        expect(result.details).not.toHaveProperty('field');
+        expect(result.details).not.toHaveProperty('fields');
+      });
+
+      it('should handle P2002 with undefined target array', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: undefined },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('A record with this unique field already exists.');
+        expect(result.statusCode).toBe(HttpStatus.CONFLICT);
+      });
+
+      it('should handle P2002 with empty target array', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: [] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('A record with this unique field already exists.');
+        expect(result.statusCode).toBe(HttpStatus.CONFLICT);
+        expect(result.details).not.toHaveProperty('field');
+        expect(result.details).not.toHaveProperty('fields');
+      });
+
+      it('should handle P2002 with null target', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: null },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('A record with this unique field already exists.');
+      });
+    });
+
+    describe('buildUniqueConstraintMessage() - Helper method', () => {
+      it('should exist as a private method', () => {
+        // Assert
+        expect(filter).toHaveProperty('buildUniqueConstraintMessage');
+        expect(typeof (filter as any).buildUniqueConstraintMessage).toBe('function');
+      });
+
+      it('should build message for single field', () => {
+        // Act
+        const message = (filter as any).buildUniqueConstraintMessage(['name']);
+
+        // Assert
+        expect(message).toBe('The name is already in use. Please choose a different name.');
+      });
+
+      it('should build message for two fields', () => {
+        // Act
+        const message = (filter as any).buildUniqueConstraintMessage(['name', 'icon']);
+
+        // Assert
+        expect(message).toBe('A record with this name and icon combination already exists.');
+      });
+
+      it('should build message for three or more fields', () => {
+        // Act
+        const message = (filter as any).buildUniqueConstraintMessage([
+          'userId',
+          'habitId',
+          'date',
+        ]);
+
+        // Assert
+        expect(message).toBe(
+          'A record with this userId and habitId and date combination already exists.'
+        );
+      });
+
+      it('should return fallback message for undefined fields', () => {
+        // Act
+        const message = (filter as any).buildUniqueConstraintMessage(undefined);
+
+        // Assert
+        expect(message).toBe('A record with this unique field already exists.');
+      });
+
+      it('should return fallback message for empty array', () => {
+        // Act
+        const message = (filter as any).buildUniqueConstraintMessage([]);
+
+        // Assert
+        expect(message).toBe('A record with this unique field already exists.');
+      });
+
+      it('should return fallback message for null', () => {
+        // Act
+        const message = (filter as any).buildUniqueConstraintMessage(null);
+
+        // Assert
+        expect(message).toBe('A record with this unique field already exists.');
+      });
+    });
+
+    describe('Message formatting requirements', () => {
+      it('should use "The" prefix for single field messages', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['username'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toMatch(/^The /);
+      });
+
+      it('should capitalize first letter (sentence case)', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message.charAt(0)).toBe(result.message.charAt(0).toUpperCase());
+      });
+
+      it('should end with a period', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toMatch(/\.$/);
+      });
+
+      it('should provide actionable guidance for single fields', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toContain('Please choose a different');
+      });
+
+      it('should use field name verbatim from database', () => {
+        // Arrange - Test with snake_case field name
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['user_email'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toContain('user_email');
+        expect(result.message).toBe(
+          'The user_email is already in use. Please choose a different user_email.'
+        );
+      });
+    });
+
+    describe('Integration with existing P2002 tests', () => {
+      it('should maintain backward compatibility with error response structure', () => {
+        // Arrange
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result).toMatchObject({
+          error: 'DatabaseError',
+          message: expect.any(String),
+          statusCode: 409,
+          timestamp: expect.any(String),
+          path: expect.any(String),
+          details: expect.objectContaining({
+            code: 'P2002',
+            meta: { target: ['name'] },
+          }),
+        });
+      });
+
+      it('should not affect other Prisma error codes (P2025, P2003, etc.)', () => {
+        // Arrange
+        const p2025Error = new Prisma.PrismaClientKnownRequestError('Record not found', {
+          code: 'P2025',
+          clientVersion: '5.0.0',
+        });
+
+        // Act
+        const result = (filter as any).handlePrismaException(p2025Error, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('The requested record was not found');
+        expect(result.statusCode).toBe(HttpStatus.NOT_FOUND);
+      });
+    });
+
+    describe('Real-world database constraint scenarios', () => {
+      it('should handle global_entity_identifiers_name_unique constraint', () => {
+        // Arrange - Based on tu_archivo_esquema.sql line 719
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the constraint: `global_entity_identifiers_name_unique`',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('The name is already in use. Please choose a different name.');
+        expect(result.details).toHaveProperty('field', 'name');
+      });
+
+      it('should handle global_entity_identifiers_icon_unique constraint', () => {
+        // Arrange - Based on tu_archivo_esquema.sql line 703
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the constraint: `global_entity_identifiers_icon_unique`',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['icon'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('The icon is already in use. Please choose a different icon.');
+        expect(result.details).toHaveProperty('field', 'icon');
+      });
+
+      it('should handle global_entity_identifiers_name_icon_unique constraint', () => {
+        // Arrange - Based on tu_archivo_esquema.sql line 711
+        const prismaError = new Prisma.PrismaClientKnownRequestError(
+          'Unique constraint failed on the constraint: `global_entity_identifiers_name_icon_unique`',
+          {
+            code: 'P2002',
+            clientVersion: '5.0.0',
+            meta: { target: ['name', 'icon'] },
+          }
+        );
+
+        // Act
+        const result = (filter as any).handlePrismaException(prismaError, mockRequest);
+
+        // Assert
+        expect(result.message).toBe('A record with this name and icon combination already exists.');
+        expect(result.details).toHaveProperty('fields', ['name', 'icon']);
+      });
+    });
+  });
+
   describe('Edge cases and integration', () => {
     it('should handle HttpException with empty message', () => {
       // Arrange
