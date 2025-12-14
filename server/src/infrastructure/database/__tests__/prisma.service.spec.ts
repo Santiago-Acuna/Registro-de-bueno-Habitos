@@ -445,10 +445,11 @@ describe('PrismaService (RED PHASE)', () => {
       mockPrismaClient.$queryRaw.mockRejectedValue(new Error('Database connection lost'));
 
       // Act
-      const result = await service.healthCheck();-
-
-      // Assert
-      expect(result).toBe(false);
+      const result = await service.healthCheck();
+      -(
+        // Assert
+        expect(result).toBe(false)
+      );
     });
 
     it('should not throw error when query fails', async () => {

@@ -61,6 +61,7 @@ jest.mock('@nestjs/common', () => {
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+
 import { AppModule } from '../app.module';
 
 describe('Bootstrap Function (GREEN PHASE)', () => {
@@ -508,7 +509,9 @@ describe('Bootstrap Function (GREEN PHASE)', () => {
   describe('Startup Logging', () => {
     it('should log successful server start with port', async () => {
       await callBootstrap();
-      expect(mockLoggerInstance.log).toHaveBeenCalledWith(expect.stringContaining('Server started successfully'));
+      expect(mockLoggerInstance.log).toHaveBeenCalledWith(
+        expect.stringContaining('Server started successfully')
+      );
       expect(mockLoggerInstance.log).toHaveBeenCalledWith(expect.stringContaining('3000'));
     });
 
@@ -520,8 +523,12 @@ describe('Bootstrap Function (GREEN PHASE)', () => {
 
     it('should log API documentation URL', async () => {
       await callBootstrap();
-      expect(mockLoggerInstance.log).toHaveBeenCalledWith(expect.stringContaining('API Documentation:'));
-      expect(mockLoggerInstance.log).toHaveBeenCalledWith(expect.stringContaining('http://localhost:3000/docs'));
+      expect(mockLoggerInstance.log).toHaveBeenCalledWith(
+        expect.stringContaining('API Documentation:')
+      );
+      expect(mockLoggerInstance.log).toHaveBeenCalledWith(
+        expect.stringContaining('http://localhost:3000/docs')
+      );
     });
 
     it('should log health check URL', async () => {
@@ -663,7 +670,9 @@ describe('Bootstrap Function (GREEN PHASE)', () => {
           /* Catch to prevent unhandled rejection */
         });
 
-        expect(() => rejectionHandler(testReason, testPromise)).toThrow('Process exited with code 1');
+        expect(() => rejectionHandler(testReason, testPromise)).toThrow(
+          'Process exited with code 1'
+        );
         expect(mockProcessExit).toHaveBeenCalledWith(1);
       } else {
         // Handler was registered before mock, verify listeners exist

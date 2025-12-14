@@ -126,7 +126,9 @@ describe('ActionTypeQueryDto', () => {
       const hasActionsErrors = errors.find(err => err.property === 'hasActions');
       expect(hasActionsErrors).toBeDefined();
       expect(hasActionsErrors?.constraints).toHaveProperty('isBoolean');
-      expect(hasActionsErrors?.constraints?.['isBoolean']).toContain('hasActions must be a boolean');
+      expect(hasActionsErrors?.constraints?.['isBoolean']).toContain(
+        'hasActions must be a boolean'
+      );
     });
   });
 

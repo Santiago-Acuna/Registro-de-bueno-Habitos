@@ -35,9 +35,7 @@ describe('Configuration Validation (RED PHASE)', () => {
         const result = configValidation.validate(config);
 
         expect(result.error).toBeUndefined();
-        expect(result.value.DATABASE_URL).toBe(
-          'postgresql://user:password@localhost:5432/dbname',
-        );
+        expect(result.value.DATABASE_URL).toBe('postgresql://user:password@localhost:5432/dbname');
       });
 
       it('should accept valid PostgreSQL URL with postgres:// protocol', () => {
@@ -52,9 +50,7 @@ describe('Configuration Validation (RED PHASE)', () => {
         const result = configValidation.validate(config);
 
         expect(result.error).toBeUndefined();
-        expect(result.value.DATABASE_URL).toBe(
-          'postgres://user:password@localhost:5432/dbname',
-        );
+        expect(result.value.DATABASE_URL).toBe('postgres://user:password@localhost:5432/dbname');
       });
 
       it('should accept PostgreSQL URL with special characters in password', () => {
@@ -323,7 +319,7 @@ describe('Configuration Validation (RED PHASE)', () => {
       it('should accept common ports like 3000, 5000, 8000', () => {
         const ports = [3000, 5000, 8000];
 
-        ports.forEach((port) => {
+        ports.forEach(port => {
           const config = {
             DATABASE_URL: 'postgresql://user:password@localhost:5432/dbname',
             NODE_ENV: 'development',
@@ -552,9 +548,7 @@ describe('Configuration Validation (RED PHASE)', () => {
 
         expect(result.error).toBeDefined();
         expect(result.error?.message).toContain('NODE_ENV');
-        expect(result.error?.message).toMatch(
-          /development|staging|production|test/i,
-        );
+        expect(result.error?.message).toMatch(/development|staging|production|test/i);
       });
 
       it('should reject invalid NODE_ENV value "prod"', () => {
@@ -869,8 +863,7 @@ describe('Configuration Validation (RED PHASE)', () => {
         const config = {
           DATABASE_URL: 'postgresql://user:password@localhost:5432/dbname',
           NODE_ENV: 'development',
-          CORS_ORIGIN:
-            'http://localhost:3000,http://localhost:5173,https://example.com',
+          CORS_ORIGIN: 'http://localhost:3000,http://localhost:5173,https://example.com',
           CLOUDINARY_CLOUD_NAME: 'test-cloud',
           CLOUDINARY_API_KEY: 'test-key',
           CLOUDINARY_API_SECRET: 'test-secret',
@@ -880,7 +873,7 @@ describe('Configuration Validation (RED PHASE)', () => {
 
         expect(result.error).toBeUndefined();
         expect(result.value.CORS_ORIGIN).toBe(
-          'http://localhost:3000,http://localhost:5173,https://example.com',
+          'http://localhost:3000,http://localhost:5173,https://example.com'
         );
       });
 
@@ -1112,9 +1105,7 @@ describe('Configuration Validation (RED PHASE)', () => {
 
         expect(result.error).toBeDefined();
         expect(result.error?.message).toContain('LOG_LEVEL');
-        expect(result.error?.message).toMatch(
-          /error|warn|log|debug|verbose/i,
-        );
+        expect(result.error?.message).toMatch(/error|warn|log|debug|verbose/i);
       });
 
       it('should reject invalid LOG_LEVEL "trace"', () => {
@@ -1216,9 +1207,7 @@ describe('Configuration Validation (RED PHASE)', () => {
       const result = configValidation.validate(config);
 
       expect(result.error).toBeUndefined();
-      expect(result.value.DATABASE_URL).toBe(
-        'postgresql://user:password@localhost:5432/dbname',
-      );
+      expect(result.value.DATABASE_URL).toBe('postgresql://user:password@localhost:5432/dbname');
       expect(result.value.NODE_ENV).toBe('production');
       expect(result.value.PORT).toBe(8080);
       expect(result.value.API_VERSION).toBe('v2');
@@ -1284,8 +1273,7 @@ describe('Configuration Validation (RED PHASE)', () => {
 
     it('should validate production configuration', () => {
       const config = {
-        DATABASE_URL:
-          'postgresql://prod_user:secure_pass@db.prod.com:5432/prod_db',
+        DATABASE_URL: 'postgresql://prod_user:secure_pass@db.prod.com:5432/prod_db',
         NODE_ENV: 'production',
         PORT: 443,
         API_VERSION: 'v1',
@@ -1303,8 +1291,7 @@ describe('Configuration Validation (RED PHASE)', () => {
 
     it('should validate staging configuration', () => {
       const config = {
-        DATABASE_URL:
-          'postgresql://staging_user:staging_pass@db.staging.com:5432/staging_db',
+        DATABASE_URL: 'postgresql://staging_user:staging_pass@db.staging.com:5432/staging_db',
         NODE_ENV: 'staging',
         PORT: 3001,
         API_VERSION: 'v2',
@@ -1399,9 +1386,7 @@ describe('Configuration Validation (RED PHASE)', () => {
 
       expect(result.error).toBeDefined();
       expect(result.error?.message).toContain('NODE_ENV');
-      expect(result.error?.message).toMatch(
-        /development|staging|production|test/i,
-      );
+      expect(result.error?.message).toMatch(/development|staging|production|test/i);
     });
 
     it('should provide clear error message for invalid API_VERSION format', () => {

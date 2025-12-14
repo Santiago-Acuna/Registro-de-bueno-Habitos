@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/swagger';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { IsOptional, IsBoolean } from 'class-validator';
 
 import { CreateHabitDto } from './create-habit.dto';
 

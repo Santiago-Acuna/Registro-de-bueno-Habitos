@@ -419,7 +419,7 @@ describe('Infrastructure DTOs (RED PHASE)', () => {
 
         expect(dto.data).toEqual(data);
         expect(Array.isArray(dto.data)).toBe(true);
-        expect(dto.data.length).toBe(2);
+        expect(dto.data).toHaveLength(2);
       });
 
       it('should handle empty array', () => {
@@ -428,7 +428,7 @@ describe('Infrastructure DTOs (RED PHASE)', () => {
 
         expect(dto.data).toEqual([]);
         expect(Array.isArray(dto.data)).toBe(true);
-        expect(dto.data.length).toBe(0);
+        expect(dto.data).toHaveLength(0);
       });
 
       it('should preserve item types', () => {
@@ -491,7 +491,7 @@ describe('Infrastructure DTOs (RED PHASE)', () => {
         const dto = new PaginatedResponseDto(data, 1, 1, 10);
 
         expect(dto.totalPages).toBe(1);
-        expect(dto.data.length).toBe(1);
+        expect(dto.data).toHaveLength(1);
       });
 
       it('should handle limit of 1 with multiple items', () => {

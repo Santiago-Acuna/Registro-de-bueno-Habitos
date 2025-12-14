@@ -111,9 +111,7 @@ describe('LoggingInterceptor', () => {
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe();
 
-      expect(loggerLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('📥 POST /api/v1/habits')
-      );
+      expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('📥 POST /api/v1/habits'));
     });
 
     it('should log PUT requests correctly', () => {
@@ -154,9 +152,7 @@ describe('LoggingInterceptor', () => {
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe();
 
-      expect(loggerLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('192.168.1.100')
-      );
+      expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('192.168.1.100'));
     });
 
     it('should handle IPv6 addresses', () => {
@@ -164,9 +160,7 @@ describe('LoggingInterceptor', () => {
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe();
 
-      expect(loggerLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('::1')
-      );
+      expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('::1'));
     });
 
     it('should handle URLs with query parameters', () => {
@@ -181,7 +175,7 @@ describe('LoggingInterceptor', () => {
   });
 
   describe('Response Logging', () => {
-    it('should log response with method, URL, status code, content length, and duration', (done) => {
+    it('should log response with method, URL, status code, content length, and duration', done => {
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
         expect(loggerLogSpy).toHaveBeenCalledWith(
           expect.stringMatching(/📤 GET \/api\/v1\/habits - 200 - 1234b - \d+ms/)
@@ -190,7 +184,7 @@ describe('LoggingInterceptor', () => {
       });
     });
 
-    it('should log response after request completes', (done) => {
+    it('should log response after request completes', done => {
       let requestLogged = false;
       let responseLogged = false;
 
@@ -206,106 +200,88 @@ describe('LoggingInterceptor', () => {
       });
     });
 
-    it('should handle 201 Created status code', (done) => {
+    it('should handle 201 Created status code', done => {
       mockResponse.statusCode = 201;
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('- 201 -')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('- 201 -'));
         done();
       });
     });
 
-    it('should handle 204 No Content status code', (done) => {
+    it('should handle 204 No Content status code', done => {
       mockResponse.statusCode = 204;
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('- 204 -')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('- 204 -'));
         done();
       });
     });
 
-    it('should handle 400 Bad Request status code', (done) => {
+    it('should handle 400 Bad Request status code', done => {
       mockResponse.statusCode = 400;
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('- 400 -')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('- 400 -'));
         done();
       });
     });
 
-    it('should handle 404 Not Found status code', (done) => {
+    it('should handle 404 Not Found status code', done => {
       mockResponse.statusCode = 404;
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('- 404 -')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('- 404 -'));
         done();
       });
     });
 
-    it('should handle 500 Internal Server Error status code', (done) => {
+    it('should handle 500 Internal Server Error status code', done => {
       mockResponse.statusCode = 500;
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('- 500 -')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('- 500 -'));
         done();
       });
     });
 
-    it('should handle missing content-length header', (done) => {
+    it('should handle missing content-length header', done => {
       mockResponse.get = jest.fn().mockReturnValue(undefined);
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('- 0b -')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('- 0b -'));
         done();
       });
     });
 
-    it('should handle zero content-length', (done) => {
+    it('should handle zero content-length', done => {
       mockResponse.get = jest.fn().mockReturnValue('0');
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('- 0b -')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('- 0b -'));
         done();
       });
     });
 
-    it('should handle large content-length values', (done) => {
+    it('should handle large content-length values', done => {
       mockResponse.get = jest.fn().mockReturnValue('1048576');
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('- 1048576b -')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('- 1048576b -'));
         done();
       });
     });
   });
 
   describe('Duration Calculation', () => {
-    it('should calculate and log request duration', (done) => {
+    it('should calculate and log request duration', done => {
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringMatching(/\d+ms/)
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringMatching(/\d+ms/));
         done();
       });
     });
 
-    it('should have non-negative duration', (done) => {
+    it('should have non-negative duration', done => {
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
         const responseLog = loggerLogSpy.mock.calls.find((call: any[]) =>
           call[0].includes('📤')
@@ -323,7 +299,7 @@ describe('LoggingInterceptor', () => {
       });
     });
 
-    it('should measure duration from intercept call to response completion', (done) => {
+    it('should measure duration from intercept call to response completion', done => {
       const delay = 50;
       mockCallHandler.handle = jest.fn().mockReturnValue(
         of('delayed response').pipe(
@@ -359,21 +335,21 @@ describe('LoggingInterceptor', () => {
       expect(result.subscribe).toBeDefined();
     });
 
-    it('should pass through the response from CallHandler', (done) => {
+    it('should pass through the response from CallHandler', done => {
       const testData = { id: 1, name: 'Test' };
       mockCallHandler.handle = jest.fn().mockReturnValue(of(testData));
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((data) => {
+      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(data => {
         expect(data).toEqual(testData);
         done();
       });
     });
 
-    it('should not modify the response data', (done) => {
+    it('should not modify the response data', done => {
       const originalData = { habits: [], total: 0 };
       mockCallHandler.handle = jest.fn().mockReturnValue(of(originalData));
 
-      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe((data) => {
+      interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(data => {
         expect(data).toBe(originalData);
         done();
       });
@@ -384,19 +360,19 @@ describe('LoggingInterceptor', () => {
       expect(mockCallHandler.handle).toHaveBeenCalled();
     });
 
-    it('should propagate errors from the request handler', (done) => {
+    it('should propagate errors from the request handler', done => {
       const testError = new Error('Test error');
       mockCallHandler.handle = jest.fn().mockReturnValue(throwError(() => testError));
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
-        error: (error) => {
+        error: error => {
           expect(error).toBe(testError);
           done();
         },
       });
     });
 
-    it('should log request even when handler throws error', (done) => {
+    it('should log request even when handler throws error', done => {
       const testError = new Error('Handler error');
       mockCallHandler.handle = jest.fn().mockReturnValue(throwError(() => testError));
 
@@ -405,15 +381,13 @@ describe('LoggingInterceptor', () => {
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe({
         error: () => {
           // Should have logged the incoming request
-          expect(loggerLogSpy).toHaveBeenCalledWith(
-            expect.stringContaining('📥')
-          );
+          expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('📥'));
           done();
         },
       });
     });
 
-    it('should not log response when handler throws error before completion', (done) => {
+    it('should not log response when handler throws error before completion', done => {
       const testError = new Error('Handler error');
       mockCallHandler.handle = jest.fn().mockReturnValue(throwError(() => testError));
 
@@ -471,26 +445,22 @@ describe('LoggingInterceptor', () => {
       );
     });
 
-    it('should handle null status code', (done) => {
+    it('should handle null status code', done => {
       mockResponse.statusCode = null;
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('- null -')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('- null -'));
         done();
       });
     });
 
     it('should handle very long URLs', () => {
-      const longUrl = '/api/v1/habits?' + 'a=1&'.repeat(100);
+      const longUrl = `/api/v1/habits?${'a=1&'.repeat(100)}`;
       mockRequest.url = longUrl;
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe();
 
-      expect(loggerLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining(longUrl)
-      );
+      expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining(longUrl));
     });
 
     it('should handle special characters in URL', () => {
@@ -504,14 +474,12 @@ describe('LoggingInterceptor', () => {
     });
 
     it('should handle very long User-Agent strings', () => {
-      const longUserAgent = 'Mozilla/5.0 ' + 'x'.repeat(500);
+      const longUserAgent = `Mozilla/5.0 ${'x'.repeat(500)}`;
       mockRequest.get = jest.fn().mockReturnValue(longUserAgent);
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe();
 
-      expect(loggerLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining(longUserAgent)
-      );
+      expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining(longUserAgent));
     });
   });
 
@@ -519,16 +487,12 @@ describe('LoggingInterceptor', () => {
     it('should use incoming emoji (📥) for requests', () => {
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe();
 
-      expect(loggerLogSpy).toHaveBeenCalledWith(
-        expect.stringContaining('📥')
-      );
+      expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('📥'));
     });
 
-    it('should use outgoing emoji (📤) for responses', (done) => {
+    it('should use outgoing emoji (📤) for responses', done => {
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
-        expect(loggerLogSpy).toHaveBeenCalledWith(
-          expect.stringContaining('📤')
-        );
+        expect(loggerLogSpy).toHaveBeenCalledWith(expect.stringContaining('📤'));
         done();
       });
     });
@@ -536,12 +500,10 @@ describe('LoggingInterceptor', () => {
     it('should format request log as: 📥 METHOD URL - IP - USER_AGENT', () => {
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe();
 
-      expect(loggerLogSpy).toHaveBeenCalledWith(
-        '📥 GET /api/v1/habits - 127.0.0.1 - Mozilla/5.0'
-      );
+      expect(loggerLogSpy).toHaveBeenCalledWith('📥 GET /api/v1/habits - 127.0.0.1 - Mozilla/5.0');
     });
 
-    it('should format response log as: 📤 METHOD URL - STATUS - SIZEb - DURATIONms', (done) => {
+    it('should format response log as: 📤 METHOD URL - STATUS - SIZEb - DURATIONms', done => {
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {
         expect(loggerLogSpy).toHaveBeenCalledWith(
           expect.stringMatching(/^📤 GET \/api\/v1\/habits - 200 - 1234b - \d+ms$/)
@@ -550,7 +512,7 @@ describe('LoggingInterceptor', () => {
       });
     });
 
-    it('should log request and response separately', (done) => {
+    it('should log request and response separately', done => {
       loggerLogSpy.mockClear();
 
       interceptor.intercept(mockExecutionContext, mockCallHandler).subscribe(() => {

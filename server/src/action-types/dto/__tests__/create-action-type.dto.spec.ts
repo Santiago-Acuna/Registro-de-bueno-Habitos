@@ -73,7 +73,9 @@ describe('CreateActionTypeDto', () => {
       const nameErrors = errors.find(err => err.property === 'name');
       expect(nameErrors).toBeDefined();
       expect(nameErrors?.constraints).toHaveProperty('isLength');
-      expect(nameErrors?.constraints?.['isLength']).toContain('ActionType name must be between 2 and 50 characters');
+      expect(nameErrors?.constraints?.['isLength']).toContain(
+        'ActionType name must be between 2 and 50 characters'
+      );
     });
 
     it('should fail when name is too long (more than 50 characters)', async () => {
