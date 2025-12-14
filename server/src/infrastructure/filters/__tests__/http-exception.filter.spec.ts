@@ -352,7 +352,7 @@ describe('HttpExceptionFilter', () => {
 
       // Assert
       expect(result.statusCode).toBe(HttpStatus.CONFLICT);
-      expect(result.message).toBe('A record with this unique field already exists');
+      expect(result.message).toBe('The email is already in use. Please choose a different email.');
     });
 
     it('should map P2025 (record not found) to 404 Not Found', () => {
@@ -852,7 +852,9 @@ describe('HttpExceptionFilter', () => {
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
 
         // Assert
-        expect(result.message).toBe('The email is already in use. Please choose a different email.');
+        expect(result.message).toBe(
+          'The email is already in use. Please choose a different email.'
+        );
         expect(result.statusCode).toBe(HttpStatus.CONFLICT);
       });
 
@@ -878,14 +880,11 @@ describe('HttpExceptionFilter', () => {
 
       it('should maintain 409 CONFLICT status code for P2002 errors', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: ['name'] },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: ['name'] },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -959,14 +958,11 @@ describe('HttpExceptionFilter', () => {
     describe('Edge cases for P2002 error handling', () => {
       it('should handle P2002 with missing meta gracefully', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            // meta is undefined
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          // meta is undefined
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -980,14 +976,11 @@ describe('HttpExceptionFilter', () => {
 
       it('should handle P2002 with undefined target array', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: undefined },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: undefined },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -999,14 +992,11 @@ describe('HttpExceptionFilter', () => {
 
       it('should handle P2002 with empty target array', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: [] },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: [] },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -1020,14 +1010,11 @@ describe('HttpExceptionFilter', () => {
 
       it('should handle P2002 with null target', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: null },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: null },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -1062,11 +1049,7 @@ describe('HttpExceptionFilter', () => {
 
       it('should build message for three or more fields', () => {
         // Act
-        const message = (filter as any).buildUniqueConstraintMessage([
-          'userId',
-          'habitId',
-          'date',
-        ]);
+        const message = (filter as any).buildUniqueConstraintMessage(['userId', 'habitId', 'date']);
 
         // Assert
         expect(message).toBe(
@@ -1102,14 +1085,11 @@ describe('HttpExceptionFilter', () => {
     describe('Message formatting requirements', () => {
       it('should use "The" prefix for single field messages', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: ['username'] },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: ['username'] },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -1120,14 +1100,11 @@ describe('HttpExceptionFilter', () => {
 
       it('should capitalize first letter (sentence case)', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: ['name'] },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: ['name'] },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -1138,14 +1115,11 @@ describe('HttpExceptionFilter', () => {
 
       it('should end with a period', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: ['name'] },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: ['name'] },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -1156,14 +1130,11 @@ describe('HttpExceptionFilter', () => {
 
       it('should provide actionable guidance for single fields', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: ['name'] },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: ['name'] },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -1174,14 +1145,11 @@ describe('HttpExceptionFilter', () => {
 
       it('should use field name verbatim from database', () => {
         // Arrange - Test with snake_case field name
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: ['user_email'] },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: ['user_email'] },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
@@ -1197,14 +1165,11 @@ describe('HttpExceptionFilter', () => {
     describe('Integration with existing P2002 tests', () => {
       it('should maintain backward compatibility with error response structure', () => {
         // Arrange
-        const prismaError = new Prisma.PrismaClientKnownRequestError(
-          'Unique constraint failed',
-          {
-            code: 'P2002',
-            clientVersion: '5.0.0',
-            meta: { target: ['name'] },
-          }
-        );
+        const prismaError = new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
+          code: 'P2002',
+          clientVersion: '5.0.0',
+          meta: { target: ['name'] },
+        });
 
         // Act
         const result = (filter as any).handlePrismaException(prismaError, mockRequest);
