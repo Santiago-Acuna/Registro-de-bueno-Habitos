@@ -47,10 +47,16 @@ const fetchHabits = createAsyncThunk("habit/fetchAllHabits", async () => {
 const postHabits = createAsyncThunk(
   "habit/postHabits",
 
-  async (habit: HabitBody) => {
+  async (payload: { habit: HabitBody; File: File }) => {
+    const { habit, File } = payload;
     console.log("post dispached");
     try {
-      const response = await axios.post("http://localhost:3000/api/v1/habits/", habit);
+      const formData = new FormData();
+      formData.append("name", habit.name);
+      formData.append("habitType", habit.habitType);
+      formData.append("icon", File);
+      const response = await axios.post("http://localhost:3000/api/v1/habits/", formData);
+
       console.log(response.data);
       return response.data;
     } catch (e) {
@@ -82,8 +88,8 @@ const asyncActions = (builder: ActionReducerMapBuilder<State>): void => {
         state.backUpHabits = action.payload;
       }
     })
-    .addCase(postHabits.fulfilled, () => {})
-    .addCase(patchHabits.fulfilled, () => {});
+    .addCase(postHabits.fulfilled, () => { })
+    .addCase(patchHabits.fulfilled, () => { });
 };
 
 export { fetchHabits, postHabits, patchHabits };

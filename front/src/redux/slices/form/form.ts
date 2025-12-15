@@ -10,7 +10,7 @@ interface State {
 }
 const initialState: State = {
   formState: "",
-  habitInfo: { name: "", logo: "", habit_type: "" },
+  habitInfo: { name: "", icon: "", habitType: "" },
   habitID: ""
 };
 const formSlice = createSlice({
@@ -21,9 +21,9 @@ const formSlice = createSlice({
       state.formState = action.payload;
     },
     getInfo: (state: State, action: PayloadAction<Habit>) => {
-      const { id, name, habit_type, logo } = action.payload;
+      const { id, name, habitType, icon} = action.payload;
       state.habitID = id;
-      state.habitInfo = { name, habit_type, logo };
+      state.habitInfo = { name, habitType, icon };
     },
   }
 });
