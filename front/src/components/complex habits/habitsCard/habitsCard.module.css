@@ -1,98 +1,19 @@
-.title {
-  font-size: 24px;
-  align-self: center;
-  text-align: center;
-  text-decoration: none;
-  padding-right: 15px;
-  padding-left: 15px;
-  color: rgba(203, 75, 207, 1)
-}
-.link{
-  width: 30%;
-  height: 90%;
-  text-decoration: none;
-}
-
-.diets {
-  font-size: 16px;
-  font-weight: normal;
-  text-decoration: none;
-  align-self: center;
-  text-align: center;
-  padding-right: 15px;
-  padding-left: 15px;
-  color: rgba(48, 0, 78, 0.87)
-}
-
-.image {
-  width: 80%;
-
-  border-radius: 10px;
-}
-.recipeContainer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-  margin-top: 30px;
-  margin-bottom: 40px;
-}
-
-/* CSS */
-.button24 {
-  align-self: center;
-  width: 50%;
-  background: #FF4742;
-  border: 1px solid #FF4742;
-  border-radius: 6px;
-  box-shadow: rgba(0, 0, 0, 0.1) 1px 2px 4px;
-  box-sizing: border-box;
-  color: #FFFFFF;
-  cursor: pointer;
-  display: inline-block;
-  font-family: nunito,roboto,proxima-nova,"proxima nova",sans-serif;
-  font-size: 16px;
-  font-weight: 800;
-  line-height: 16px;
-  min-height: 40px;
-  outline: 0;
-  padding: 12px 14px;
-  text-align: center;
-  text-rendering: geometricprecision;
-  text-transform: none;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  vertical-align: middle;
-}
-
-.button-24:hover,
-.button-24:active {
-  background-color: initial;
-  background-position: 0 0;
-  color: #FF4742;
-}
-
-.button-24:active {
-  opacity: .5;
-}
-
-
 @property --rotate {
   syntax: "<angle>";
   initial-value: 132deg;
   inherits: false;
 }
 
-
+.title {
+  color: rgba(203, 75, 207, 1);
+  margin: calc(1vw + 0px) 0;
+}
 
 .card {
-    display: flex;
-  flex-direction: column;
-  justify-content: space-around ;
   background: #191c29;
   width: 100%;
-
-  padding: 3px;
+  margin: 0;
+  padding: 0;
   position: relative;
   border-radius: 6px;
   justify-content: center;
@@ -103,32 +24,23 @@
   color: rgb(88 199 250 / 0%);
   cursor: pointer;
   font-family: cursive;
-  
-}
 
-.card:hover {
-  color: rgb(88 199 250 / 100%);
-  transition: color 1s;
-}
- .card:hover:after {
-  animation: none;
-  opacity: 0;
 }
 
 
 .card::before {
   content: "";
-  width: 104%;
-  height: 102%;
+  width: calc(100% + 1.2vw + 0px);
+  height: calc(100% + 1.2vw + 0px);
+  padding: 0;
+  margin: 0;
   border-radius: 8px;
-  background-image: linear-gradient(
-    var(--rotate)
-    , #5ddcff, #3c67e3 43%, #4e00c2);
-    position: absolute;
-    z-index: -1;
-    top: -1%;
-    left: -2%;
-    animation: spin 2.5s linear infinite;
+  background-image: linear-gradient(var(--rotate), #5ddcff, #3c67e3 43%, #4e00c2);
+  position: absolute;
+  z-index: -1;
+  top: -1;
+  left: -1;
+  /* animation: spin 1.5s linear infinite; */
 }
 
 .card::after {
@@ -140,23 +52,45 @@
   z-index: -1;
   height: 100%;
   width: 100%;
-  margin: 0 auto;
+  padding: 0;
+  margin: 0 0;
   transform: scale(0.8);
-  filter: blur(calc(var(--card-height) / 6));
-  background-image: linear-gradient(
-    var(--rotate)
-    , #5ddcff, #3c67e3 43%, #4e00c2);
-    opacity: 1;
+  filter: blur(0px);
+  background-image: linear-gradient(var(--rotate), #5ddcff, #3c67e3 43%, #4e00c2);
+  opacity: 1;
   transition: opacity .5s;
-  animation: spin 2.5s linear infinite;
+  /* animation: spin 1.5s linear infinite; */
 }
+.card:hover:after {
+  filter: blur(7vw);
+}
+
+.card:hover:before,
+.card:hover:after {
+  animation: spin 1.5s linear infinite;
+
+}
+
+
 
 @keyframes spin {
   0% {
     --rotate: 0deg;
   }
+
   100% {
     --rotate: 360deg;
   }
 }
 
+.link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+}
+
+.image {
+  width: 80%;
+}

@@ -15,10 +15,10 @@ const HabitsCard: React.FC<HabitsCardProps> = ({ habits }: HabitsCardProps) => {
   return (
     <div className={styles.card} style={display}>
       <Link to="/Reading" className={styles.link}>
-      <h3 className={styles.title}>{habits.name}</h3>
-      <img className={styles.image} src={habits.logo} alt="img not found" />
+      <span className={styles.title}>{habits.name}</span>
+      <img className={styles.image} src={habits.icon} alt="img not found" />
       </Link>
-      
+
     </div>
   );
 };

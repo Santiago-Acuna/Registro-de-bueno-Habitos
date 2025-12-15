@@ -18,3 +18,14 @@ const SpaceBackground = ({ children, className }: SpaceBackgroundProps) => {
 };
 
 export default SpaceBackground;
+
+    // <SpaceBackground className={styles.container}></SpaceBackground> ejemplo de uso
+
+// .container { // anadir a la hoja de estilos principal
+//   display: flex;
+//   min-height: 100vh;
+//   min-width: 100vw;
+//   flex-direction: column;
+//   position: fixed;
+//   background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+// }

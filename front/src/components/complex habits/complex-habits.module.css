@@ -15,16 +15,14 @@
   margin: 3% 3% 0% 2%;
 }
 .cardsContainers{
-  display: flex;
-  flex-direction: row;
+  display: grid;
+
   justify-content: center;
   align-items: center;
   align-self: center;
-  gap: 4px;
-  /* grid-template-columns: repeat(3, 1fr); */
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5%;
 
   height: 70%;
   width: 90%;
-
-
 }
