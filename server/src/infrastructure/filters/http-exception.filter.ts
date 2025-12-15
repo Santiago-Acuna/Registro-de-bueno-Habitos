@@ -92,9 +92,9 @@ export class HttpExceptionFilter implements ExceptionFilter {
         message = this.buildUniqueConstraintMessage(fields);
 
         if (fields && fields.length === 1) {
-          details.field = fields[0];
+          details['field'] = fields[0];
         } else if (fields && fields.length > 1) {
-          details.fields = fields;
+          details['fields'] = fields;
         }
         break;
       }
