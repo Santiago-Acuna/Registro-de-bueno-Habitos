@@ -28,7 +28,7 @@ export class HabitsService {
 
   async create(
     createHabitDto: CreateHabitDto,
-    logo: Express.Multer.File
+    icon: Express.Multer.File
   ): Promise<HabitResponseDto> {
     this.logger.log(`Creating new habit: ${createHabitDto.name}`);
 
@@ -38,8 +38,8 @@ export class HabitsService {
       throw new ConflictError(`Habit with name '${createHabitDto.name}' already exists`);
     }
 
-    const result = await this.cloudinaryService.uploadImage(logo, {
-      public_id: logo.originalname.split('.')[0] as string,
+    const result = await this.cloudinaryService.uploadImage(icon, {
+      public_id: icon.originalname.split('.')[0] as string,
       folder: 'habits',
       resourceType: 'auto',
     });
@@ -118,7 +118,7 @@ export class HabitsService {
   async update(
     id: UUID,
     updateHabitDto: UpdateHabitDto,
-    logo?: Express.Multer.File
+    icon?: Express.Multer.File
   ): Promise<HabitResponseDto> {
     this.logger.log(`Updating habit with id: ${id}`);
 
@@ -154,17 +154,17 @@ export class HabitsService {
         hasNameUpdate = true;
       }
 
-      // Handle logo update from file upload parameter
-      if (logo) {
+      // Handle icon update from file upload parameter
+      if (icon) {
         // Check file size limit (2MB for updates)
         const maxSize = 2 * 1024 * 1024; // 2MB
-        if (logo.size > maxSize) {
-          throw new ValidationException('Logo size cannot exceed 2MB');
+        if (icon.size > maxSize) {
+          throw new ValidationException('Icon size cannot exceed 2MB');
         }
 
-        // Upload new logo
-        const result = await this.cloudinaryService.uploadImage(logo, {
-          public_id: logo.originalname.split('.')[0] as string,
+        // Upload new icon
+        const result = await this.cloudinaryService.uploadImage(icon, {
+          public_id: icon.originalname.split('.')[0] as string,
           folder: 'habits',
           resourceType: 'auto',
         });
@@ -242,7 +242,7 @@ export class HabitsService {
       id: habit.id,
       name: habit.globalEntityIdentifier.name.getValue(),
       habitType: habit.habitType,
-      logo: habit.globalEntityIdentifier.icon.getValue(),
+      icon: habit.globalEntityIdentifier.icon.getValue(),
       isActive: habit.isActive,
       totalActionsCount: habit.totalActionsCount,
       lastActionDate: habit.lastActionDate ? new Date(habit.lastActionDate) : null,

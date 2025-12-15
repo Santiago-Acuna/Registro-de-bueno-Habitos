@@ -80,12 +80,24 @@ export class HttpExceptionFilter implements ExceptionFilter {
   ): ErrorResponse {
     let statusCode: HttpStatus;
     let message: string;
+    const details: Record<string, unknown> = {
+      code: exception.code,
+      meta: exception.meta,
+    };
 
     switch (exception.code) {
-      case 'P2002':
+      case 'P2002': {
         statusCode = HttpStatus.CONFLICT;
-        message = 'A record with this unique field already exists';
+        const fields = exception.meta?.['target'] as string[] | undefined;
+        message = this.buildUniqueConstraintMessage(fields);
+
+        if (fields && fields.length === 1) {
+          details['field'] = fields[0];
+        } else if (fields && fields.length > 1) {
+          details['fields'] = fields;
+        }
         break;
+      }
       case 'P2025':
         statusCode = HttpStatus.NOT_FOUND;
         message = 'The requested record was not found';
@@ -109,11 +121,22 @@ export class HttpExceptionFilter implements ExceptionFilter {
       statusCode,
       timestamp: new Date().toISOString(),
       path: request.url,
-      details: {
-        code: exception.code,
-        meta: exception.meta,
-      },
+      details,
     };
+  }
+
+  private buildUniqueConstraintMessage(fields?: string[]): string {
+    if (!fields || fields.length === 0) {
+      return 'A record with this unique field already exists.';
+    }
+
+    if (fields.length === 1) {
+      const field = fields[0];
+      return `The ${field} is already in use. Please choose a different ${field}.`;
+    }
+
+    const fieldList = fields.join(' and ');
+    return `A record with this ${fieldList} combination already exists.`;
   }
 
   private handlePrismaValidationError(

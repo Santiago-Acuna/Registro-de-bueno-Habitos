@@ -17,6 +17,7 @@ model actionLogs {
   updatedAt         DateTime           @default(now()) @map("updated_at") @db.Timestamptz(6)
   actionTypeId      String             @map("action_type_id") @db.Uuid
   actionTypes       actionTypes        @relation(fields: [actionTypeId], references: [id], map: "fk_actions_action_type_id")
+  developmentLogs   developmentLogs?
   pronunciationLogs pronunciationLogs?
   readingLogs       readingLogs?
 
@@ -56,7 +57,7 @@ model books {
   averageOfCharactersPerMinute Float?        @map("average_of_characters_per_minute")
   author                       String?       @db.VarChar(100)
   genre                        String?       @db.VarChar(50)
-  completionPercentage         Decimal?      @default(dbgenerated("\nCASE\n    WHEN (total_pages > 0) THEN round((((current_page)::numeric / (total_pages)::numeric) * (100)::numeric), 2)\n    ELSE (0)::numeric\nEND")) @map("completion_percentage") @db.Decimal(5, 2)
+  completionPercentage         Decimal?      @default(dbgenerated("\nCASE\n    WHEN (totalPages > 0) THEN round((((current_page)::numeric / (total_pages)::numeric) * (100)::numeric), 2)\n    ELSE (0)::numeric\nEND")) @map("completion_percentage") @db.Decimal(5, 2)
   totalReadingSessions         Int           @default(0) @map("total_reading_sessions")
   totalCharactersRead          BigInt        @default(0) @map("total_characters_read")
   averageSessionDuration       Int           @default(0) @map("average_session_duration")
@@ -67,6 +68,47 @@ model books {
 
   @@index([completionPercentage], map: "idx_books_completion")
   @@index([totalReadingSessions(sort: Desc)], map: "idx_books_total_sessions")
+}
+
+model developmentLogs {
+  id                                                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  commitName                                          String                @map("commit_name") @db.VarChar(255)
+  description                                         String                @db.VarChar(2000)
+  commitHash                                          String                @map("commit_hash") @db.VarChar(1000)
+  isForMe                                             Boolean               @map("is_for_me")
+  createdAt                                           DateTime              @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt                                           DateTime              @default(now()) @map("updated_at") @db.Timestamptz(6)
+  actionId                                            String                @unique(map: "development_logs_action_id_unique") @map("action_id") @db.Uuid
+  featuresId                                          String?               @map("features_id") @db.Uuid
+  commitSizeId                                        Int                   @map("commit_size_id")
+  commitImportanceId                                  Int                   @map("commit_importance_id")
+  programmingLanguageId                               Int                   @map("programming_language_id")
+  externalDependencyId                                Int?                  @map("external_dependency_id")
+  actionLogs                                          actionLogs            @relation(fields: [actionId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "development_logs_action_logs_fk")
+  subtypesDevelopmentLogsCommitImportanceIdTosubtypes subtypes              @relation("development_logs_commit_importance_idTosubtypes", fields: [commitImportanceId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "development_logs_commit_importance_fk")
+  subtypesDevelopmentLogsCommitSizeIdTosubtypes       subtypes              @relation("development_logs_commit_size_idTosubtypes", fields: [commitSizeId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "development_logs_commit_size_fk")
+  externalDependencies                                externalDependencies? @relation(fields: [externalDependencyId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "development_logs_external_dependencies_fk")
+  features                                            features?             @relation(fields: [featuresId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "development_logs_features_fk")
+  programmingLanguages                                programmingLanguages  @relation(fields: [programmingLanguageId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "development_logs_programming_languages_fk")
+
+  @@map("development_logs")
+}
+
+model externalDependencies {
+  id                    Int                  @id @default(autoincrement())
+  name                  String               @db.VarChar(100)
+  programmingLanguageId Int                  @map("programming_language_id")
+  developmentLogs       developmentLogs[]
+  programmingLanguages  programmingLanguages @relation(fields: [programmingLanguageId], references: [id], onDelete: Cascade, map: "external_dependencies_programming_languages_fk")
+
+  @@map("external_dependencies")
+}
+
+model features {
+  id              String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String            @db.VarChar(50)
+  description     String            @db.VarChar(1000)
+  developmentLogs developmentLogs[]
 }
 
 model globalEntityIdentifiers {
@@ -101,6 +143,15 @@ model habits {
   @@index([globalIdentifierId], map: "idx_habits_global_identifier_id")
 }
 
+model programmingLanguages {
+  id                   Int                    @id @default(autoincrement())
+  name                 String                 @db.VarChar(50)
+  developmentLogs      developmentLogs[]
+  externalDependencies externalDependencies[]
+
+  @@map("programming_languages")
+}
+
 model pronunciationLogs {
   id                 String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   actionId           String     @unique @map("action_id") @db.Uuid
@@ -128,7 +179,7 @@ model readingLogs {
   usingVoice                  Boolean    @default(false) @map("using_voice")
   readingDate                 DateTime?  @map("reading_date") @db.Date
   sessionDurationSeconds      Int?       @map("session_duration_seconds")
-  readingEfficiency           Decimal?   @default(dbgenerated("\nCASE\n    WHEN (number_of_breaths_per_minute > (0)::double precision) THEN round(((number_of_characters_per_minute / number_of_breaths_per_minute))::numeric, 2)\n    ELSE NULL::numeric\nEND")) @map("reading_efficiency") @db.Decimal(5, 2)
+  readingEfficiency           Decimal?   @default(dbgenerated("\nCASE\n    WHEN (numberOfBreathsPerMinute > (0)::double precision) THEN round(((numberOfCharactersPerMinute / number_of_breaths_per_minute))::numeric, 2)\n    ELSE NULL::numeric\nEND")) @map("reading_efficiency") @db.Decimal(5, 2)
   createdAt                   DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt                   DateTime   @default(now()) @map("updated_at") @db.Timestamptz(6)
   books                       books      @relation(fields: [bookId], references: [id], map: "fk_reading_logs_book_id")
@@ -140,6 +191,23 @@ model readingLogs {
   @@index([readingDate], map: "idx_reading_logs_date")
   @@index([usingVoice, bookId], map: "idx_reading_logs_voice")
   @@map("reading_logs")
+}
+
+model subtypes {
+  id                                                         Int               @id @default(autoincrement())
+  typeId                                                     Int               @map("type_id")
+  name                                                       String            @db.VarChar(100)
+  description                                                String            @db.VarChar(1000)
+  developmentLogsDevelopmentLogsCommitImportanceIdTosubtypes developmentLogs[] @relation("development_logs_commit_importance_idTosubtypes")
+  developmentLogsDevelopmentLogsCommitSizeIdTosubtypes       developmentLogs[] @relation("development_logs_commit_size_idTosubtypes")
+  types                                                      types             @relation(fields: [typeId], references: [id], onDelete: Cascade, map: "subtypes_types_fk")
+}
+
+model types {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(100)
+  description String     @db.VarChar(1000)
+  subtypes    subtypes[]
 }
 
 enum habitComplexity {

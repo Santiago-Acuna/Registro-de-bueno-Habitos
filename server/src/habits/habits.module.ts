@@ -16,6 +16,6 @@ import { HabitsService } from './services/habits.service';
     },
   ],
   imports: [CloudinaryModule],
-  exports: [HabitsService],
+  exports: [HabitsService, 'IHabitsRepository'],
 })
 export class HabitsModule {}

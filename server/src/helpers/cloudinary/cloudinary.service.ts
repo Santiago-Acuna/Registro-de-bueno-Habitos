@@ -72,7 +72,7 @@ export class CloudinaryService {
         this.buildUploadOptions(uploadOptions),
         (error, result) => {
           if (error) {
-            return reject(this.handleUploadError(error));
+            return resolve(this.handleUploadError(error));
           }
           // Check if the result is valid before resolving
           if (!result) {
