@@ -1,0 +1,2 @@
+ALTER TABLE subtypes
+    ADD CONSTRAINT subtypes_types_fk FOREIGN KEY (type_id) REFERENCES public.types(id) ON UPDATE CASCADE ON DELETE CASCADE;

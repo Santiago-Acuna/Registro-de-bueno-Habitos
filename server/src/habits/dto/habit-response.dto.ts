@@ -23,11 +23,11 @@ export class HabitResponseDto {
   habitType!: HabitComplexity;
 
   @ApiProperty({
-    description: 'Base64 encoded logo for the habit',
+    description: 'Base64 encoded icon for the habit',
     example:
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   })
-  logo!: string;
+  icon!: string;
 
   @ApiProperty({
     description: 'Whether the habit is active',

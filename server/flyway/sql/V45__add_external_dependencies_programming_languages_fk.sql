@@ -1,0 +1,2 @@
+ALTER TABLE external_dependencies
+    ADD CONSTRAINT external_dependencies_programming_languages_fk FOREIGN KEY (programming_language_id) REFERENCES public.programming_languages(id) ON UPDATE CASCADE ON DELETE CASCADE;

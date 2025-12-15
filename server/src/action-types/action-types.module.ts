@@ -16,6 +16,6 @@ import { ActionTypesService } from './services/action-types.service';
     },
   ],
   imports: [CloudinaryModule],
-  exports: [ActionTypesService],
+  exports: [ActionTypesService, 'IActionTypesRepository'],
 })
 export class ActionTypesModule {}

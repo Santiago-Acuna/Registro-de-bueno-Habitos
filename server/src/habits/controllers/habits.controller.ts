@@ -69,10 +69,10 @@ export class HabitsController {
   })
   async create(
     @Body() createHabitDto: CreateHabitDto,
-    @UploadedFile() logo: Express.Multer.File
+    @UploadedFile() icon: Express.Multer.File
   ): Promise<HabitResponseDto> {
     const uploadImageDto = new UploadImageDto();
-    uploadImageDto.image = logo;
+    uploadImageDto.image = icon;
 
     const errors = await validate(uploadImageDto);
     if (errors.length > 0) {
@@ -85,7 +85,7 @@ export class HabitsController {
       throw new ValidationException(message);
     }
 
-    return this.habitsService.create(createHabitDto, logo);
+    return this.habitsService.create(createHabitDto, icon);
   }
 
   @Get()
@@ -166,7 +166,7 @@ export class HabitsController {
   }
 
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('logo'))
+  @UseInterceptors(FileInterceptor('icon'))
   @Version('1')
   @ApiOperation({
     summary: 'Update habit',
@@ -180,7 +180,7 @@ export class HabitsController {
     description: 'Unique identifier of the habit',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
-  @ApiFile('logo')
+  @ApiFile('icon')
   @ApiBody({ type: UpdateHabitDto })
   @ApiResponse({
     status: 200,
@@ -202,12 +202,12 @@ export class HabitsController {
   async update(
     @Param('id', ParseUUIDPipe) id: UUID,
     @Body() updateHabitDto: UpdateHabitDto,
-    @UploadedFile() logo?: Express.Multer.File
+    @UploadedFile() icon?: Express.Multer.File
   ): Promise<HabitResponseDto> {
-    // Validate logo if provided
-    if (logo) {
+    // Validate icon if provided
+    if (icon) {
       const uploadImageDto = new UploadImageDto();
-      uploadImageDto.image = logo;
+      uploadImageDto.image = icon;
 
       const errors = await validate(uploadImageDto);
       if (errors.length > 0) {
@@ -221,8 +221,8 @@ export class HabitsController {
       }
     }
 
-    return logo
-      ? this.habitsService.update(id, updateHabitDto, logo)
+    return icon
+      ? this.habitsService.update(id, updateHabitDto, icon)
       : this.habitsService.update(id, updateHabitDto);
   }
 
