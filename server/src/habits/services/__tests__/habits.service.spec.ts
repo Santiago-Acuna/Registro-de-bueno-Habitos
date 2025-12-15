@@ -613,7 +613,7 @@ describe('HabitsService', () => {
             icon: newIconUrl,
           })
         );
-        expect(result.logo).toBe(newIconUrl);
+        expect(result.icon).toBe(newIconUrl);
       });
 
       it('should successfully update habit name and icon together', async () => {
@@ -660,7 +660,7 @@ describe('HabitsService', () => {
           expect.any(Object)
         );
         expect(result.name).toBe(updateDto.name);
-        expect(result.logo).toBe(newIconUrl);
+        expect(result.icon).toBe(newIconUrl);
       });
 
       it('should throw ValidationException when icon upload fails', async () => {

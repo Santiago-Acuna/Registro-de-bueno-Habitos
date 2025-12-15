@@ -67,7 +67,7 @@ describe('HabitsController', () => {
     id: mockHabitId,
     name: mockHabitName,
     habitType: HabitComplexity.SIMPLE,
-    logo: mockLogo,
+    icon: mockLogo,
     isActive: true,
     totalActionsCount: 0,
     lastActionDate: null,
