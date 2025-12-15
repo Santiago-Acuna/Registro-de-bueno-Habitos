@@ -67,7 +67,7 @@ const Form: FC = () => {
       />
 
       <div className={styles.subContainer}>
-        <p className={styles.subTitle}>Logo:</p>
+        <p className={styles.subTitle}>Icon:</p>
         <DragDropFiles
           File={File}
           setFile={setFile}

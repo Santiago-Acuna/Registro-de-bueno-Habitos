@@ -10,11 +10,11 @@ import { useCustomDispatch, useCustomSelector } from "../../redux/hooks/hooks";
 import DragDropFiles from "../uploadImage/dragUploadImage";
 
 const HabitForm: FC = () => {
-  // work: para quien ?: string, lenguage: string; descripcion: string:
+
   const [habit, setHabit] = useState<HabitBody>({
     name: "",
-    logo: "",
-    habit_type: ""
+    icon: "",
+    habitType: ""
   });
   const [errors, setErrors] = useState<Record<string, string | undefined>>({});
   const [disabled, setDisabled] = useState<boolean>(false);
@@ -38,17 +38,17 @@ const HabitForm: FC = () => {
   ): Promise<void> => {
     e.preventDefault();
     console.log("handle submit")
-    let check = checkBeforeSubmit(errors, habit, setErrors, setDisabled)
+    let check = checkBeforeSubmit(errors, habit, setErrors, setDisabled, File, form)
     console.log(check)
 
     if (check && form === "CREATE") {
       console.log("pre submit");
-      await dispatch(postHabits(habit));
+      await dispatch(postHabits({habit, File:File!}));
       console.log("submitted");
 
       alert("Habit Created Successfully");
       navigate("/");
-    } else if (checkBeforeSubmit(errors, habit, setErrors, setDisabled) && form === "UPDATE") {
+    } else if (checkBeforeSubmit(errors, habit, setErrors, setDisabled, File, form) && form === "UPDATE") {
       console.log("pre update");
       await dispatch(patchHabits( {habit, habitID} ));
       console.log("updated");
@@ -69,7 +69,7 @@ const HabitForm: FC = () => {
         setDisabled={setDisabled}
       />
       <SelectComplexityInput
-        inputName="habit_type"
+        inputName="habitType"
         habit={habit}
         setHabit={setHabit}
         handleChange={handleChange}
@@ -78,7 +78,7 @@ const HabitForm: FC = () => {
         setDisabled={setDisabled}
       />
       <div className={styles.subContainer}>
-        <p className={styles.subTitle}>Logo:</p>
+        <p className={styles.subTitle}>Icon:</p>
         <DragDropFiles
           File={File}
           setFile={setFile}

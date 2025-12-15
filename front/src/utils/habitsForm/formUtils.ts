@@ -12,7 +12,7 @@ const enable = ({ accumulatedErrors, setDisabled }: EnableProps): void => {
 const validate = ({ e, errors, setErrors, setDisabled }: ValidateProps): void => {
   let accumulatedErrors = errors;
   if (e.target.value.length === 0 || e.target.value === undefined) {
-    let address = e.target.name === "logo" ? "address " : "";
+    let address = e.target.name === "icon" ? "address " : "";
     setErrors({
       ...errors,
       [e.target.name]: `${e.target.name} ${address}is empty`
@@ -57,7 +57,9 @@ const checkBeforeSubmit = (
   errors: Record<string, string | undefined>,
   habit: HabitBody,
   setErrors: React.Dispatch<React.SetStateAction<Record<string, string | undefined>>>,
-  setDisabled: React.Dispatch<React.SetStateAction<boolean>>
+  setDisabled: React.Dispatch<React.SetStateAction<boolean>>,
+  File: File | null,
+  form: string
 
 ): boolean=> {
   if (habit.name === "") {
@@ -67,24 +69,24 @@ const checkBeforeSubmit = (
     });
     setDisabled(true);
     return false;
-  } else if (habit.habit_type === "") {
+  } else if (habit.habitType === "") {
     setErrors({
       ...errors,
-      habit_type: "Habit type is empty"
+      habitType: "Habit type is empty"
     });
     setDisabled(true);
     return false;
-  } else if (habit.habit_type === "select") {
+  } else if (habit.habitType === "select") {
     setErrors({
       ...errors,
-      habit_type: "select a habit type"
+      habitType: "select a habit type"
     });
     setDisabled(true);
     return false;
-  } else if (habit.logo === "") {
+  } else if (habit.icon === "" && File === null && form === "CREATE") {
     setErrors({
       ...errors,
-      logo: "logo address is empty"
+      icon: "icon is empty"
     });
     setDisabled(true);
     return false;

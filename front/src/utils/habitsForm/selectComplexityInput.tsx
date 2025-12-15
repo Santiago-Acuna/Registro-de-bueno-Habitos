@@ -20,14 +20,14 @@ const SelectComplexityInput: React.FC<inputFormProps> = ({
 
   return (
     <div className={styles.subContainer}>
-      <label className={styles.subTitle} htmlFor={"habit_type"}>
+      <label className={styles.subTitle} htmlFor={"habitType"}>
       Complexity:
       </label>
       <select
         className={styles.select}
         onChange={(e) => handleChange({ e, setHabit, habit, errors, setErrors, setDisabled })}
         name={inputName}
-        value={habit.habit_type}
+        value={habit.habitType}
       >
         <option value="select">Select</option>
         {options.map((e) => (
