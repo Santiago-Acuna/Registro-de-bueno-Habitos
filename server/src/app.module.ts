@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ActionTypesModule } from './action-types/action-types.module';
 import { BooksModule } from './books/books.module';
 import { HabitsModule } from './habits/habits.module';
+import { FrontConfigModule } from './helpers/frontConfig/frontConfig.module';
 import { configValidation } from './infrastructure/config/config.validation';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { HealthController } from './infrastructure/health/health.controller';
@@ -41,6 +42,7 @@ import { HealthController } from './infrastructure/health/health.controller';
     HabitsModule,
     BooksModule,
     ActionTypesModule,
+    FrontConfigModule,
   ],
   controllers: [HealthController],
   providers: [],

@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Version } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
@@ -11,6 +11,7 @@ import { FrontConfigService } from './frontConfig.service';
 export class FrontConfigController {
   constructor(private readonly frontConfigService: FrontConfigService) {}
 
+  @Version('1')
   @Get('habits-by-type')
   @ApiOperation({
     summary: 'Get habits organized by type',
