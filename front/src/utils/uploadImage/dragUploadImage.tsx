@@ -1,7 +1,6 @@
-import { useRef, useState } from "react";
+import { useRef} from "react";
 import styles from "./uploadImage.module.css";
 import { type HabitBody, HandleChangeProps } from "../../habits-types";
-import UploadImage from "./uploadImage";
 
 interface DragDropFilesProps {
   File: File | null;
@@ -20,12 +19,9 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
   habit,
   setHabit,
   errors,
-  setErrors,
-  handleChange,
   setDisabled
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [isImageValid, setIsImageValid] = useState<boolean | null>(null);
 
   const handleDragOver = (event: React.DragEvent<HTMLDivElement | HTMLParagraphElement>): void => {
     event.preventDefault();
@@ -47,17 +43,7 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
       // Update state or perform further actions with the dropped file
       setFile(droppedFile);
       if (droppedFile !== null) {
-        try {
-          let result = await UploadImage(droppedFile);
-          console.log(result);
-          result !== undefined &&
-            setHabit({
-              ...habit,
-              logo: result
-            });
-        } catch (e) {
-          console.log(e);
-        }
+        setDisabled(false)
       }
     }
   };
@@ -66,51 +52,14 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
     e.preventDefault();
     setHabit({
       ...habit,
-      logo: ""
-    });
-  };
-  const handleUrlInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const imageUrl = e.target.value;
-    console.log(typeof e.target.value);
-
-    handleChange({ e, setHabit, habit, errors, setErrors, setDisabled });
-
-    if (e.target.value === "") {
-      console.log("si");
-      setIsImageValid(null);
-      setHabit({
-        ...habit,
-        logo: imageUrl
-      });
-      return undefined;
-    }
-
-    // Create a new Image object
-    const img = new Image();
-
-    // Set up event handlers for successful load and error
-    img.onload = () => {
-      setIsImageValid(true);
-    };
-
-    img.onerror = () => {
-      setIsImageValid(false);
-    };
-
-    // Set the image source to the provided URL
-    img.src = imageUrl;
-
-    // Update the input state
-    setHabit({
-      ...habit,
-      logo: imageUrl
+      icon: ""
     });
   };
 
-  if (habit.logo !== "" && isImageValid === true) {
+  if (habit.icon !== "" ) {
     return (
       <div className={styles.urlImgDiv}>
-        <img className={styles.urlImg} src={habit.logo} alt="invalid img" />
+        <img className={styles.urlImg} src={habit.icon} alt="invalid img" />
         <button
           className={styles.cancelBtn}
           onClick={(e) => {
@@ -169,20 +118,8 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
       >
         Select Files
       </button>
-      <p>Or</p>
-      <p>Use an Url</p>
-      <input
-        className={styles.urlImgInput}
-        type="text"
-        value={habit.logo}
-        name={"logo"}
-        autoComplete="off"
-        onChange={(e) => {
-          handleUrlInputChange(e);
-        }}
-      />
-      {isImageValid === false && <p className={styles.danger}>Image url is not valid</p>}
-      {errors.logo !== undefined && <p className={styles.danger}>{errors.logo}</p>}
+      {/* {isImageValid === false && <p className={styles.danger}>Image url is not valid</p>} */}
+      {errors.icon !== undefined && <p className={styles.danger}>{errors.icon}</p>}
     </div>
   );
 };

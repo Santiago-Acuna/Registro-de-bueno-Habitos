@@ -183,7 +183,7 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
         }}
       />
       {isImageValid === false && <p className={styles.danger}>Image url is not valid</p>}
-      {errors.logo !== undefined && <p className={styles.danger}>{errors.logo}</p>}
+      {errors.icon !== undefined && <p className={styles.danger}>{errors.icon}</p>}
     </div>
   );
 };
