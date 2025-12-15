@@ -10,9 +10,9 @@ const InputForm: React.FC<inputFormProps> = ({
   setDisabled,
   errors,
 }) => {
-  const isHabit_type = inputName === "habit_type" ? "habit type" : inputName;
-  const firstLetter = isHabit_type.charAt(0).toUpperCase();
-  const inputNameCapitalLetter = firstLetter + isHabit_type.slice(1);
+  const ishabitType = inputName === "habitType" ? "habit type" : inputName;
+  const firstLetter = ishabitType.charAt(0).toUpperCase();
+  const inputNameCapitalLetter = firstLetter + ishabitType.slice(1);
   return (
     <div className={styles.subContainer}>
       <label className={styles.subTitle} htmlFor={inputName}>

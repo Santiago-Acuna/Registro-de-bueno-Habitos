@@ -113,14 +113,14 @@ const checkBeforeSubmit = (
   } else if (book.image === "") {
     setErrors({
       ...errors,
-      habit_type: "Habit type is book",
+      habitType: "Habit type is book",
     });
     setDisabled(true);
     return false;
   } else if (book.total_pages === 0) {
     setErrors({
       ...errors,
-      habit_type: "total page is empty",
+      habitType: "total page is empty",
     });
     setDisabled(true);
     return false;

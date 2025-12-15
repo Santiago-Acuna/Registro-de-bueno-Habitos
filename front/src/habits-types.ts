@@ -6,9 +6,10 @@ enum HabitType {
 
 interface HabitBody {
   name: string;
-  habit_type: HabitType | string;
+  habitType: HabitType | string;
   icon: string;
 }
+
 
 interface Habit {
   id: string;
@@ -33,8 +34,8 @@ interface HandleChangeProps {
 }
 interface HabitErrors {
   name: string;
-  habit_type: string;
-  logo: string;
+  habitType: string;
+  icon: string;
 }
 
 interface ValidateProps {

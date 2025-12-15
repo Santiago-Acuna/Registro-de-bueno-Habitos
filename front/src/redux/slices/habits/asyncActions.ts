@@ -2,7 +2,7 @@ import { type State, type Habit } from "./habits";
 import {
   type PayloadAction,
   type ActionReducerMapBuilder,
-  createAsyncThunk,
+  createAsyncThunk
 } from "@reduxjs/toolkit";
 import axios from "axios";
 import { HabitBody } from "../../../habits-types";
@@ -47,13 +47,16 @@ const fetchHabits = createAsyncThunk("habit/fetchAllHabits", async () => {
 const postHabits = createAsyncThunk(
   "habit/postHabits",
 
-  async (habit: HabitBody) => {
+  async (payload: { habit: HabitBody; File: File }) => {
+    const { habit, File } = payload;
     console.log("post dispached");
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/v1/habits/",
-        habit
-      );
+      const formData = new FormData();
+      formData.append("name", habit.name);
+      formData.append("habitType", habit.habitType);
+      formData.append("icon", File);
+      const response = await axios.post("http://localhost:3000/api/v1/habits/", formData);
+
       console.log(response.data);
       return response.data;
     } catch (e) {
@@ -68,10 +71,7 @@ const patchHabits = createAsyncThunk(
   async (payload: { habit: HabitBody; habitID: string }) => {
     const { habit, habitID } = payload;
     try {
-      const response = await axios.patch(
-        `http://localhost:3000/api/v1/habits/${habitID}`,
-        habit
-      );
+      const response = await axios.patch(`http://localhost:3000/api/v1/habits/${habitID}`, habit);
       console.log(response.data);
       return response.data;
     } catch (e) {
@@ -82,17 +82,14 @@ const patchHabits = createAsyncThunk(
 
 const asyncActions = (builder: ActionReducerMapBuilder<State>): void => {
   builder
-    .addCase(
-      fetchHabits.fulfilled,
-      (state, action: PayloadAction<Habit[] | []>) => {
-        if (action.payload !== undefined && action.payload !== null) {
-          state.habits = action.payload;
-          state.backUpHabits = action.payload;
-        }
+    .addCase(fetchHabits.fulfilled, (state, action: PayloadAction<Habit[] | []>) => {
+      if (action.payload !== undefined && action.payload !== null) {
+        state.habits = action.payload;
+        state.backUpHabits = action.payload;
       }
-    )
-    .addCase(postHabits.fulfilled, () => {})
-    .addCase(patchHabits.fulfilled, () => {});
+    })
+    .addCase(postHabits.fulfilled, () => { })
+    .addCase(patchHabits.fulfilled, () => { });
 };
 
 export { fetchHabits, postHabits, patchHabits };

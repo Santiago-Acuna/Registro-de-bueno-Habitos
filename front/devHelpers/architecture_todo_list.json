@@ -1,0 +1,633 @@
+{
+  "projectName": "Habit Tracker - Architecture Refactoring",
+  "overview": {
+    "totalPhases": 3,
+    "estimatedDuration": "3-4 weeks",
+    "patterns": ["Custom Hooks", "Atomic Design", "Feature-Sliced Design"]
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Custom Hooks Pattern Implementation",
+      "duration": "1-2 days",
+      "priority": "HIGH",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "CH-001",
+          "title": "Create hooks directory structure",
+          "description": "Create src/hooks/ directory with proper organization",
+          "estimatedTime": "15 minutes",
+          "priority": "high",
+          "dependencies": [],
+          "subtasks": [
+            "Create src/hooks/ directory",
+            "Add index.ts for barrel exports",
+            "Update tsconfig paths if needed"
+          ],
+          "gitCommit": "feat: add hooks directory structure"
+        },
+        {
+          "id": "CH-002",
+          "title": "Create useHabitForm custom hook",
+          "description": "Extract form logic from createHabit.tsx into reusable hook",
+          "estimatedTime": "2-3 hours",
+          "priority": "high",
+          "dependencies": ["CH-001"],
+          "subtasks": [
+            "Create src/hooks/useHabitForm.ts",
+            "Extract useState logic for habit, errors, disabled",
+            "Move handleChange validation logic to hook",
+            "Move handleSubmit logic to hook",
+            "Add TypeScript types for hook return values",
+            "Export hook from index.ts"
+          ],
+          "files": [
+            "src/hooks/useHabitForm.ts",
+            "src/hooks/index.ts"
+          ],
+          "gitCommit": "feat: implement useHabitForm custom hook"
+        },
+        {
+          "id": "CH-003",
+          "title": "Write tests for useHabitForm (TDD RED phase)",
+          "description": "Create comprehensive tests for form validation and submission",
+          "estimatedTime": "1-2 hours",
+          "priority": "high",
+          "dependencies": ["CH-002"],
+          "subtasks": [
+            "Create useHabitForm.test.ts",
+            "Test initial state",
+            "Test handleChange with valid input",
+            "Test handleChange with invalid input",
+            "Test error validation logic",
+            "Test handleSubmit success case",
+            "Test handleSubmit error case"
+          ],
+          "files": [
+            "src/hooks/__tests__/useHabitForm.test.ts"
+          ],
+          "gitCommit": "test: add useHabitForm tests (RED)"
+        },
+        {
+          "id": "CH-004",
+          "title": "Refactor createHabit.tsx to use useHabitForm",
+          "description": "Replace inline logic with custom hook",
+          "estimatedTime": "1 hour",
+          "priority": "high",
+          "dependencies": ["CH-003"],
+          "subtasks": [
+            "Import useHabitForm in createHabit.tsx",
+            "Replace useState calls with hook destructuring",
+            "Remove inline validation logic",
+            "Test component functionality",
+            "Run tests to ensure GREEN phase"
+          ],
+          "files": [
+            "src/components/createHabit/createHabit.tsx"
+          ],
+          "gitCommit": "feat: refactor createHabit to use useHabitForm (GREEN)"
+        },
+        {
+          "id": "CH-005",
+          "title": "Create useHabitsFilter custom hook",
+          "description": "Extract filtering logic from habit selection components",
+          "estimatedTime": "1-2 hours",
+          "priority": "medium",
+          "dependencies": ["CH-001"],
+          "subtasks": [
+            "Create src/hooks/useHabitsFilter.ts",
+            "Extract filterByComplexity logic",
+            "Add useCustomSelector for habits state",
+            "Add useCustomDispatch for actions",
+            "Create filtered habits computed value",
+            "Add TypeScript types"
+          ],
+          "files": [
+            "src/hooks/useHabitsFilter.ts"
+          ],
+          "gitCommit": "feat: implement useHabitsFilter custom hook"
+        },
+        {
+          "id": "CH-006",
+          "title": "Create useBooks custom hook",
+          "description": "Centralize book-related state and operations",
+          "estimatedTime": "1-2 hours",
+          "priority": "medium",
+          "dependencies": ["CH-001"],
+          "subtasks": [
+            "Create src/hooks/useBooks.ts",
+            "Extract book state selectors",
+            "Add CRUD operation wrappers",
+            "Add loading and error state handling",
+            "Add TypeScript types"
+          ],
+          "files": [
+            "src/hooks/useBooks.ts"
+          ],
+          "gitCommit": "feat: implement useBooks custom hook"
+        },
+        {
+          "id": "CH-007",
+          "title": "Phase 1 testing and documentation",
+          "description": "Verify all custom hooks work correctly",
+          "estimatedTime": "1 hour",
+          "priority": "high",
+          "dependencies": ["CH-004", "CH-005", "CH-006"],
+          "subtasks": [
+            "Run all tests",
+            "Test in development environment",
+            "Update CLAUDE.md with hooks documentation",
+            "Add JSDoc comments to hooks",
+            "Create usage examples in comments"
+          ],
+          "gitCommit": "docs: add custom hooks documentation"
+        }
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Atomic Design Pattern Implementation",
+      "duration": "3-5 days",
+      "priority": "MEDIUM",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "AD-001",
+          "title": "Create Atomic Design directory structure",
+          "description": "Reorganize components folder with atomic hierarchy",
+          "estimatedTime": "30 minutes",
+          "priority": "high",
+          "dependencies": ["CH-007"],
+          "subtasks": [
+            "Create src/components/atoms/",
+            "Create src/components/molecules/",
+            "Create src/components/organisms/",
+            "Create src/components/templates/",
+            "Create src/components/pages/",
+            "Add index.ts barrel exports for each level"
+          ],
+          "gitCommit": "feat: add atomic design directory structure"
+        },
+        {
+          "id": "AD-002",
+          "title": "Create Atom components",
+          "description": "Build basic UI building blocks",
+          "estimatedTime": "3-4 hours",
+          "priority": "high",
+          "dependencies": ["AD-001"],
+          "subtasks": [
+            "Create Button atom (wrap Material-UI Button)",
+            "Create Input atom (wrap Material-UI TextField)",
+            "Create Icon atom",
+            "Create Label atom",
+            "Create Badge atom for habit types",
+            "Add TypeScript props interfaces",
+            "Add CSS modules for each atom",
+            "Write tests for each atom"
+          ],
+          "files": [
+            "src/components/atoms/Button/",
+            "src/components/atoms/Input/",
+            "src/components/atoms/Icon/",
+            "src/components/atoms/Label/",
+            "src/components/atoms/Badge/"
+          ],
+          "gitCommit": "feat: implement atomic components (atoms)"
+        },
+        {
+          "id": "AD-003",
+          "title": "Create Molecule components",
+          "description": "Combine atoms into simple functional groups",
+          "estimatedTime": "4-5 hours",
+          "priority": "high",
+          "dependencies": ["AD-002"],
+          "subtasks": [
+            "Create FormField molecule (Label + Input + Error)",
+            "Create HabitTypeSelector molecule",
+            "Create HabitCard molecule",
+            "Create SearchBar molecule",
+            "Create FilterButton molecule",
+            "Add TypeScript props interfaces",
+            "Write tests for each molecule"
+          ],
+          "files": [
+            "src/components/molecules/FormField/",
+            "src/components/molecules/HabitTypeSelector/",
+            "src/components/molecules/HabitCard/",
+            "src/components/molecules/SearchBar/",
+            "src/components/molecules/FilterButton/"
+          ],
+          "gitCommit": "feat: implement molecular components"
+        },
+        {
+          "id": "AD-004",
+          "title": "Create Organism components",
+          "description": "Build complex UI sections from molecules and atoms",
+          "estimatedTime": "5-6 hours",
+          "priority": "high",
+          "dependencies": ["AD-003"],
+          "subtasks": [
+            "Refactor HabitForm as organism",
+            "Create HabitsList organism",
+            "Create HabitsFilter organism",
+            "Create BookDashboard organism",
+            "Create ComplexHabitsPanel organism",
+            "Add TypeScript props interfaces",
+            "Write tests for each organism"
+          ],
+          "files": [
+            "src/components/organisms/HabitForm/",
+            "src/components/organisms/HabitsList/",
+            "src/components/organisms/HabitsFilter/",
+            "src/components/organisms/BookDashboard/",
+            "src/components/organisms/ComplexHabitsPanel/"
+          ],
+          "gitCommit": "feat: implement organism components"
+        },
+        {
+          "id": "AD-005",
+          "title": "Create Template components",
+          "description": "Build page layout templates",
+          "estimatedTime": "3-4 hours",
+          "priority": "medium",
+          "dependencies": ["AD-004"],
+          "subtasks": [
+            "Create DashboardTemplate with header and content areas",
+            "Create FormTemplate with modal/overlay structure",
+            "Create ReadingTemplate for book tracking pages",
+            "Add responsive breakpoints",
+            "Add TypeScript props interfaces"
+          ],
+          "files": [
+            "src/components/templates/DashboardTemplate/",
+            "src/components/templates/FormTemplate/",
+            "src/components/templates/ReadingTemplate/"
+          ],
+          "gitCommit": "feat: implement page templates"
+        },
+        {
+          "id": "AD-006",
+          "title": "Refactor existing pages to use Atomic Design",
+          "description": "Update App.tsx routes to use new component structure",
+          "estimatedTime": "4-5 hours",
+          "priority": "high",
+          "dependencies": ["AD-005"],
+          "subtasks": [
+            "Refactor habitsSelection to use new components",
+            "Refactor createHabit to use FormTemplate",
+            "Refactor ComplexHabits page",
+            "Refactor Reading pages",
+            "Update imports in App.tsx",
+            "Remove old component files",
+            "Test all pages in browser"
+          ],
+          "files": [
+            "src/components/pages/HabitsPage/",
+            "src/components/pages/ComplexHabitsPage/",
+            "src/components/pages/ReadingPage/",
+            "src/App.tsx"
+          ],
+          "gitCommit": "feat: refactor pages to use atomic design"
+        },
+        {
+          "id": "AD-007",
+          "title": "Phase 2 testing and documentation",
+          "description": "Comprehensive testing of atomic components",
+          "estimatedTime": "2 hours",
+          "priority": "high",
+          "dependencies": ["AD-006"],
+          "subtasks": [
+            "Run all component tests",
+            "Visual regression testing",
+            "Test responsive breakpoints",
+            "Update CLAUDE.md with component documentation",
+            "Create Storybook or component showcase (optional)",
+            "Document component hierarchy"
+          ],
+          "gitCommit": "docs: add atomic design documentation"
+        }
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Feature-Sliced Design (FSD) Migration",
+      "duration": "1-2 weeks",
+      "priority": "LOW",
+      "status": "pending",
+      "tasks": [
+        {
+          "id": "FSD-001",
+          "title": "Create FSD directory structure",
+          "description": "Set up Feature-Sliced Design architecture",
+          "estimatedTime": "1 hour",
+          "priority": "high",
+          "dependencies": ["AD-007"],
+          "subtasks": [
+            "Create src/app/ directory",
+            "Create src/pages/ directory",
+            "Create src/features/ directory",
+            "Create src/entities/ directory",
+            "Create src/shared/ directory",
+            "Create src/widgets/ directory",
+            "Add README.md in each layer explaining purpose",
+            "Update tsconfig.json with path aliases"
+          ],
+          "gitCommit": "feat: add FSD directory structure"
+        },
+        {
+          "id": "FSD-002",
+          "title": "Move shared code to shared layer",
+          "description": "Identify and migrate reusable utilities",
+          "estimatedTime": "2-3 hours",
+          "priority": "high",
+          "dependencies": ["FSD-001"],
+          "subtasks": [
+            "Move custom hooks to shared/hooks/",
+            "Move atomic components to shared/ui/",
+            "Create shared/api/ with axios config",
+            "Move types to shared/types/",
+            "Create shared/lib/ for utilities",
+            "Update all imports across project"
+          ],
+          "files": [
+            "src/shared/hooks/",
+            "src/shared/ui/",
+            "src/shared/api/",
+            "src/shared/types/",
+            "src/shared/lib/"
+          ],
+          "gitCommit": "feat: migrate shared code to FSD shared layer"
+        },
+        {
+          "id": "FSD-003",
+          "title": "Create habit entity",
+          "description": "Extract habit business entity",
+          "estimatedTime": "3-4 hours",
+          "priority": "high",
+          "dependencies": ["FSD-002"],
+          "subtasks": [
+            "Create entities/habit/model/types.ts",
+            "Create entities/habit/api/habitApi.ts",
+            "Move habit-types.ts content to entity",
+            "Create entities/habit/index.ts",
+            "Add CRUD API functions",
+            "Update Redux slice imports"
+          ],
+          "files": [
+            "src/entities/habit/"
+          ],
+          "gitCommit": "feat: create habit entity"
+        },
+        {
+          "id": "FSD-004",
+          "title": "Create book entity",
+          "description": "Extract book business entity",
+          "estimatedTime": "2-3 hours",
+          "priority": "high",
+          "dependencies": ["FSD-002"],
+          "subtasks": [
+            "Create entities/book/model/types.ts",
+            "Create entities/book/api/bookApi.ts",
+            "Extract book types from Redux slice",
+            "Create entities/book/index.ts",
+            "Add CRUD API functions"
+          ],
+          "files": [
+            "src/entities/book/"
+          ],
+          "gitCommit": "feat: create book entity"
+        },
+        {
+          "id": "FSD-005",
+          "title": "Create habit-creation feature",
+          "description": "Migrate habit creation functionality",
+          "estimatedTime": "4-5 hours",
+          "priority": "high",
+          "dependencies": ["FSD-003"],
+          "subtasks": [
+            "Create features/habit-creation/ui/",
+            "Create features/habit-creation/model/",
+            "Move createHabit component to feature",
+            "Move HabitForm to feature",
+            "Create feature-specific slice if needed",
+            "Add feature/habit-creation/index.ts"
+          ],
+          "files": [
+            "src/features/habit-creation/"
+          ],
+          "gitCommit": "feat: create habit-creation feature"
+        },
+        {
+          "id": "FSD-006",
+          "title": "Create habit-selection feature",
+          "description": "Migrate habit selection and filtering",
+          "estimatedTime": "4-5 hours",
+          "priority": "high",
+          "dependencies": ["FSD-003"],
+          "subtasks": [
+            "Create features/habit-selection/ui/",
+            "Create features/habit-selection/model/",
+            "Move habitsSelection component to feature",
+            "Move filtering logic to feature model",
+            "Add feature/habit-selection/index.ts"
+          ],
+          "files": [
+            "src/features/habit-selection/"
+          ],
+          "gitCommit": "feat: create habit-selection feature"
+        },
+        {
+          "id": "FSD-007",
+          "title": "Create complex-habits feature",
+          "description": "Migrate complex habits functionality",
+          "estimatedTime": "4-5 hours",
+          "priority": "medium",
+          "dependencies": ["FSD-003"],
+          "subtasks": [
+            "Create features/complex-habits/ui/",
+            "Create features/complex-habits/model/",
+            "Move complex habits components to feature",
+            "Add feature-specific logic",
+            "Add feature/complex-habits/index.ts"
+          ],
+          "files": [
+            "src/features/complex-habits/"
+          ],
+          "gitCommit": "feat: create complex-habits feature"
+        },
+        {
+          "id": "FSD-008",
+          "title": "Create book-tracking feature",
+          "description": "Migrate reading/book tracking functionality",
+          "estimatedTime": "4-5 hours",
+          "priority": "medium",
+          "dependencies": ["FSD-004"],
+          "subtasks": [
+            "Create features/book-tracking/ui/",
+            "Create features/book-tracking/model/",
+            "Move reading components to feature",
+            "Move book components to feature",
+            "Add feature/book-tracking/index.ts"
+          ],
+          "files": [
+            "src/features/book-tracking/"
+          ],
+          "gitCommit": "feat: create book-tracking feature"
+        },
+        {
+          "id": "FSD-009",
+          "title": "Create page components",
+          "description": "Build page-level components that compose features",
+          "estimatedTime": "3-4 hours",
+          "priority": "high",
+          "dependencies": ["FSD-005", "FSD-006", "FSD-007", "FSD-008"],
+          "subtasks": [
+            "Create pages/habits-page/",
+            "Create pages/complex-habits-page/",
+            "Create pages/reading-page/",
+            "Compose features in pages",
+            "Add page-level layouts"
+          ],
+          "files": [
+            "src/pages/habits-page/",
+            "src/pages/complex-habits-page/",
+            "src/pages/reading-page/"
+          ],
+          "gitCommit": "feat: create FSD page components"
+        },
+        {
+          "id": "FSD-010",
+          "title": "Migrate Redux store to app layer",
+          "description": "Move store configuration to app layer",
+          "estimatedTime": "2 hours",
+          "priority": "high",
+          "dependencies": ["FSD-009"],
+          "subtasks": [
+            "Move store.ts to app/store.ts",
+            "Create app/providers/ for Redux Provider",
+            "Update store to use feature slices",
+            "Update main.tsx imports",
+            "Verify all Redux connections work"
+          ],
+          "files": [
+            "src/app/store.ts",
+            "src/app/providers/"
+          ],
+          "gitCommit": "feat: migrate Redux store to app layer"
+        },
+        {
+          "id": "FSD-011",
+          "title": "Create app router",
+          "description": "Move routing configuration to app layer",
+          "estimatedTime": "2 hours",
+          "priority": "high",
+          "dependencies": ["FSD-010"],
+          "subtasks": [
+            "Create app/router.tsx",
+            "Move routes from App.tsx to router",
+            "Update App.tsx to use router",
+            "Add route constants",
+            "Test all navigation"
+          ],
+          "files": [
+            "src/app/router.tsx",
+            "src/App.tsx"
+          ],
+          "gitCommit": "feat: create app router"
+        },
+        {
+          "id": "FSD-012",
+          "title": "Clean up old structure",
+          "description": "Remove deprecated files and folders",
+          "estimatedTime": "1-2 hours",
+          "priority": "medium",
+          "dependencies": ["FSD-011"],
+          "subtasks": [
+            "Delete old src/components/ (if fully migrated)",
+            "Delete old src/redux/ (if fully migrated)",
+            "Remove unused imports",
+            "Update .gitignore if needed",
+            "Verify no broken imports remain"
+          ],
+          "gitCommit": "refactor: remove deprecated file structure"
+        },
+        {
+          "id": "FSD-013",
+          "title": "Phase 3 testing and documentation",
+          "description": "Comprehensive testing of FSD architecture",
+          "estimatedTime": "3-4 hours",
+          "priority": "high",
+          "dependencies": ["FSD-012"],
+          "subtasks": [
+            "Run all tests",
+            "Test all features in browser",
+            "Test routing navigation",
+            "Test Redux state management",
+            "Update CLAUDE.md with FSD documentation",
+            "Create architecture diagram",
+            "Document layer responsibilities",
+            "Add examples of where to add new features"
+          ],
+          "gitCommit": "docs: add FSD architecture documentation"
+        },
+        {
+          "id": "FSD-014",
+          "title": "Security and accessibility audit",
+          "description": "Final quality checks before completion",
+          "estimatedTime": "2-3 hours",
+          "priority": "high",
+          "dependencies": ["FSD-013"],
+          "subtasks": [
+            "Run security audit",
+            "Fix security vulnerabilities",
+            "Run accessibility audit (WCAG)",
+            "Fix accessibility issues",
+            "Apply ESLint + Prettier",
+            "Final code review"
+          ],
+          "gitCommit": "fix: security and accessibility improvements"
+        }
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "name": "Phase 1 Complete",
+      "date": "End of Week 1",
+      "deliverables": [
+        "All custom hooks implemented",
+        "Form logic extracted and reusable",
+        "Tests passing for all hooks"
+      ]
+    },
+    {
+      "name": "Phase 2 Complete",
+      "date": "End of Week 2",
+      "deliverables": [
+        "Atomic component library ready",
+        "All pages refactored to use new components",
+        "Component documentation complete"
+      ]
+    },
+    {
+      "name": "Phase 3 Complete",
+      "date": "End of Week 4",
+      "deliverables": [
+        "Full FSD architecture implemented",
+        "Clean separation of concerns",
+        "Scalable structure for future features",
+        "Security and accessibility compliant"
+      ]
+    }
+  ],
+  "notes": [
+    "Follow TDD: Write tests (RED) before implementation (GREEN)",
+    "Use git-workflow-manager for all commits",
+    "Never mention Claude in commit messages",
+    "Apply ESLint + Prettier before each commit",
+    "All commits to front-end branch",
+    "Each task should have its own commit",
+    "Review CLAUDE.md workflow before starting each phase"
+  ]
+}
