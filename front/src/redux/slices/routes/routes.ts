@@ -26,7 +26,6 @@ const routesSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
-      state.isLoading = true;
     },
   },
   extraReducers: (builder) => {
