@@ -112,7 +112,8 @@ describe('fetchRoutes Async Thunk', () => {
       // Assert: Verify correct endpoint was called
       expect(mockedAxios.get).toHaveBeenCalledTimes(1);
       expect(mockedAxios.get).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v1/front-config/habits-by-type')
+        '/api/v1/front-config/habits-by-type',
+        expect.objectContaining({ timeout: 10000 })
       );
     });
 
