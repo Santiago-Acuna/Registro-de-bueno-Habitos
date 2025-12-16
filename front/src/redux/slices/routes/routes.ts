@@ -1,5 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RouteConfig, RoutesState } from "./routes.types";
+import { fetchRoutes } from "./asyncActions";
 
 const initialState: RoutesState = {
   routes: [],
@@ -27,6 +28,23 @@ const routesSlice = createSlice({
       state.error = null;
       state.isLoading = true;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchRoutes.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchRoutes.fulfilled, (state, action: PayloadAction<RouteConfig[]>) => {
+        state.routes = action.payload;
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(fetchRoutes.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload || action.error.message || 'Failed to fetch routes';
+        state.routes = [];
+      });
   },
 });
 
