@@ -30,6 +30,17 @@ export class HabitsRepository implements IHabitsRepository {
     return mapping[habitType];
   }
 
+  private mapFromPrismaHabitType(
+    prismaHabitType: 'simple' | 'complex' | 'withoutIntervals'
+  ): HabitComplexity {
+    const mapping = {
+      simple: HabitComplexity.SIMPLE,
+      complex: HabitComplexity.COMPLEX,
+      withoutIntervals: HabitComplexity.WITHOUT_INTERVALS,
+    };
+    return mapping[prismaHabitType];
+  }
+
   async create(data: CreateHabitData): Promise<Habit> {
     try {
       // First, create the habit without global identifier
@@ -115,7 +126,7 @@ export class HabitsRepository implements IHabitsRepository {
     const updateData: any = {};
 
     if (habitData.habitType) {
-      updateData.habitType = habitData.habitType;
+      updateData.habitType = this.mapToPrismaHabitType(habitData.habitType);
     }
     if (habitData.isActive !== undefined) {
       updateData.isActive = habitData.isActive;
@@ -131,6 +142,9 @@ export class HabitsRepository implements IHabitsRepository {
       const data = await this.prisma.habits.update({
         where: { id },
         data: updateData,
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
 
       return this.mapToDomain(data);
@@ -184,7 +198,7 @@ export class HabitsRepository implements IHabitsRepository {
 
     return new Habit(
       data.id,
-      data.habitType as HabitComplexity,
+      this.mapFromPrismaHabitType(data.habitType),
       data.createdAt,
       data.updatedAt,
       data.isActive,

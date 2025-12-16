@@ -58,7 +58,7 @@ describe('HabitsRepository', () => {
   // Prisma data structure with JOIN to globalEntityIdentifiers
   const createMockPrismaData = (overrides: Partial<any> = {}): any => ({
     id: mockHabitId,
-    habitType: HabitComplexity.SIMPLE,
+    habitType: 'simple',
     globalIdentifierId: validGlobalIdentifierId,
     globalEntityIdentifiers: {
       id: validGlobalIdentifierId,
@@ -191,7 +191,7 @@ describe('HabitsRepository', () => {
         habitType: HabitComplexity.COMPLEX,
       });
       const mockPrismaResponse = createMockPrismaData({
-        habitType: HabitComplexity.COMPLEX,
+        habitType: 'complex',
       });
 
       // Mock the 3-step process
@@ -230,7 +230,7 @@ describe('HabitsRepository', () => {
         habitType: HabitComplexity.WITHOUT_INTERVALS,
       });
       const mockPrismaResponse = createMockPrismaData({
-        habitType: HabitComplexity.WITHOUT_INTERVALS,
+        habitType: 'withoutIntervals',
       });
 
       // Mock the 3-step process
@@ -576,7 +576,7 @@ describe('HabitsRepository', () => {
         lastActionDate: new Date('2024-01-02T00:00:00.000Z'),
       };
       const mockUpdatedData = createMockPrismaData({
-        habitType: HabitComplexity.COMPLEX,
+        habitType: 'complex',
         isActive: false,
         totalActionsCount: 5,
         lastActionDate: new Date('2024-01-02T00:00:00.000Z'),
@@ -590,10 +590,13 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: {
-          habitType: HabitComplexity.COMPLEX,
+          habitType: 'complex',
           isActive: false,
           totalActionsCount: 5,
           lastActionDate: new Date('2024-01-02T00:00:00.000Z'),
+        },
+        include: {
+          globalEntityIdentifiers: true,
         },
       });
       expect(result).toBeInstanceOf(Habit);
@@ -608,7 +611,7 @@ describe('HabitsRepository', () => {
         habitType: HabitComplexity.COMPLEX,
       };
       const mockUpdatedData = createMockPrismaData({
-        habitType: HabitComplexity.COMPLEX,
+        habitType: 'complex',
       });
       mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
 
@@ -618,7 +621,10 @@ describe('HabitsRepository', () => {
       // Assert
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
-        data: { habitType: HabitComplexity.COMPLEX },
+        data: { habitType: 'complex' },
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
       expect(result.habitType).toBe(HabitComplexity.COMPLEX);
     });
@@ -636,6 +642,9 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: { isActive: false },
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
     });
 
@@ -652,6 +661,9 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: { totalActionsCount: 0 },
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
     });
 
@@ -668,6 +680,9 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: { lastActionDate: null },
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
     });
 
@@ -711,6 +726,9 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: {},
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
     });
   });
@@ -841,7 +859,7 @@ describe('HabitsRepository', () => {
     it('should correctly map all Prisma data with JOIN to domain entity', async () => {
       // Arrange - Prisma data with globalEntityIdentifiers JOIN
       const complexPrismaData = createMockPrismaData({
-        habitType: HabitComplexity.WITHOUT_INTERVALS,
+        habitType: 'withoutIntervals',
         isActive: false,
         totalActionsCount: 10,
         lastActionDate: new Date('2024-01-01T12:00:00.000Z'),
@@ -892,19 +910,19 @@ describe('HabitsRepository', () => {
 
     it('should correctly map all habit complexity types', async () => {
       // Test each habit complexity type
-      const complexityTypes = [
-        HabitComplexity.SIMPLE,
-        HabitComplexity.COMPLEX,
-        HabitComplexity.WITHOUT_INTERVALS,
+      const complexityTypesMapping = [
+        { prisma: 'simple', domain: HabitComplexity.SIMPLE },
+        { prisma: 'complex', domain: HabitComplexity.COMPLEX },
+        { prisma: 'withoutIntervals', domain: HabitComplexity.WITHOUT_INTERVALS },
       ];
 
-      for (const complexity of complexityTypes) {
-        const prismaData = createMockPrismaData({ habitType: complexity });
+      for (const { prisma, domain } of complexityTypesMapping) {
+        const prismaData = createMockPrismaData({ habitType: prisma });
         mockPrismaService.habits.findUnique.mockResolvedValue(prismaData);
 
         const result = await repository.findById(mockHabitId);
 
-        expect(result!.habitType).toBe(complexity);
+        expect(result!.habitType).toBe(domain);
       }
     });
 
@@ -930,6 +948,282 @@ describe('HabitsRepository', () => {
       expect(result!.globalEntityIdentifier.name.getValue()).toBe('Valid Habit Name');
       expect(result!.globalEntityIdentifier.icon).toBeInstanceOf(IdentifierIcon);
       expect(() => result!.globalEntityIdentifier.name.getValue()).not.toThrow();
+    });
+  });
+
+  describe('mapToDomain() - Prisma camelCase enum transformation', () => {
+    it('should transform Prisma camelCase "complex" to HabitComplexity.COMPLEX', async () => {
+      // Arrange - Prisma returns camelCase enum value as Prisma does in production
+      const prismaDataWithCamelCase = {
+        id: mockHabitId,
+        habitType: 'complex', // Prisma returns this camelCase string
+        globalIdentifierId: validGlobalIdentifierId,
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: mockHabitName,
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+        isActive: true,
+        totalActionsCount: 0,
+        lastActionDate: null,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+      };
+      mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithCamelCase);
+
+      // Act
+      const result = await repository.findById(mockHabitId);
+
+      // Assert - Should be transformed to the domain enum value
+      expect(result).toBeInstanceOf(Habit);
+      expect(result!.habitType).toBe(HabitComplexity.COMPLEX);
+      expect(result!.habitType).toBe('Complex'); // Domain enum value
+      expect(result!.habitType).not.toBe('complex'); // NOT the Prisma camelCase value
+    });
+
+    it('should transform Prisma camelCase "simple" to HabitComplexity.SIMPLE', async () => {
+      // Arrange - Prisma returns camelCase enum value as Prisma does in production
+      const prismaDataWithCamelCase = {
+        id: mockHabitId,
+        habitType: 'simple', // Prisma returns this camelCase string
+        globalIdentifierId: validGlobalIdentifierId,
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: mockHabitName,
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+        isActive: true,
+        totalActionsCount: 0,
+        lastActionDate: null,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+      };
+      mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithCamelCase);
+
+      // Act
+      const result = await repository.findById(mockHabitId);
+
+      // Assert - Should be transformed to the domain enum value
+      expect(result).toBeInstanceOf(Habit);
+      expect(result!.habitType).toBe(HabitComplexity.SIMPLE);
+      expect(result!.habitType).toBe('Simple'); // Domain enum value
+      expect(result!.habitType).not.toBe('simple'); // NOT the Prisma camelCase value
+    });
+
+    it('should transform Prisma camelCase "withoutIntervals" to HabitComplexity.WITHOUT_INTERVALS', async () => {
+      // Arrange - Prisma returns camelCase enum value as Prisma does in production
+      const prismaDataWithCamelCase = {
+        id: mockHabitId,
+        habitType: 'withoutIntervals', // Prisma returns this camelCase string
+        globalIdentifierId: validGlobalIdentifierId,
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: mockHabitName,
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+        isActive: true,
+        totalActionsCount: 0,
+        lastActionDate: null,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+      };
+      mockPrismaService.habits.findUnique.mockResolvedValue(prismaDataWithCamelCase);
+
+      // Act
+      const result = await repository.findById(mockHabitId);
+
+      // Assert - Should be transformed to the domain enum value
+      expect(result).toBeInstanceOf(Habit);
+      expect(result!.habitType).toBe(HabitComplexity.WITHOUT_INTERVALS);
+      expect(result!.habitType).toBe('Without Intervals'); // Domain enum value
+      expect(result!.habitType).not.toBe('withoutIntervals'); // NOT the Prisma camelCase value
+    });
+
+    it('should transform Prisma enum in findAll results', async () => {
+      // Arrange - Multiple habits with camelCase enum values from Prisma
+      const mockHabitsData = [
+        {
+          id: mockHabitId,
+          habitType: 'complex',
+          globalIdentifierId: validGlobalIdentifierId,
+          globalEntityIdentifiers: {
+            id: validGlobalIdentifierId,
+            name: 'Habit 1',
+            icon: mockIconUrl,
+            entityType: 'habit',
+            entityId: mockHabitId,
+          },
+          isActive: true,
+          totalActionsCount: 0,
+          lastActionDate: null,
+          createdAt: fixedDate,
+          updatedAt: fixedDate,
+        },
+        {
+          id: 'habit-id-2',
+          habitType: 'simple',
+          globalIdentifierId: 'global-id-2',
+          globalEntityIdentifiers: {
+            id: 'global-id-2',
+            name: 'Habit 2',
+            icon: 'https://example.com/icon2.png',
+            entityType: 'habit',
+            entityId: 'habit-id-2',
+          },
+          isActive: true,
+          totalActionsCount: 0,
+          lastActionDate: null,
+          createdAt: fixedDate,
+          updatedAt: fixedDate,
+        },
+        {
+          id: 'habit-id-3',
+          habitType: 'withoutIntervals',
+          globalIdentifierId: 'global-id-3',
+          globalEntityIdentifiers: {
+            id: 'global-id-3',
+            name: 'Habit 3',
+            icon: 'https://example.com/icon3.png',
+            entityType: 'habit',
+            entityId: 'habit-id-3',
+          },
+          isActive: true,
+          totalActionsCount: 0,
+          lastActionDate: null,
+          createdAt: fixedDate,
+          updatedAt: fixedDate,
+        },
+      ];
+      mockPrismaService.habits.findMany.mockResolvedValue(mockHabitsData);
+      mockPrismaService.habits.count.mockResolvedValue(3);
+
+      // Act
+      const result = await repository.findAll({ page: 1, limit: 10 });
+
+      // Assert - All enum values should be transformed
+      expect(result.data).toHaveLength(3);
+      expect(result.data[0]!.habitType).toBe(HabitComplexity.COMPLEX);
+      expect(result.data[0]!.habitType).toBe('Complex');
+      expect(result.data[1]!.habitType).toBe(HabitComplexity.SIMPLE);
+      expect(result.data[1]!.habitType).toBe('Simple');
+      expect(result.data[2]!.habitType).toBe(HabitComplexity.WITHOUT_INTERVALS);
+      expect(result.data[2]!.habitType).toBe('Without Intervals');
+    });
+
+    it('should transform Prisma enum after create operation', async () => {
+      // Arrange
+      const createData = createMockCreateHabitData({
+        habitType: HabitComplexity.COMPLEX,
+      });
+
+      // Mock the 3-step process with Prisma returning camelCase
+      const habitWithoutGlobalId = { id: mockHabitId, habitType: 'complex' };
+      const globalIdentifier = {
+        id: validGlobalIdentifierId,
+        name: mockHabitName,
+        icon: mockIconUrl,
+        entityType: 'habit',
+        entityId: mockHabitId,
+      };
+      const mockPrismaResponseAfterUpdate = {
+        id: mockHabitId,
+        habitType: 'complex', // Prisma returns camelCase
+        globalIdentifierId: validGlobalIdentifierId,
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: mockHabitName,
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+        isActive: true,
+        totalActionsCount: 0,
+        lastActionDate: null,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+      };
+
+      mockPrismaService.habits.create.mockResolvedValue(habitWithoutGlobalId);
+      mockPrismaService.globalEntityIdentifiers.create.mockResolvedValue(globalIdentifier);
+      mockPrismaService.habits.update.mockResolvedValue(mockPrismaResponseAfterUpdate);
+
+      // Act
+      const result = await repository.create(createData);
+
+      // Assert - Should transform camelCase to domain enum
+      expect(result.habitType).toBe(HabitComplexity.COMPLEX);
+      expect(result.habitType).toBe('Complex');
+      expect(result.habitType).not.toBe('complex');
+    });
+
+    it('should transform Prisma enum after update operation', async () => {
+      // Arrange
+      const partialUpdate: Partial<Habit> = {
+        habitType: HabitComplexity.WITHOUT_INTERVALS,
+      };
+      const mockUpdatedDataFromPrisma = {
+        id: mockHabitId,
+        habitType: 'withoutIntervals', // Prisma returns camelCase
+        globalIdentifierId: validGlobalIdentifierId,
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: mockHabitName,
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+        isActive: true,
+        totalActionsCount: 0,
+        lastActionDate: null,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+      };
+      mockPrismaService.habits.update.mockResolvedValue(mockUpdatedDataFromPrisma);
+
+      // Act
+      const result = await repository.update(mockHabitId, partialUpdate);
+
+      // Assert - Should transform camelCase to domain enum
+      expect(result.habitType).toBe(HabitComplexity.WITHOUT_INTERVALS);
+      expect(result.habitType).toBe('Without Intervals');
+      expect(result.habitType).not.toBe('withoutIntervals');
+    });
+
+    it('should transform Prisma enum when finding by name', async () => {
+      // Arrange
+      const prismaDataWithCamelCase = {
+        id: mockHabitId,
+        habitType: 'simple', // Prisma returns camelCase
+        globalIdentifierId: validGlobalIdentifierId,
+        globalEntityIdentifiers: {
+          id: validGlobalIdentifierId,
+          name: mockHabitName,
+          icon: mockIconUrl,
+          entityType: 'habit',
+          entityId: mockHabitId,
+        },
+        isActive: true,
+        totalActionsCount: 0,
+        lastActionDate: null,
+        createdAt: fixedDate,
+        updatedAt: fixedDate,
+      };
+      mockPrismaService.habits.findFirst.mockResolvedValue(prismaDataWithCamelCase);
+
+      // Act
+      const result = await repository.findByName(mockHabitName);
+
+      // Assert - Should transform camelCase to domain enum
+      expect(result).toBeInstanceOf(Habit);
+      expect(result!.habitType).toBe(HabitComplexity.SIMPLE);
+      expect(result!.habitType).toBe('Simple');
+      expect(result!.habitType).not.toBe('simple');
     });
   });
 
