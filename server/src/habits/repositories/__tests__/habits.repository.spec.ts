@@ -58,7 +58,7 @@ describe('HabitsRepository', () => {
   // Prisma data structure with JOIN to globalEntityIdentifiers
   const createMockPrismaData = (overrides: Partial<any> = {}): any => ({
     id: mockHabitId,
-    habitType: HabitComplexity.SIMPLE,
+    habitType: 'simple',
     globalIdentifierId: validGlobalIdentifierId,
     globalEntityIdentifiers: {
       id: validGlobalIdentifierId,
@@ -191,7 +191,7 @@ describe('HabitsRepository', () => {
         habitType: HabitComplexity.COMPLEX,
       });
       const mockPrismaResponse = createMockPrismaData({
-        habitType: HabitComplexity.COMPLEX,
+        habitType: 'complex',
       });
 
       // Mock the 3-step process
@@ -230,7 +230,7 @@ describe('HabitsRepository', () => {
         habitType: HabitComplexity.WITHOUT_INTERVALS,
       });
       const mockPrismaResponse = createMockPrismaData({
-        habitType: HabitComplexity.WITHOUT_INTERVALS,
+        habitType: 'withoutIntervals',
       });
 
       // Mock the 3-step process
@@ -576,7 +576,7 @@ describe('HabitsRepository', () => {
         lastActionDate: new Date('2024-01-02T00:00:00.000Z'),
       };
       const mockUpdatedData = createMockPrismaData({
-        habitType: HabitComplexity.COMPLEX,
+        habitType: 'complex',
         isActive: false,
         totalActionsCount: 5,
         lastActionDate: new Date('2024-01-02T00:00:00.000Z'),
@@ -590,10 +590,13 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: {
-          habitType: HabitComplexity.COMPLEX,
+          habitType: 'complex',
           isActive: false,
           totalActionsCount: 5,
           lastActionDate: new Date('2024-01-02T00:00:00.000Z'),
+        },
+        include: {
+          globalEntityIdentifiers: true,
         },
       });
       expect(result).toBeInstanceOf(Habit);
@@ -608,7 +611,7 @@ describe('HabitsRepository', () => {
         habitType: HabitComplexity.COMPLEX,
       };
       const mockUpdatedData = createMockPrismaData({
-        habitType: HabitComplexity.COMPLEX,
+        habitType: 'complex',
       });
       mockPrismaService.habits.update.mockResolvedValue(mockUpdatedData);
 
@@ -618,7 +621,10 @@ describe('HabitsRepository', () => {
       // Assert
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
-        data: { habitType: HabitComplexity.COMPLEX },
+        data: { habitType: 'complex' },
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
       expect(result.habitType).toBe(HabitComplexity.COMPLEX);
     });
@@ -636,6 +642,9 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: { isActive: false },
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
     });
 
@@ -652,6 +661,9 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: { totalActionsCount: 0 },
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
     });
 
@@ -668,6 +680,9 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: { lastActionDate: null },
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
     });
 
@@ -711,6 +726,9 @@ describe('HabitsRepository', () => {
       expect(mockPrismaService.habits.update).toHaveBeenCalledWith({
         where: { id: mockHabitId },
         data: {},
+        include: {
+          globalEntityIdentifiers: true,
+        },
       });
     });
   });
@@ -841,7 +859,7 @@ describe('HabitsRepository', () => {
     it('should correctly map all Prisma data with JOIN to domain entity', async () => {
       // Arrange - Prisma data with globalEntityIdentifiers JOIN
       const complexPrismaData = createMockPrismaData({
-        habitType: HabitComplexity.WITHOUT_INTERVALS,
+        habitType: 'withoutIntervals',
         isActive: false,
         totalActionsCount: 10,
         lastActionDate: new Date('2024-01-01T12:00:00.000Z'),
@@ -892,19 +910,19 @@ describe('HabitsRepository', () => {
 
     it('should correctly map all habit complexity types', async () => {
       // Test each habit complexity type
-      const complexityTypes = [
-        HabitComplexity.SIMPLE,
-        HabitComplexity.COMPLEX,
-        HabitComplexity.WITHOUT_INTERVALS,
+      const complexityTypesMapping = [
+        { prisma: 'simple', domain: HabitComplexity.SIMPLE },
+        { prisma: 'complex', domain: HabitComplexity.COMPLEX },
+        { prisma: 'withoutIntervals', domain: HabitComplexity.WITHOUT_INTERVALS },
       ];
 
-      for (const complexity of complexityTypes) {
-        const prismaData = createMockPrismaData({ habitType: complexity });
+      for (const { prisma, domain } of complexityTypesMapping) {
+        const prismaData = createMockPrismaData({ habitType: prisma });
         mockPrismaService.habits.findUnique.mockResolvedValue(prismaData);
 
         const result = await repository.findById(mockHabitId);
 
-        expect(result!.habitType).toBe(complexity);
+        expect(result!.habitType).toBe(domain);
       }
     });
 
