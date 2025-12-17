@@ -363,7 +363,9 @@ describe("CH-005: useHabitsFilter Hook - Filtering Logic", () => {
         expect(result.current.filteredHabits).toBeDefined();
         expect(result.current.filteredHabits.length).toBe(2);
         expect(
-          result.current.filteredHabits.every((h: any) => h.habitType === "Simple")
+          result.current.filteredHabits.every(
+            (h: any) => h.habitType === "Simple"
+          )
         ).toBe(true);
       });
     });
@@ -392,7 +394,9 @@ describe("CH-005: useHabitsFilter Hook - Filtering Logic", () => {
       waitFor(() => {
         expect(result.current.filteredHabits.length).toBe(2);
         expect(
-          result.current.filteredHabits.every((h: any) => h.habitType === "Complex")
+          result.current.filteredHabits.every(
+            (h: any) => h.habitType === "Complex"
+          )
         ).toBe(true);
       });
     });
@@ -798,7 +802,9 @@ describe("CH-005: useHabitsFilter Hook - Filtering Logic", () => {
       const { result } = renderHook(() => useHabitsFilter(), { wrapper });
 
       // Assert: Should not throw errors
-      expect(() => result.current.filterByComplexity("InvalidType")).not.toThrow();
+      expect(() =>
+        result.current.filterByComplexity("InvalidType")
+      ).not.toThrow();
       expect(() => result.current.filterByComplexity("")).not.toThrow();
       expect(() => result.current.filterByComplexity("   ")).not.toThrow();
     });

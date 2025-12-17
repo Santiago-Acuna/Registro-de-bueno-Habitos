@@ -24,7 +24,7 @@ export type Reading = {
 export type BookType = {
   id: string;
   name: string;
-  image:string;
+  image: string;
   total_pages: number;
   average_of_characters_per_minute: number;
   current_page: number; //poner default value 0
@@ -32,7 +32,7 @@ export type BookType = {
 
 export type BookBody = {
   name: string;
-  image:string;
+  image: string;
   total_pages: number;
   average_of_characters_per_minute: number;
   current_page: number; //poner default value 0

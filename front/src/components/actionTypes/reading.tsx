@@ -8,11 +8,9 @@ const ActionTypes: FC = () => {
     <div className={styles.readingContainer}>
       {/* <div></div> boton de back*/}
       <div></div>
-// cambiar el fondo de complex y guardarlo para los de sin intervalo
-https://codepen.io/t_afif/pen/OJvBbxm // nuevo fondo de complex
-      <div className={styles.optionCard}>
-        lista de types
-      </div>
+      // cambiar el fondo de complex y guardarlo para los de sin intervalo
+      https://codepen.io/t_afif/pen/OJvBbxm // nuevo fondo de complex
+      <div className={styles.optionCard}>lista de types</div>
     </div>
   );
 };

@@ -34,14 +34,18 @@ const routesSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchRoutes.fulfilled, (state, action: PayloadAction<RouteConfig[]>) => {
-        state.routes = action.payload;
-        state.isLoading = false;
-        state.error = null;
-      })
+      .addCase(
+        fetchRoutes.fulfilled,
+        (state, action: PayloadAction<RouteConfig[]>) => {
+          state.routes = action.payload;
+          state.isLoading = false;
+          state.error = null;
+        }
+      )
       .addCase(fetchRoutes.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload || action.error.message || 'Failed to fetch routes';
+        state.error =
+          action.payload || action.error.message || "Failed to fetch routes";
         state.routes = [];
       });
   },

@@ -9,9 +9,9 @@
  */
 
 // Current Components
-export { default as ComplexHabits } from './complex habits/complex-habits';
-export { default as CreateHabits } from './createHabit/createHabit';
-export { default as HabitsSelection } from './habitsSelection/habitsSelection';
+export { default as ComplexHabits } from "./complex habits/complex-habits";
+export { default as CreateHabits } from "./createHabit/createHabit";
+export { default as HabitsSelection } from "./habitsSelection/habitsSelection";
 
 // Future Components (to be implemented):
 // export { default as SimpleHabits } from './simpleHabits/simpleHabits';

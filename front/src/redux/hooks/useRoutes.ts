@@ -14,11 +14,11 @@
  * ```
  */
 
-import { useCallback } from 'react';
-import { useCustomDispatch, useCustomSelector } from './hooks';
-import { fetchRoutes as fetchRoutesThunk } from '../slices/routes/asyncActions';
-import { clearError as clearErrorAction } from '../slices/routes/routes';
-import type { RouteConfig } from '../slices/routes/routes.types';
+import { useCallback } from "react";
+import { useCustomDispatch, useCustomSelector } from "./hooks";
+import { fetchRoutes as fetchRoutesThunk } from "../slices/routes/asyncActions";
+import { clearError as clearErrorAction } from "../slices/routes/routes";
+import type { RouteConfig } from "../slices/routes/routes.types";
 
 /**
  * Return type for useRoutes hook

@@ -81,9 +81,11 @@ The application uses custom React hooks to encapsulate business logic and Redux 
 ### Available Hooks
 
 #### `useBooks`
+
 **Purpose:** Manages book-related state and operations through Redux.
 
 **Returns:**
+
 - `books`: Array of all books
 - `bookInfo`: Current book being edited/viewed
 - `bookID`: ID of the selected book
@@ -95,6 +97,7 @@ The application uses custom React hooks to encapsulate business logic and Redux 
 - `getInfo(book)`: Set book info for editing
 
 **Usage:**
+
 ```typescript
 import { useBooks } from '@/hooks';
 
@@ -110,11 +113,13 @@ function BookManager() {
 ```
 
 #### `useHabits`
+
 **Purpose:** Manages habit-related state and CRUD operations.
 
 **Usage:**
+
 ```typescript
-import { useHabits } from '@/hooks';
+import { useHabits } from "@/hooks";
 
 function HabitList() {
   const { habits, isLoading, error } = useHabits();
@@ -123,11 +128,13 @@ function HabitList() {
 ```
 
 #### `useHabitForm`
+
 **Purpose:** Handles habit form state and validation logic.
 
 **Usage:**
+
 ```typescript
-import { useHabitForm } from '@/hooks';
+import { useHabitForm } from "@/hooks";
 
 function CreateHabit() {
   const { formData, handleChange, handleSubmit } = useHabitForm();
@@ -136,11 +143,13 @@ function CreateHabit() {
 ```
 
 #### `useHabitMutations`
+
 **Purpose:** Provides methods for creating, updating, and deleting habits.
 
 **Usage:**
+
 ```typescript
-import { useHabitMutations } from '@/hooks';
+import { useHabitMutations } from "@/hooks";
 
 function HabitActions() {
   const { createHabit, updateHabit, deleteHabit } = useHabitMutations();
@@ -149,11 +158,13 @@ function HabitActions() {
 ```
 
 #### `useReadingLogs`
+
 **Purpose:** Manages reading log entries for book tracking.
 
 **Usage:**
+
 ```typescript
-import { useReadingLogs } from '@/hooks';
+import { useReadingLogs } from "@/hooks";
 
 function ReadingTracker() {
   const { logs, addLog, updateLog } = useReadingLogs();
@@ -162,11 +173,13 @@ function ReadingTracker() {
 ```
 
 #### `useHabitsFilter`
+
 **Purpose:** Provides filtering and sorting functionality for habit lists.
 
 **Usage:**
+
 ```typescript
-import { useHabitsFilter } from '@/hooks';
+import { useHabitsFilter } from "@/hooks";
 
 function FilteredHabits() {
   const { filteredHabits, setFilter, setSortBy } = useHabitsFilter();

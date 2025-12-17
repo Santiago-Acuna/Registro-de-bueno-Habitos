@@ -13,18 +13,18 @@
  * 7. Route path transformation (habitName → kebab-case path)
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { configureStore } from '@reduxjs/toolkit';
-import axios from 'axios';
-import { routesReducer } from '../routes';
-import { fetchRoutes } from '../asyncActions';
-import type { RoutesState } from '../routes.types';
+import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+import { configureStore } from "@reduxjs/toolkit";
+import axios from "axios";
+import { routesReducer } from "../routes";
+import { fetchRoutes } from "../asyncActions";
+import type { RoutesState } from "../routes.types";
 
 // Mock axios
-vi.mock('axios');
+vi.mock("axios");
 const mockedAxios = vi.mocked(axios, true);
 
-describe('fetchRoutes Async Thunk', () => {
+describe("fetchRoutes Async Thunk", () => {
   let store: ReturnType<typeof configureStore>;
 
   beforeEach(() => {
@@ -43,14 +43,14 @@ describe('fetchRoutes Async Thunk', () => {
     vi.resetAllMocks();
   });
 
-  describe('Successful Fetch Scenarios', () => {
-    it('should fetch routes and update state with transformed data', async () => {
+  describe("Successful Fetch Scenarios", () => {
+    it("should fetch routes and update state with transformed data", async () => {
       // Arrange: Mock successful API response
       const mockApiResponse = {
         data: {
-          complex: [{ Programming: ['for work', 'personal Project'] }],
-          simple: [{ 'Morning Exercise': ['Cardio', 'Strength'] }],
-          withoutintervals: [{ 'Water Intake': [] }],
+          complex: [{ Programming: ["for work", "personal Project"] }],
+          simple: [{ "Morning Exercise": ["Cardio", "Strength"] }],
+          withoutintervals: [{ "Water Intake": [] }],
         },
       };
 
@@ -72,29 +72,38 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.routes).toHaveLength(3);
 
       // Verify route structure and transformations
-      const programmingRoute = state.routes.find((r) => r.habitName === 'Programming');
+      const programmingRoute = state.routes.find(
+        (r) => r.habitName === "Programming"
+      );
       expect(programmingRoute).toBeDefined();
-      expect(programmingRoute?.path).toBe('/programming');
-      expect(programmingRoute?.component).toBe('ComplexHabits');
-      expect(programmingRoute?.habitType).toBe('complex');
-      expect(programmingRoute?.actionTypes).toEqual(['for work', 'personal Project']);
+      expect(programmingRoute?.path).toBe("/programming");
+      expect(programmingRoute?.component).toBe("ComplexHabits");
+      expect(programmingRoute?.habitType).toBe("complex");
+      expect(programmingRoute?.actionTypes).toEqual([
+        "for work",
+        "personal Project",
+      ]);
 
-      const exerciseRoute = state.routes.find((r) => r.habitName === 'Morning Exercise');
+      const exerciseRoute = state.routes.find(
+        (r) => r.habitName === "Morning Exercise"
+      );
       expect(exerciseRoute).toBeDefined();
-      expect(exerciseRoute?.path).toBe('/morning-exercise');
-      expect(exerciseRoute?.component).toBe('SimpleHabits');
-      expect(exerciseRoute?.habitType).toBe('simple');
-      expect(exerciseRoute?.actionTypes).toEqual(['Cardio', 'Strength']);
+      expect(exerciseRoute?.path).toBe("/morning-exercise");
+      expect(exerciseRoute?.component).toBe("SimpleHabits");
+      expect(exerciseRoute?.habitType).toBe("simple");
+      expect(exerciseRoute?.actionTypes).toEqual(["Cardio", "Strength"]);
 
-      const waterRoute = state.routes.find((r) => r.habitName === 'Water Intake');
+      const waterRoute = state.routes.find(
+        (r) => r.habitName === "Water Intake"
+      );
       expect(waterRoute).toBeDefined();
-      expect(waterRoute?.path).toBe('/water-intake');
-      expect(waterRoute?.component).toBe('WithoutIntervalsHabits');
-      expect(waterRoute?.habitType).toBe('withoutintervals');
+      expect(waterRoute?.path).toBe("/water-intake");
+      expect(waterRoute?.component).toBe("WithoutIntervalsHabits");
+      expect(waterRoute?.habitType).toBe("withoutintervals");
       expect(waterRoute?.actionTypes).toEqual([]);
     });
 
-    it('should call correct API endpoint', async () => {
+    it("should call correct API endpoint", async () => {
       // Arrange: Mock API response
       const mockApiResponse = {
         data: {
@@ -112,12 +121,12 @@ describe('fetchRoutes Async Thunk', () => {
       // Assert: Verify correct endpoint was called
       expect(mockedAxios.get).toHaveBeenCalledTimes(1);
       expect(mockedAxios.get).toHaveBeenCalledWith(
-        '/api/v1/front-config/habits-by-type',
+        "/api/v1/front-config/habits-by-type",
         expect.objectContaining({ timeout: 10000 })
       );
     });
 
-    it('should set loading state to true while fetching', async () => {
+    it("should set loading state to true while fetching", async () => {
       // Arrange: Mock delayed API response
       const mockApiResponse = {
         data: {
@@ -150,10 +159,10 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.isLoading).toBe(false);
     });
 
-    it('should clear previous errors on successful fetch', async () => {
+    it("should clear previous errors on successful fetch", async () => {
       // Arrange: Set an error in state first
-      store.dispatch({ type: 'routes/setError', payload: 'Previous error' });
-      expect(store.getState().routes.error).toBe('Previous error');
+      store.dispatch({ type: "routes/setError", payload: "Previous error" });
+      expect(store.getState().routes.error).toBe("Previous error");
 
       // Mock successful API response
       const mockApiResponse = {
@@ -174,14 +183,14 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.error).toBeNull();
     });
 
-    it('should handle multiple habits of the same type', async () => {
+    it("should handle multiple habits of the same type", async () => {
       // Arrange: Mock API response with multiple habits of same type
       const mockApiResponse = {
         data: {
           complex: [
-            { Programming: ['for work', 'personal Project'] },
-            { Reading: ['fiction', 'non-fiction'] },
-            { 'Learn English': ['vocabulary', 'grammar', 'speaking'] },
+            { Programming: ["for work", "personal Project"] },
+            { Reading: ["fiction", "non-fiction"] },
+            { "Learn English": ["vocabulary", "grammar", "speaking"] },
           ],
           simple: [],
           withoutintervals: [],
@@ -196,22 +205,26 @@ describe('fetchRoutes Async Thunk', () => {
       // Assert: Should have 3 routes, all with complex type
       const state = store.getState().routes;
       expect(state.routes).toHaveLength(3);
-      expect(state.routes.every((r) => r.habitType === 'complex')).toBe(true);
+      expect(state.routes.every((r) => r.habitType === "complex")).toBe(true);
 
       // Verify path transformations
-      const programmingRoute = state.routes.find((r) => r.habitName === 'Programming');
-      expect(programmingRoute?.path).toBe('/programming');
+      const programmingRoute = state.routes.find(
+        (r) => r.habitName === "Programming"
+      );
+      expect(programmingRoute?.path).toBe("/programming");
 
-      const readingRoute = state.routes.find((r) => r.habitName === 'Reading');
-      expect(readingRoute?.path).toBe('/reading');
+      const readingRoute = state.routes.find((r) => r.habitName === "Reading");
+      expect(readingRoute?.path).toBe("/reading");
 
-      const englishRoute = state.routes.find((r) => r.habitName === 'Learn English');
-      expect(englishRoute?.path).toBe('/learn-english');
+      const englishRoute = state.routes.find(
+        (r) => r.habitName === "Learn English"
+      );
+      expect(englishRoute?.path).toBe("/learn-english");
     });
   });
 
-  describe('Empty Response Handling', () => {
-    it('should handle empty response from backend', async () => {
+  describe("Empty Response Handling", () => {
+    it("should handle empty response from backend", async () => {
       // Arrange: Mock empty API response
       const mockApiResponse = {
         data: {
@@ -233,13 +246,13 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.error).toBeNull();
     });
 
-    it('should handle habits with empty action types', async () => {
+    it("should handle habits with empty action types", async () => {
       // Arrange: Mock API response with empty action types
       const mockApiResponse = {
         data: {
           complex: [],
           simple: [],
-          withoutintervals: [{ 'Daily Check': [] }],
+          withoutintervals: [{ "Daily Check": [] }],
         },
       };
 
@@ -252,15 +265,15 @@ describe('fetchRoutes Async Thunk', () => {
       const state = store.getState().routes;
       expect(state.routes).toHaveLength(1);
       expect(state.routes[0].actionTypes).toEqual([]);
-      expect(state.routes[0].habitName).toBe('Daily Check');
+      expect(state.routes[0].habitName).toBe("Daily Check");
     });
   });
 
-  describe('Network Error Handling', () => {
-    it('should handle network errors with user-friendly message', async () => {
+  describe("Network Error Handling", () => {
+    it("should handle network errors with user-friendly message", async () => {
       // Arrange: Mock network error
-      const networkError = new Error('Network Error');
-      (networkError as any).code = 'ERR_NETWORK';
+      const networkError = new Error("Network Error");
+      (networkError as any).code = "ERR_NETWORK";
       mockedAxios.get.mockRejectedValueOnce(networkError);
 
       // Act: Dispatch the async thunk
@@ -268,15 +281,17 @@ describe('fetchRoutes Async Thunk', () => {
 
       // Assert: Should store user-friendly error message
       const state = store.getState().routes;
-      expect(state.error).toBe('Unable to load routes. Please check your connection.');
+      expect(state.error).toBe(
+        "Unable to load routes. Please check your connection."
+      );
       expect(state.isLoading).toBe(false);
       expect(state.routes).toEqual([]);
     });
 
-    it('should handle timeout errors', async () => {
+    it("should handle timeout errors", async () => {
       // Arrange: Mock timeout error
-      const timeoutError = new Error('timeout of 10000ms exceeded');
-      (timeoutError as any).code = 'ECONNABORTED';
+      const timeoutError = new Error("timeout of 10000ms exceeded");
+      (timeoutError as any).code = "ECONNABORTED";
       mockedAxios.get.mockRejectedValueOnce(timeoutError);
 
       // Act: Dispatch the async thunk
@@ -284,14 +299,14 @@ describe('fetchRoutes Async Thunk', () => {
 
       // Assert: Should store timeout error message
       const state = store.getState().routes;
-      expect(state.error).toBe('Request timed out. Please try again.');
+      expect(state.error).toBe("Request timed out. Please try again.");
       expect(state.isLoading).toBe(false);
       expect(state.routes).toEqual([]);
     });
 
-    it('should set loading to false on network error', async () => {
+    it("should set loading to false on network error", async () => {
       // Arrange: Mock network error
-      const networkError = new Error('Network Error');
+      const networkError = new Error("Network Error");
       mockedAxios.get.mockRejectedValueOnce(networkError);
 
       // Act: Dispatch the async thunk
@@ -303,13 +318,13 @@ describe('fetchRoutes Async Thunk', () => {
     });
   });
 
-  describe('API Error Response Handling', () => {
-    it('should handle 404 Not Found error', async () => {
+  describe("API Error Response Handling", () => {
+    it("should handle 404 Not Found error", async () => {
       // Arrange: Mock 404 error
       const error404 = {
         response: {
           status: 404,
-          data: { message: 'Not Found' },
+          data: { message: "Not Found" },
         },
       };
       mockedAxios.get.mockRejectedValueOnce(error404);
@@ -319,17 +334,19 @@ describe('fetchRoutes Async Thunk', () => {
 
       // Assert: Should store user-friendly 404 error message
       const state = store.getState().routes;
-      expect(state.error).toBe('Routes configuration not found. Please contact support.');
+      expect(state.error).toBe(
+        "Routes configuration not found. Please contact support."
+      );
       expect(state.isLoading).toBe(false);
       expect(state.routes).toEqual([]);
     });
 
-    it('should handle 500 Internal Server Error', async () => {
+    it("should handle 500 Internal Server Error", async () => {
       // Arrange: Mock 500 error
       const error500 = {
         response: {
           status: 500,
-          data: { message: 'Internal Server Error' },
+          data: { message: "Internal Server Error" },
         },
       };
       mockedAxios.get.mockRejectedValueOnce(error500);
@@ -339,17 +356,19 @@ describe('fetchRoutes Async Thunk', () => {
 
       // Assert: Should store user-friendly 500 error message
       const state = store.getState().routes;
-      expect(state.error).toBe('Server error loading routes. Please try again later.');
+      expect(state.error).toBe(
+        "Server error loading routes. Please try again later."
+      );
       expect(state.isLoading).toBe(false);
       expect(state.routes).toEqual([]);
     });
 
-    it('should handle 401 Unauthorized error', async () => {
+    it("should handle 401 Unauthorized error", async () => {
       // Arrange: Mock 401 error
       const error401 = {
         response: {
           status: 401,
-          data: { message: 'Unauthorized' },
+          data: { message: "Unauthorized" },
         },
       };
       mockedAxios.get.mockRejectedValueOnce(error401);
@@ -363,12 +382,12 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.isLoading).toBe(false);
     });
 
-    it('should handle 403 Forbidden error', async () => {
+    it("should handle 403 Forbidden error", async () => {
       // Arrange: Mock 403 error
       const error403 = {
         response: {
           status: 403,
-          data: { message: 'Forbidden' },
+          data: { message: "Forbidden" },
         },
       };
       mockedAxios.get.mockRejectedValueOnce(error403);
@@ -382,12 +401,12 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.isLoading).toBe(false);
     });
 
-    it('should handle 503 Service Unavailable error', async () => {
+    it("should handle 503 Service Unavailable error", async () => {
       // Arrange: Mock 503 error
       const error503 = {
         response: {
           status: 503,
-          data: { message: 'Service Unavailable' },
+          data: { message: "Service Unavailable" },
         },
       };
       mockedAxios.get.mockRejectedValueOnce(error503);
@@ -397,17 +416,19 @@ describe('fetchRoutes Async Thunk', () => {
 
       // Assert: Should store server error message
       const state = store.getState().routes;
-      expect(state.error).toBe('Server error loading routes. Please try again later.');
+      expect(state.error).toBe(
+        "Server error loading routes. Please try again later."
+      );
       expect(state.isLoading).toBe(false);
     });
   });
 
-  describe('Invalid Response Format Handling', () => {
-    it('should handle malformed JSON response', async () => {
+  describe("Invalid Response Format Handling", () => {
+    it("should handle malformed JSON response", async () => {
       // Arrange: Mock malformed response (missing required properties)
       const malformedResponse = {
         data: {
-          invalid: 'structure',
+          invalid: "structure",
         },
       };
       mockedAxios.get.mockResolvedValueOnce(malformedResponse);
@@ -422,11 +443,11 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.routes.length === 0 || state.error !== null).toBe(true);
     });
 
-    it('should handle response with missing habit type category', async () => {
+    it("should handle response with missing habit type category", async () => {
       // Arrange: Mock response missing 'simple' category
       const incompleteResponse = {
         data: {
-          complex: [{ Programming: ['for work'] }],
+          complex: [{ Programming: ["for work"] }],
           withoutintervals: [],
         },
       };
@@ -441,7 +462,7 @@ describe('fetchRoutes Async Thunk', () => {
       // Should process available categories without crashing
     });
 
-    it('should handle response with null data', async () => {
+    it("should handle response with null data", async () => {
       // Arrange: Mock response with null data
       const nullResponse = {
         data: null,
@@ -457,7 +478,7 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.routes.length === 0 || state.error !== null).toBe(true);
     });
 
-    it('should handle response with undefined data', async () => {
+    it("should handle response with undefined data", async () => {
       // Arrange: Mock response with undefined data
       const undefinedResponse = {
         data: undefined,
@@ -474,17 +495,17 @@ describe('fetchRoutes Async Thunk', () => {
     });
   });
 
-  describe('Route Path Transformation', () => {
-    it('should transform habit name to kebab-case path', async () => {
+  describe("Route Path Transformation", () => {
+    it("should transform habit name to kebab-case path", async () => {
       // Arrange: Mock API response with various habit name formats
       const mockApiResponse = {
         data: {
           complex: [
             { Programming: [] },
-            { 'Learn English': [] },
-            { 'Morning Routine Exercise': [] },
-            { 'UPPERCASE HABIT': [] },
-            { 'Mixed-Case-Habit': [] },
+            { "Learn English": [] },
+            { "Morning Routine Exercise": [] },
+            { "UPPERCASE HABIT": [] },
+            { "Mixed-Case-Habit": [] },
           ],
           simple: [],
           withoutintervals: [],
@@ -499,30 +520,40 @@ describe('fetchRoutes Async Thunk', () => {
       // Assert: Verify path transformations
       const state = store.getState().routes;
 
-      const programmingRoute = state.routes.find((r) => r.habitName === 'Programming');
-      expect(programmingRoute?.path).toBe('/programming');
+      const programmingRoute = state.routes.find(
+        (r) => r.habitName === "Programming"
+      );
+      expect(programmingRoute?.path).toBe("/programming");
 
-      const englishRoute = state.routes.find((r) => r.habitName === 'Learn English');
-      expect(englishRoute?.path).toBe('/learn-english');
+      const englishRoute = state.routes.find(
+        (r) => r.habitName === "Learn English"
+      );
+      expect(englishRoute?.path).toBe("/learn-english");
 
-      const routineRoute = state.routes.find((r) => r.habitName === 'Morning Routine Exercise');
-      expect(routineRoute?.path).toBe('/morning-routine-exercise');
+      const routineRoute = state.routes.find(
+        (r) => r.habitName === "Morning Routine Exercise"
+      );
+      expect(routineRoute?.path).toBe("/morning-routine-exercise");
 
-      const upperRoute = state.routes.find((r) => r.habitName === 'UPPERCASE HABIT');
-      expect(upperRoute?.path).toBe('/uppercase-habit');
+      const upperRoute = state.routes.find(
+        (r) => r.habitName === "UPPERCASE HABIT"
+      );
+      expect(upperRoute?.path).toBe("/uppercase-habit");
 
-      const mixedRoute = state.routes.find((r) => r.habitName === 'Mixed-Case-Habit');
-      expect(mixedRoute?.path).toBe('/mixed-case-habit');
+      const mixedRoute = state.routes.find(
+        (r) => r.habitName === "Mixed-Case-Habit"
+      );
+      expect(mixedRoute?.path).toBe("/mixed-case-habit");
     });
 
-    it('should handle special characters in habit names', async () => {
+    it("should handle special characters in habit names", async () => {
       // Arrange: Mock API response with special characters
       const mockApiResponse = {
         data: {
           simple: [
-            { 'Habit & Activity': [] },
-            { 'Habit/Task': [] },
-            { 'Habit (Version 2)': [] },
+            { "Habit & Activity": [] },
+            { "Habit/Task": [] },
+            { "Habit (Version 2)": [] },
           ],
           complex: [],
           withoutintervals: [],
@@ -542,11 +573,11 @@ describe('fetchRoutes Async Thunk', () => {
       });
     });
 
-    it('should handle leading and trailing spaces in habit names', async () => {
+    it("should handle leading and trailing spaces in habit names", async () => {
       // Arrange: Mock API response with spaces
       const mockApiResponse = {
         data: {
-          complex: [{ '  Spaced Habit  ': [] }],
+          complex: [{ "  Spaced Habit  ": [] }],
           simple: [],
           withoutintervals: [],
         },
@@ -560,12 +591,12 @@ describe('fetchRoutes Async Thunk', () => {
       // Assert: Spaces should be trimmed
       const state = store.getState().routes;
       const route = state.routes[0];
-      expect(route.path).toBe('/spaced-habit');
+      expect(route.path).toBe("/spaced-habit");
     });
   });
 
-  describe('Component Mapping', () => {
-    it('should map complex habitType to ComplexHabits component', async () => {
+  describe("Component Mapping", () => {
+    it("should map complex habitType to ComplexHabits component", async () => {
       // Arrange: Mock API response with complex habits
       const mockApiResponse = {
         data: {
@@ -584,12 +615,12 @@ describe('fetchRoutes Async Thunk', () => {
       const state = store.getState().routes;
       expect(state.routes).toHaveLength(2);
       state.routes.forEach((route) => {
-        expect(route.component).toBe('ComplexHabits');
-        expect(route.habitType).toBe('complex');
+        expect(route.component).toBe("ComplexHabits");
+        expect(route.habitType).toBe("complex");
       });
     });
 
-    it('should map simple habitType to SimpleHabits component', async () => {
+    it("should map simple habitType to SimpleHabits component", async () => {
       // Arrange: Mock API response with simple habits
       const mockApiResponse = {
         data: {
@@ -608,18 +639,18 @@ describe('fetchRoutes Async Thunk', () => {
       const state = store.getState().routes;
       expect(state.routes).toHaveLength(2);
       state.routes.forEach((route) => {
-        expect(route.component).toBe('SimpleHabits');
-        expect(route.habitType).toBe('simple');
+        expect(route.component).toBe("SimpleHabits");
+        expect(route.habitType).toBe("simple");
       });
     });
 
-    it('should map withoutintervals habitType to WithoutIntervalsHabits component', async () => {
+    it("should map withoutintervals habitType to WithoutIntervalsHabits component", async () => {
       // Arrange: Mock API response with withoutintervals habits
       const mockApiResponse = {
         data: {
           complex: [],
           simple: [],
-          withoutintervals: [{ 'Water Intake': [] }, { 'Daily Journal': [] }],
+          withoutintervals: [{ "Water Intake": [] }, { "Daily Journal": [] }],
         },
       };
 
@@ -632,18 +663,18 @@ describe('fetchRoutes Async Thunk', () => {
       const state = store.getState().routes;
       expect(state.routes).toHaveLength(2);
       state.routes.forEach((route) => {
-        expect(route.component).toBe('WithoutIntervalsHabits');
-        expect(route.habitType).toBe('withoutintervals');
+        expect(route.component).toBe("WithoutIntervalsHabits");
+        expect(route.habitType).toBe("withoutintervals");
       });
     });
   });
 
-  describe('Redux State Integration', () => {
-    it('should use extraReducers to handle async thunk lifecycle', async () => {
+  describe("Redux State Integration", () => {
+    it("should use extraReducers to handle async thunk lifecycle", async () => {
       // Arrange: Mock API response
       const mockApiResponse = {
         data: {
-          complex: [{ Programming: ['for work'] }],
+          complex: [{ Programming: ["for work"] }],
           simple: [],
           withoutintervals: [],
         },
@@ -655,7 +686,7 @@ describe('fetchRoutes Async Thunk', () => {
       const resultAction = await store.dispatch(fetchRoutes());
 
       // Assert: Verify action types
-      expect(resultAction.type).toBe('routes/fetchRoutes/fulfilled');
+      expect(resultAction.type).toBe("routes/fetchRoutes/fulfilled");
 
       // Verify final state
       const state = store.getState().routes;
@@ -664,10 +695,10 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.error).toBeNull();
     });
 
-    it('should handle pending state correctly', () => {
+    it("should handle pending state correctly", () => {
       // Arrange: Create pending action
       const pendingAction = {
-        type: 'routes/fetchRoutes/pending',
+        type: "routes/fetchRoutes/pending",
       };
 
       // Act: Dispatch pending action directly to test reducer
@@ -678,16 +709,16 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.isLoading).toBe(true);
     });
 
-    it('should handle rejected state correctly', async () => {
+    it("should handle rejected state correctly", async () => {
       // Arrange: Mock API error
-      const error = new Error('API Error');
+      const error = new Error("API Error");
       mockedAxios.get.mockRejectedValueOnce(error);
 
       // Act: Dispatch the async thunk
       const resultAction = await store.dispatch(fetchRoutes());
 
       // Assert: Verify action types
-      expect(resultAction.type).toBe('routes/fetchRoutes/rejected');
+      expect(resultAction.type).toBe("routes/fetchRoutes/rejected");
 
       // Verify final state
       const state = store.getState().routes;
@@ -695,18 +726,18 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.error).toBeTruthy();
     });
 
-    it('should not mutate existing routes during loading', async () => {
+    it("should not mutate existing routes during loading", async () => {
       // Arrange: Set initial routes
       const initialRoutes = [
         {
-          path: '/initial',
-          component: 'InitialComponent',
-          habitName: 'Initial',
-          habitType: 'simple' as const,
+          path: "/initial",
+          component: "InitialComponent",
+          habitName: "Initial",
+          habitType: "simple" as const,
           actionTypes: [],
         },
       ];
-      store.dispatch({ type: 'routes/setRoutes', payload: initialRoutes });
+      store.dispatch({ type: "routes/setRoutes", payload: initialRoutes });
 
       // Mock delayed response
       let resolvePromise: (value: any) => void;
@@ -735,13 +766,13 @@ describe('fetchRoutes Async Thunk', () => {
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle duplicate habit names across different types', async () => {
+  describe("Edge Cases", () => {
+    it("should handle duplicate habit names across different types", async () => {
       // Arrange: Mock API response with duplicate names
       const mockApiResponse = {
         data: {
-          complex: [{ Exercise: ['running', 'swimming'] }],
-          simple: [{ Exercise: ['push-ups'] }],
+          complex: [{ Exercise: ["running", "swimming"] }],
+          simple: [{ Exercise: ["push-ups"] }],
           withoutintervals: [],
         },
       };
@@ -757,10 +788,10 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.routes.length).toBeGreaterThan(0);
     });
 
-    it('should handle very long habit names', async () => {
+    it("should handle very long habit names", async () => {
       // Arrange: Mock API response with long name
       const longName =
-        'This is an extremely long habit name that exceeds normal character limits and should still be processed correctly';
+        "This is an extremely long habit name that exceeds normal character limits and should still be processed correctly";
       const mockApiResponse = {
         data: {
           complex: [{ [longName]: [] }],
@@ -781,12 +812,15 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.routes[0].path.length).toBeGreaterThan(0);
     });
 
-    it('should handle habits with many action types', async () => {
+    it("should handle habits with many action types", async () => {
       // Arrange: Mock API response with many action types
-      const manyActionTypes = Array.from({ length: 50 }, (_, i) => `action-${i}`);
+      const manyActionTypes = Array.from(
+        { length: 50 },
+        (_, i) => `action-${i}`
+      );
       const mockApiResponse = {
         data: {
-          complex: [{ 'Advanced Habit': manyActionTypes }],
+          complex: [{ "Advanced Habit": manyActionTypes }],
           simple: [],
           withoutintervals: [],
         },
@@ -803,11 +837,11 @@ describe('fetchRoutes Async Thunk', () => {
       expect(state.routes[0].actionTypes).toHaveLength(50);
     });
 
-    it('should handle habits with numeric names', async () => {
+    it("should handle habits with numeric names", async () => {
       // Arrange: Mock API response with numeric names
       const mockApiResponse = {
         data: {
-          simple: [{ '30 Day Challenge': [] }, { '100 Push-ups': [] }],
+          simple: [{ "30 Day Challenge": [] }, { "100 Push-ups": [] }],
           complex: [],
           withoutintervals: [],
         },
@@ -822,18 +856,22 @@ describe('fetchRoutes Async Thunk', () => {
       const state = store.getState().routes;
       expect(state.routes).toHaveLength(2);
 
-      const challengeRoute = state.routes.find((r) => r.habitName === '30 Day Challenge');
-      expect(challengeRoute?.path).toBe('/30-day-challenge');
+      const challengeRoute = state.routes.find(
+        (r) => r.habitName === "30 Day Challenge"
+      );
+      expect(challengeRoute?.path).toBe("/30-day-challenge");
 
-      const pushupsRoute = state.routes.find((r) => r.habitName === '100 Push-ups');
-      expect(pushupsRoute?.path).toBe('/100-push-ups');
+      const pushupsRoute = state.routes.find(
+        (r) => r.habitName === "100 Push-ups"
+      );
+      expect(pushupsRoute?.path).toBe("/100-push-ups");
     });
 
-    it('should handle habits with emoji in names', async () => {
+    it("should handle habits with emoji in names", async () => {
       // Arrange: Mock API response with emoji
       const mockApiResponse = {
         data: {
-          simple: [{ 'Reading 📚': [] }, { '💪 Workout': [] }],
+          simple: [{ "Reading 📚": [] }, { "💪 Workout": [] }],
           complex: [],
           withoutintervals: [],
         },
@@ -854,8 +892,8 @@ describe('fetchRoutes Async Thunk', () => {
     });
   });
 
-  describe('Request Timeout Configuration', () => {
-    it('should configure request with 10 second timeout', async () => {
+  describe("Request Timeout Configuration", () => {
+    it("should configure request with 10 second timeout", async () => {
       // Arrange: Mock API response
       const mockApiResponse = {
         data: {

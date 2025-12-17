@@ -21,23 +21,23 @@
  * 7. TypeScript return types
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import { ReactNode } from 'react';
-import { routesReducer } from '../../slices/routes/routes';
-import type { RouteConfig } from '../../slices/routes/routes.types';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
+import { ReactNode } from "react";
+import { routesReducer } from "../../slices/routes/routes";
+import type { RouteConfig } from "../../slices/routes/routes.types";
 
 // Import the hook we're testing (this will fail initially - RED phase)
 // @ts-expect-error - Hook doesn't exist yet (RED phase)
-import { useRoutes } from '../useRoutes';
+import { useRoutes } from "../useRoutes";
 
 // Mock axios for async thunk testing
-vi.mock('axios');
-import axios from 'axios';
+vi.mock("axios");
+import axios from "axios";
 
-describe('US-003: useRoutes Custom Hook', () => {
+describe("US-003: useRoutes Custom Hook", () => {
   let store: ReturnType<typeof configureStore>;
 
   // Helper to create a Redux wrapper for testing hooks
@@ -63,24 +63,24 @@ describe('US-003: useRoutes Custom Hook', () => {
     vi.resetAllMocks();
   });
 
-  describe('Hook Existence and Structure', () => {
-    it('should be a function', () => {
+  describe("Hook Existence and Structure", () => {
+    it("should be a function", () => {
       // Arrange & Act: Check if useRoutes is a function
 
       // Assert: Hook should be a function
-      expect(typeof useRoutes).toBe('function');
+      expect(typeof useRoutes).toBe("function");
     });
 
-    it('should follow React hooks naming convention', () => {
+    it("should follow React hooks naming convention", () => {
       // Arrange & Act: Get hook name
       const hookName = useRoutes.name;
 
       // Assert: Should start with 'use' and be PascalCase
       expect(hookName).toMatch(/^use[A-Z]/);
-      expect(hookName).toBe('useRoutes');
+      expect(hookName).toBe("useRoutes");
     });
 
-    it('should return an object with expected properties', () => {
+    it("should return an object with expected properties", () => {
       // Arrange: Create wrapper with store
       const wrapper = createWrapper(store);
 
@@ -89,14 +89,14 @@ describe('US-003: useRoutes Custom Hook', () => {
 
       // Assert: Should return object with all required properties
       expect(result.current).toBeDefined();
-      expect(result.current).toHaveProperty('routes');
-      expect(result.current).toHaveProperty('isLoading');
-      expect(result.current).toHaveProperty('error');
-      expect(result.current).toHaveProperty('fetchRoutes');
-      expect(result.current).toHaveProperty('clearError');
+      expect(result.current).toHaveProperty("routes");
+      expect(result.current).toHaveProperty("isLoading");
+      expect(result.current).toHaveProperty("error");
+      expect(result.current).toHaveProperty("fetchRoutes");
+      expect(result.current).toHaveProperty("clearError");
     });
 
-    it('should return routes as an array', () => {
+    it("should return routes as an array", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -107,7 +107,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(Array.isArray(result.current.routes)).toBe(true);
     });
 
-    it('should return isLoading as a boolean', () => {
+    it("should return isLoading as a boolean", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -115,10 +115,10 @@ describe('US-003: useRoutes Custom Hook', () => {
       const { result } = renderHook(() => useRoutes(), { wrapper });
 
       // Assert: isLoading should be boolean
-      expect(typeof result.current.isLoading).toBe('boolean');
+      expect(typeof result.current.isLoading).toBe("boolean");
     });
 
-    it('should return error as string or null', () => {
+    it("should return error as string or null", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -127,11 +127,12 @@ describe('US-003: useRoutes Custom Hook', () => {
 
       // Assert: error should be string or null
       expect(
-        typeof result.current.error === 'string' || result.current.error === null
+        typeof result.current.error === "string" ||
+          result.current.error === null
       ).toBe(true);
     });
 
-    it('should return fetchRoutes as a function', () => {
+    it("should return fetchRoutes as a function", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -139,10 +140,10 @@ describe('US-003: useRoutes Custom Hook', () => {
       const { result } = renderHook(() => useRoutes(), { wrapper });
 
       // Assert: fetchRoutes should be a function
-      expect(typeof result.current.fetchRoutes).toBe('function');
+      expect(typeof result.current.fetchRoutes).toBe("function");
     });
 
-    it('should return clearError as a function', () => {
+    it("should return clearError as a function", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -150,12 +151,12 @@ describe('US-003: useRoutes Custom Hook', () => {
       const { result } = renderHook(() => useRoutes(), { wrapper });
 
       // Assert: clearError should be a function
-      expect(typeof result.current.clearError).toBe('function');
+      expect(typeof result.current.clearError).toBe("function");
     });
   });
 
-  describe('Initial State Access', () => {
-    it('should return empty routes array initially', () => {
+  describe("Initial State Access", () => {
+    it("should return empty routes array initially", () => {
       // Arrange: Create wrapper with fresh store
       const wrapper = createWrapper(store);
 
@@ -167,7 +168,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.routes.length).toBe(0);
     });
 
-    it('should return isLoading as false initially', () => {
+    it("should return isLoading as false initially", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -178,7 +179,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('should return error as null initially', () => {
+    it("should return error as null initially", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -190,27 +191,27 @@ describe('US-003: useRoutes Custom Hook', () => {
     });
   });
 
-  describe('Redux State Integration', () => {
-    it('should access routes from Redux state', () => {
+  describe("Redux State Integration", () => {
+    it("should access routes from Redux state", () => {
       // Arrange: Populate store with routes
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/programming',
-          component: 'ComplexHabits',
-          habitName: 'Programming',
-          habitType: 'complex',
-          actionTypes: ['for work', 'personal project'],
+          path: "/programming",
+          component: "ComplexHabits",
+          habitName: "Programming",
+          habitType: "complex",
+          actionTypes: ["for work", "personal project"],
         },
         {
-          path: '/exercise',
-          component: 'SimpleHabits',
-          habitName: 'Exercise',
-          habitType: 'simple',
-          actionTypes: ['cardio', 'strength'],
+          path: "/exercise",
+          component: "SimpleHabits",
+          habitName: "Exercise",
+          habitType: "simple",
+          actionTypes: ["cardio", "strength"],
         },
       ];
 
-      store.dispatch({ type: 'routes/setRoutes', payload: mockRoutes });
+      store.dispatch({ type: "routes/setRoutes", payload: mockRoutes });
 
       const wrapper = createWrapper(store);
 
@@ -222,9 +223,9 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.routes.length).toBe(2);
     });
 
-    it('should access isLoading from Redux state', () => {
+    it("should access isLoading from Redux state", () => {
       // Arrange: Set loading state in store
-      store.dispatch({ type: 'routes/setLoading', payload: true });
+      store.dispatch({ type: "routes/setLoading", payload: true });
 
       const wrapper = createWrapper(store);
 
@@ -235,10 +236,10 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.isLoading).toBe(true);
     });
 
-    it('should access error from Redux state', () => {
+    it("should access error from Redux state", () => {
       // Arrange: Set error in store
-      const errorMessage = 'Failed to fetch routes';
-      store.dispatch({ type: 'routes/setError', payload: errorMessage });
+      const errorMessage = "Failed to fetch routes";
+      store.dispatch({ type: "routes/setError", payload: errorMessage });
 
       const wrapper = createWrapper(store);
 
@@ -249,7 +250,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.error).toBe(errorMessage);
     });
 
-    it('should react to Redux state changes', () => {
+    it("should react to Redux state changes", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -262,27 +263,27 @@ describe('US-003: useRoutes Custom Hook', () => {
       // Update Redux state
       const newRoutes: RouteConfig[] = [
         {
-          path: '/reading',
-          component: 'ComplexHabits',
-          habitName: 'Reading',
-          habitType: 'complex',
-          actionTypes: ['fiction', 'non-fiction'],
+          path: "/reading",
+          component: "ComplexHabits",
+          habitName: "Reading",
+          habitType: "complex",
+          actionTypes: ["fiction", "non-fiction"],
         },
       ];
 
-      store.dispatch({ type: 'routes/setRoutes', payload: newRoutes });
+      store.dispatch({ type: "routes/setRoutes", payload: newRoutes });
 
       // Assert: Hook should reflect new state
       expect(result.current.routes).toEqual(newRoutes);
     });
   });
 
-  describe('fetchRoutes Function', () => {
-    it('should dispatch fetchRoutes async thunk when called', async () => {
+  describe("fetchRoutes Function", () => {
+    it("should dispatch fetchRoutes async thunk when called", async () => {
       // Arrange: Mock successful API response
       const mockApiResponse = {
         data: {
-          complex: [{ Programming: ['for work', 'personal'] }],
+          complex: [{ Programming: ["for work", "personal"] }],
           simple: [],
           withoutintervals: [],
         },
@@ -307,7 +308,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.routes.length).toBeGreaterThan(0);
     });
 
-    it('should update loading state when fetchRoutes is called', async () => {
+    it("should update loading state when fetchRoutes is called", async () => {
       // Arrange: Mock delayed API response
       let resolvePromise: (value: any) => void;
       const delayedPromise = new Promise((resolve) => {
@@ -343,15 +344,15 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('should populate routes after successful fetch', async () => {
+    it("should populate routes after successful fetch", async () => {
       // Arrange: Mock API response with routes
       const mockApiResponse = {
         data: {
           complex: [
-            { Programming: ['for work', 'personal project'] },
-            { Reading: ['fiction', 'non-fiction'] },
+            { Programming: ["for work", "personal project"] },
+            { Reading: ["fiction", "non-fiction"] },
           ],
-          simple: [{ Exercise: ['cardio', 'strength'] }],
+          simple: [{ Exercise: ["cardio", "strength"] }],
           withoutintervals: [],
         },
       };
@@ -369,18 +370,18 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.routes.length).toBe(3);
 
       const programmingRoute = result.current.routes.find(
-        (r) => r.habitName === 'Programming'
+        (r) => r.habitName === "Programming"
       );
       expect(programmingRoute).toBeDefined();
-      expect(programmingRoute?.path).toBe('/programming');
-      expect(programmingRoute?.component).toBe('ComplexHabits');
-      expect(programmingRoute?.habitType).toBe('complex');
+      expect(programmingRoute?.path).toBe("/programming");
+      expect(programmingRoute?.component).toBe("ComplexHabits");
+      expect(programmingRoute?.habitType).toBe("complex");
     });
 
-    it('should handle fetch errors gracefully', async () => {
+    it("should handle fetch errors gracefully", async () => {
       // Arrange: Mock API error
-      const networkError = new Error('Network Error');
-      (networkError as any).code = 'ERR_NETWORK';
+      const networkError = new Error("Network Error");
+      (networkError as any).code = "ERR_NETWORK";
       vi.mocked(axios.get).mockRejectedValueOnce(networkError);
 
       const wrapper = createWrapper(store);
@@ -392,21 +393,21 @@ describe('US-003: useRoutes Custom Hook', () => {
 
       // Assert: Should store error message
       expect(result.current.error).toBeTruthy();
-      expect(result.current.error).toContain('Unable to load routes');
+      expect(result.current.error).toContain("Unable to load routes");
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('should clear previous errors on successful fetch', async () => {
+    it("should clear previous errors on successful fetch", async () => {
       // Arrange: Set an error in state
       store.dispatch({
-        type: 'routes/setError',
-        payload: 'Previous error',
+        type: "routes/setError",
+        payload: "Previous error",
       });
 
       const wrapper = createWrapper(store);
       const { result } = renderHook(() => useRoutes(), { wrapper });
 
-      expect(result.current.error).toBe('Previous error');
+      expect(result.current.error).toBe("Previous error");
 
       // Mock successful API response
       vi.mocked(axios.get).mockResolvedValueOnce({
@@ -424,7 +425,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.error).toBeNull();
     });
 
-    it('should return a promise from fetchRoutes', () => {
+    it("should return a promise from fetchRoutes", () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValueOnce({
         data: {
@@ -443,24 +444,24 @@ describe('US-003: useRoutes Custom Hook', () => {
 
       // Assert: Should return a promise
       expect(returnValue).toBeInstanceOf(Promise);
-      expect(typeof returnValue.then).toBe('function');
-      expect(typeof returnValue.catch).toBe('function');
+      expect(typeof returnValue.then).toBe("function");
+      expect(typeof returnValue.catch).toBe("function");
     });
   });
 
-  describe('clearError Function', () => {
-    it('should clear error when called', () => {
+  describe("clearError Function", () => {
+    it("should clear error when called", () => {
       // Arrange: Set an error in state
       store.dispatch({
-        type: 'routes/setError',
-        payload: 'Test error message',
+        type: "routes/setError",
+        payload: "Test error message",
       });
 
       const wrapper = createWrapper(store);
       const { result } = renderHook(() => useRoutes(), { wrapper });
 
       // Verify error exists
-      expect(result.current.error).toBe('Test error message');
+      expect(result.current.error).toBe("Test error message");
 
       // Act: Clear error
       result.current.clearError();
@@ -469,20 +470,20 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.error).toBeNull();
     });
 
-    it('should not affect routes when clearing error', () => {
+    it("should not affect routes when clearing error", () => {
       // Arrange: Set routes and error
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/programming',
-          component: 'ComplexHabits',
-          habitName: 'Programming',
-          habitType: 'complex',
+          path: "/programming",
+          component: "ComplexHabits",
+          habitName: "Programming",
+          habitType: "complex",
           actionTypes: [],
         },
       ];
 
-      store.dispatch({ type: 'routes/setRoutes', payload: mockRoutes });
-      store.dispatch({ type: 'routes/setError', payload: 'Error message' });
+      store.dispatch({ type: "routes/setRoutes", payload: mockRoutes });
+      store.dispatch({ type: "routes/setError", payload: "Error message" });
 
       const wrapper = createWrapper(store);
       const { result } = renderHook(() => useRoutes(), { wrapper });
@@ -495,10 +496,10 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.error).toBeNull();
     });
 
-    it('should not affect loading state when clearing error', () => {
+    it("should not affect loading state when clearing error", () => {
       // Arrange: Set error and ensure not loading
-      store.dispatch({ type: 'routes/setError', payload: 'Error' });
-      store.dispatch({ type: 'routes/setLoading', payload: false });
+      store.dispatch({ type: "routes/setError", payload: "Error" });
+      store.dispatch({ type: "routes/setLoading", payload: false });
 
       const wrapper = createWrapper(store);
       const { result } = renderHook(() => useRoutes(), { wrapper });
@@ -512,7 +513,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.isLoading).toBe(initialLoading);
     });
 
-    it('should be safe to call when no error exists', () => {
+    it("should be safe to call when no error exists", () => {
       // Arrange: No error in state
       const wrapper = createWrapper(store);
       const { result } = renderHook(() => useRoutes(), { wrapper });
@@ -527,8 +528,8 @@ describe('US-003: useRoutes Custom Hook', () => {
     });
   });
 
-  describe('Function Reference Stability (useCallback)', () => {
-    it('should maintain stable reference for fetchRoutes across re-renders', () => {
+  describe("Function Reference Stability (useCallback)", () => {
+    it("should maintain stable reference for fetchRoutes across re-renders", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -546,7 +547,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(firstFetchRoutes).toBe(secondFetchRoutes);
     });
 
-    it('should maintain stable reference for clearError across re-renders', () => {
+    it("should maintain stable reference for clearError across re-renders", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -564,7 +565,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(firstClearError).toBe(secondClearError);
     });
 
-    it('should not create new function instances on state changes', () => {
+    it("should not create new function instances on state changes", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -575,14 +576,14 @@ describe('US-003: useRoutes Custom Hook', () => {
       const initialClearError = result.current.clearError;
 
       // Update Redux state (simulating state change)
-      store.dispatch({ type: 'routes/setLoading', payload: true });
+      store.dispatch({ type: "routes/setLoading", payload: true });
 
       // Assert: Function references should remain stable
       expect(result.current.fetchRoutes).toBe(initialFetchRoutes);
       expect(result.current.clearError).toBe(initialClearError);
     });
 
-    it('should be safe to use in useEffect dependency arrays', () => {
+    it("should be safe to use in useEffect dependency arrays", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -602,8 +603,8 @@ describe('US-003: useRoutes Custom Hook', () => {
     });
   });
 
-  describe('Multiple Hook Instances', () => {
-    it('should share state between multiple hook instances', () => {
+  describe("Multiple Hook Instances", () => {
+    it("should share state between multiple hook instances", () => {
       // Arrange: Create wrapper with shared store
       const wrapper = createWrapper(store);
 
@@ -617,7 +618,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result1.current.error).toBe(result2.current.error);
     });
 
-    it('should sync state changes across multiple instances', () => {
+    it("should sync state changes across multiple instances", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -628,22 +629,22 @@ describe('US-003: useRoutes Custom Hook', () => {
       // Update state through store
       const newRoutes: RouteConfig[] = [
         {
-          path: '/meditation',
-          component: 'SimpleHabits',
-          habitName: 'Meditation',
-          habitType: 'simple',
+          path: "/meditation",
+          component: "SimpleHabits",
+          habitName: "Meditation",
+          habitType: "simple",
           actionTypes: [],
         },
       ];
 
-      store.dispatch({ type: 'routes/setRoutes', payload: newRoutes });
+      store.dispatch({ type: "routes/setRoutes", payload: newRoutes });
 
       // Assert: Both instances should reflect the change
       expect(result1.current.routes).toEqual(newRoutes);
       expect(result2.current.routes).toEqual(newRoutes);
     });
 
-    it('should allow independent function calls from different instances', async () => {
+    it("should allow independent function calls from different instances", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({
         data: {
@@ -666,9 +667,9 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result2.current.routes).toEqual(result1.current.routes);
     });
 
-    it('should handle concurrent clearError calls from multiple instances', () => {
+    it("should handle concurrent clearError calls from multiple instances", () => {
       // Arrange: Set error
-      store.dispatch({ type: 'routes/setError', payload: 'Error' });
+      store.dispatch({ type: "routes/setError", payload: "Error" });
 
       const wrapper = createWrapper(store);
 
@@ -685,8 +686,8 @@ describe('US-003: useRoutes Custom Hook', () => {
     });
   });
 
-  describe('TypeScript Return Types', () => {
-    it('should have correct type for routes property', () => {
+  describe("TypeScript Return Types", () => {
+    it("should have correct type for routes property", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -699,16 +700,16 @@ describe('US-003: useRoutes Custom Hook', () => {
       // If routes exist, verify structure
       if (result.current.routes.length > 0) {
         const route = result.current.routes[0];
-        expect(route).toHaveProperty('path');
-        expect(route).toHaveProperty('component');
-        expect(route).toHaveProperty('habitName');
-        expect(route).toHaveProperty('habitType');
-        expect(route).toHaveProperty('actionTypes');
+        expect(route).toHaveProperty("path");
+        expect(route).toHaveProperty("component");
+        expect(route).toHaveProperty("habitName");
+        expect(route).toHaveProperty("habitType");
+        expect(route).toHaveProperty("actionTypes");
         expect(Array.isArray(route.actionTypes)).toBe(true);
       }
     });
 
-    it('should have correct type for isLoading property', () => {
+    it("should have correct type for isLoading property", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -716,13 +717,13 @@ describe('US-003: useRoutes Custom Hook', () => {
       const { result } = renderHook(() => useRoutes(), { wrapper });
 
       // Assert: isLoading should be boolean
-      expect(typeof result.current.isLoading).toBe('boolean');
+      expect(typeof result.current.isLoading).toBe("boolean");
       expect(
         result.current.isLoading === true || result.current.isLoading === false
       ).toBe(true);
     });
 
-    it('should have correct type for error property', () => {
+    it("should have correct type for error property", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -731,13 +732,12 @@ describe('US-003: useRoutes Custom Hook', () => {
 
       // Assert: error should be string | null
       const errorType = typeof result.current.error;
-      expect(
-        errorType === 'string' ||
-          result.current.error === null
-      ).toBe(true);
+      expect(errorType === "string" || result.current.error === null).toBe(
+        true
+      );
     });
 
-    it('should have correct return type for fetchRoutes', async () => {
+    it("should have correct return type for fetchRoutes", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValueOnce({
         data: {
@@ -763,7 +763,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(await result.current.fetchRoutes()).toBeUndefined();
     });
 
-    it('should have correct return type for clearError', () => {
+    it("should have correct return type for clearError", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -777,8 +777,8 @@ describe('US-003: useRoutes Custom Hook', () => {
     });
   });
 
-  describe('Edge Cases and Error Scenarios', () => {
-    it('should handle unmounting during async fetch', async () => {
+  describe("Edge Cases and Error Scenarios", () => {
+    it("should handle unmounting during async fetch", async () => {
       // Arrange: Mock slow API response
       let resolvePromise: (value: any) => void;
       const delayedPromise = new Promise((resolve) => {
@@ -810,7 +810,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       await expect(fetchPromise).resolves.toBeDefined();
     });
 
-    it('should handle rapid consecutive fetchRoutes calls', async () => {
+    it("should handle rapid consecutive fetchRoutes calls", async () => {
       // Arrange: Mock API
       vi.mocked(axios.get).mockResolvedValue({
         data: {
@@ -830,10 +830,12 @@ describe('US-003: useRoutes Custom Hook', () => {
       const promise3 = result.current.fetchRoutes();
 
       // Assert: All promises should resolve without errors
-      await expect(Promise.all([promise1, promise2, promise3])).resolves.toBeDefined();
+      await expect(
+        Promise.all([promise1, promise2, promise3])
+      ).resolves.toBeDefined();
     });
 
-    it('should handle empty routes array from backend', async () => {
+    it("should handle empty routes array from backend", async () => {
       // Arrange: Mock empty response
       vi.mocked(axios.get).mockResolvedValueOnce({
         data: {
@@ -856,10 +858,10 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('should handle network timeout errors', async () => {
+    it("should handle network timeout errors", async () => {
       // Arrange: Mock timeout error
-      const timeoutError = new Error('timeout of 10000ms exceeded');
-      (timeoutError as any).code = 'ECONNABORTED';
+      const timeoutError = new Error("timeout of 10000ms exceeded");
+      (timeoutError as any).code = "ECONNABORTED";
       vi.mocked(axios.get).mockRejectedValueOnce(timeoutError);
 
       const wrapper = createWrapper(store);
@@ -870,16 +872,16 @@ describe('US-003: useRoutes Custom Hook', () => {
       await result.current.fetchRoutes();
 
       // Assert: Should handle timeout gracefully
-      expect(result.current.error).toContain('timed out');
+      expect(result.current.error).toContain("timed out");
       expect(result.current.routes).toEqual([]);
     });
 
-    it('should handle 404 API errors', async () => {
+    it("should handle 404 API errors", async () => {
       // Arrange: Mock 404 error
       const error404 = {
         response: {
           status: 404,
-          data: { message: 'Not Found' },
+          data: { message: "Not Found" },
         },
       };
       vi.mocked(axios.get).mockRejectedValueOnce(error404);
@@ -892,16 +894,16 @@ describe('US-003: useRoutes Custom Hook', () => {
       await result.current.fetchRoutes();
 
       // Assert: Should handle 404 with user-friendly message
-      expect(result.current.error).toContain('not found');
-      expect(result.current.error).toContain('contact support');
+      expect(result.current.error).toContain("not found");
+      expect(result.current.error).toContain("contact support");
     });
 
-    it('should handle 500 server errors', async () => {
+    it("should handle 500 server errors", async () => {
       // Arrange: Mock 500 error
       const error500 = {
         response: {
           status: 500,
-          data: { message: 'Internal Server Error' },
+          data: { message: "Internal Server Error" },
         },
       };
       vi.mocked(axios.get).mockRejectedValueOnce(error500);
@@ -914,17 +916,17 @@ describe('US-003: useRoutes Custom Hook', () => {
       await result.current.fetchRoutes();
 
       // Assert: Should handle 500 with user-friendly message
-      expect(result.current.error).toContain('Server error');
-      expect(result.current.error).toContain('try again later');
+      expect(result.current.error).toContain("Server error");
+      expect(result.current.error).toContain("try again later");
     });
   });
 
-  describe('Integration with Redux Async Thunk', () => {
-    it('should integrate with fetchRoutes async thunk', async () => {
+  describe("Integration with Redux Async Thunk", () => {
+    it("should integrate with fetchRoutes async thunk", async () => {
       // Arrange: Mock API response
       const mockApiResponse = {
         data: {
-          complex: [{ 'Learn TypeScript': ['basics', 'advanced'] }],
+          complex: [{ "Learn TypeScript": ["basics", "advanced"] }],
           simple: [],
           withoutintervals: [],
         },
@@ -941,11 +943,11 @@ describe('US-003: useRoutes Custom Hook', () => {
 
       // Assert: Should dispatch thunk and update state
       expect(result.current.routes).toHaveLength(1);
-      expect(result.current.routes[0].habitName).toBe('Learn TypeScript');
-      expect(result.current.routes[0].path).toBe('/learn-typescript');
+      expect(result.current.routes[0].habitName).toBe("Learn TypeScript");
+      expect(result.current.routes[0].path).toBe("/learn-typescript");
     });
 
-    it('should handle thunk pending state', async () => {
+    it("should handle thunk pending state", async () => {
       // Arrange: Mock delayed response
       let resolvePromise: (value: any) => void;
       const delayedPromise = new Promise((resolve) => {
@@ -980,11 +982,11 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    it('should handle thunk fulfilled state', async () => {
+    it("should handle thunk fulfilled state", async () => {
       // Arrange: Mock successful response
       vi.mocked(axios.get).mockResolvedValueOnce({
         data: {
-          complex: [{ Coding: ['frontend', 'backend'] }],
+          complex: [{ Coding: ["frontend", "backend"] }],
           simple: [],
           withoutintervals: [],
         },
@@ -1003,9 +1005,9 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(result.current.routes.length).toBeGreaterThan(0);
     });
 
-    it('should handle thunk rejected state', async () => {
+    it("should handle thunk rejected state", async () => {
       // Arrange: Mock error
-      vi.mocked(axios.get).mockRejectedValueOnce(new Error('Network Error'));
+      vi.mocked(axios.get).mockRejectedValueOnce(new Error("Network Error"));
 
       const wrapper = createWrapper(store);
 
@@ -1021,8 +1023,8 @@ describe('US-003: useRoutes Custom Hook', () => {
     });
   });
 
-  describe('Hook Cleanup and Memory Leaks', () => {
-    it('should cleanup properly on unmount', () => {
+  describe("Hook Cleanup and Memory Leaks", () => {
+    it("should cleanup properly on unmount", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -1033,7 +1035,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(() => unmount()).not.toThrow();
     });
 
-    it('should not cause memory leaks with multiple mount/unmount cycles', () => {
+    it("should not cause memory leaks with multiple mount/unmount cycles", () => {
       // Arrange: Create wrapper
       const wrapper = createWrapper(store);
 
@@ -1047,7 +1049,7 @@ describe('US-003: useRoutes Custom Hook', () => {
       expect(true).toBe(true);
     });
 
-    it('should not update state after unmount', async () => {
+    it("should not update state after unmount", async () => {
       // Arrange: Mock delayed API
       let resolvePromise: (value: any) => void;
       const delayedPromise = new Promise((resolve) => {

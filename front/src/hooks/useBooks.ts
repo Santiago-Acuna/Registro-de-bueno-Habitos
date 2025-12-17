@@ -13,8 +13,15 @@ import { useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import type { RootState, Dispatch } from "@/redux/store";
 import type { BookType, BookBody } from "@/components/reading/reading types";
-import { manageForm as manageFormAction, getInfo as getInfoAction } from "@/redux/slices/book/book";
-import { fetchBooks as fetchBooksThunk, postBooks, patchBooks } from "@/redux/slices/book/asyncActions";
+import {
+  manageForm as manageFormAction,
+  getInfo as getInfoAction,
+} from "@/redux/slices/book/book";
+import {
+  fetchBooks as fetchBooksThunk,
+  postBooks,
+  patchBooks,
+} from "@/redux/slices/book/asyncActions";
 
 /**
  * useBooks Hook Return Type
@@ -53,24 +60,36 @@ export function useBooks(): UseBooksReturn {
   }, [dispatch]);
 
   // Create a new book
-  const createBook = useCallback(async (book: BookBody): Promise<void> => {
-    await dispatch(postBooks(book));
-  }, [dispatch]);
+  const createBook = useCallback(
+    async (book: BookBody): Promise<void> => {
+      await dispatch(postBooks(book));
+    },
+    [dispatch]
+  );
 
   // Update an existing book
-  const updateBook = useCallback(async (book: BookBody): Promise<void> => {
-    await dispatch(patchBooks({ book, bookID }));
-  }, [dispatch, bookID]);
+  const updateBook = useCallback(
+    async (book: BookBody): Promise<void> => {
+      await dispatch(patchBooks({ book, bookID }));
+    },
+    [dispatch, bookID]
+  );
 
   // Manage form state
-  const manageForm = useCallback((state: string): void => {
-    dispatch(manageFormAction(state));
-  }, [dispatch]);
+  const manageForm = useCallback(
+    (state: string): void => {
+      dispatch(manageFormAction(state));
+    },
+    [dispatch]
+  );
 
   // Get book info
-  const getInfo = useCallback((book: BookType): void => {
-    dispatch(getInfoAction(book));
-  }, [dispatch]);
+  const getInfo = useCallback(
+    (book: BookType): void => {
+      dispatch(getInfoAction(book));
+    },
+    [dispatch]
+  );
 
   return {
     books,

@@ -538,10 +538,7 @@ describe("CH-006: useBooks Hook - Redux Integration and CRUD Operations", () => 
       });
 
       // Assert: Should complete without errors
-      expect(axios.post).toHaveBeenCalledWith(
-        expect.any(String),
-        completeBook
-      );
+      expect(axios.post).toHaveBeenCalledWith(expect.any(String), completeBook);
     });
   });
 
@@ -838,10 +835,7 @@ describe("CH-006: useBooks Hook - Redux Integration and CRUD Operations", () => 
       vi.mocked(axios.get).mockImplementation(
         () =>
           new Promise((resolve) =>
-            setTimeout(
-              () => resolve({ data: { data: [] } }),
-              100
-            )
+            setTimeout(() => resolve({ data: { data: [] } }), 100)
           )
       );
 
@@ -869,9 +863,7 @@ describe("CH-006: useBooks Hook - Redux Integration and CRUD Operations", () => 
       // Arrange: Mock API
       vi.mocked(axios.post).mockImplementation(
         () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ data: {} }), 100)
-          )
+          new Promise((resolve) => setTimeout(() => resolve({ data: {} }), 100))
       );
 
       const store = createTestStore();
@@ -949,8 +941,7 @@ describe("CH-006: useBooks Hook - Redux Integration and CRUD Operations", () => 
       // Assert: Should handle error (check if error state exists)
       if ("error" in result.current || "fetchError" in result.current) {
         expect(
-          result.current.error !== null ||
-            result.current.fetchError !== null
+          result.current.error !== null || result.current.fetchError !== null
         ).toBe(true);
       }
     });

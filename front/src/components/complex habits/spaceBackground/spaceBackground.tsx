@@ -1,5 +1,4 @@
-
-import './styles.modules.css'; // This imports the CSS file
+import "./styles.modules.css"; // This imports the CSS file
 
 interface SpaceBackgroundProps {
   children: React.ReactNode;
@@ -19,7 +18,7 @@ const SpaceBackground = ({ children, className }: SpaceBackgroundProps) => {
 
 export default SpaceBackground;
 
-    // <SpaceBackground className={styles.container}></SpaceBackground> ejemplo de uso
+// <SpaceBackground className={styles.container}></SpaceBackground> ejemplo de uso
 
 // .container { // anadir a la hoja de estilos principal
 //   display: flex;

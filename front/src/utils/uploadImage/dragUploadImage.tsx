@@ -1,4 +1,4 @@
-import { useRef} from "react";
+import { useRef } from "react";
 import styles from "./uploadImage.module.css";
 import { type HabitBody, HandleChangeProps } from "../../habits-types";
 
@@ -8,8 +8,17 @@ interface DragDropFilesProps {
   habit: HabitBody;
   setHabit: React.Dispatch<React.SetStateAction<HabitBody>>;
   errors: Record<string, string | undefined>;
-  setErrors: React.Dispatch<React.SetStateAction<Record<string, string | undefined>>>;
-  handleChange: ({ e, setHabit, habit, errors, setDisabled, setErrors }: HandleChangeProps) => void;
+  setErrors: React.Dispatch<
+    React.SetStateAction<Record<string, string | undefined>>
+  >;
+  handleChange: ({
+    e,
+    setHabit,
+    habit,
+    errors,
+    setDisabled,
+    setErrors,
+  }: HandleChangeProps) => void;
   setDisabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -19,21 +28,22 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
   habit,
   setHabit,
   errors,
-  setDisabled
+  setDisabled,
 }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleDragOver = (event: React.DragEvent<HTMLDivElement | HTMLParagraphElement>): void => {
+  const handleDragOver = (
+    event: React.DragEvent<HTMLDivElement | HTMLParagraphElement>
+  ): void => {
     event.preventDefault();
-    console.log("drag over")
+    console.log("drag over");
   };
 
   const handleDrop = async (
-
     event: React.DragEvent<HTMLDivElement | HTMLParagraphElement>
   ): Promise<void> => {
     event.preventDefault();
-    console.log("dropped")
+    console.log("dropped");
     const droppedFiles = event.dataTransfer.files;
 
     if (droppedFiles.length > 0) {
@@ -43,7 +53,7 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
       // Update state or perform further actions with the dropped file
       setFile(droppedFile);
       if (droppedFile !== null) {
-        setDisabled(false)
+        setDisabled(false);
       }
     }
   };
@@ -52,11 +62,11 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
     e.preventDefault();
     setHabit({
       ...habit,
-      icon: ""
+      icon: "",
     });
   };
 
-  if (habit.icon !== "" ) {
+  if (habit.icon !== "") {
     return (
       <div className={styles.urlImgDiv}>
         <img className={styles.urlImg} src={habit.icon} alt="invalid img" />
@@ -75,7 +85,11 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
   if (File?.name !== null && File?.name !== undefined)
     return (
       <div className={styles.urlImgDiv}>
-        <img className={styles.urlImg} src={URL.createObjectURL(File)} alt="a ver si esta" />
+        <img
+          className={styles.urlImg}
+          src={URL.createObjectURL(File)}
+          alt="a ver si esta"
+        />
         <p className={styles.urlImgP}>{`${File.name}`}</p>
         <div className="actions">
           <button
@@ -90,7 +104,11 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
     );
   return (
     <div className={styles.imageContainer}>
-      <div className={styles.dropzone} onDragOver={handleDragOver} onDrop={handleDrop}>
+      <div
+        className={styles.dropzone}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+      >
         <p onDragOver={handleDragOver} onDrop={handleDrop}>
           Drag and Drop Files to Upload
         </p>
@@ -119,7 +137,9 @@ const DragDropFiles: React.FC<DragDropFilesProps> = ({
         Select Files
       </button>
       {/* {isImageValid === false && <p className={styles.danger}>Image url is not valid</p>} */}
-      {errors.icon !== undefined && <p className={styles.danger}>{errors.icon}</p>}
+      {errors.icon !== undefined && (
+        <p className={styles.danger}>{errors.icon}</p>
+      )}
     </div>
   );
 };

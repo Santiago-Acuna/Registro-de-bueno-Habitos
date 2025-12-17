@@ -13,7 +13,7 @@ export interface RouteConfig {
   path: string;
   component: string;
   habitName: string;
-  habitType: 'complex' | 'simple' | 'withoutintervals';
+  habitType: "complex" | "simple" | "withoutintervals";
   actionTypes: string[];
 }
 

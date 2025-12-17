@@ -32,55 +32,77 @@
  * - Invalid component names handled gracefully
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import { Provider } from 'react-redux';
-import { configureStore } from '@reduxjs/toolkit';
-import userEvent from '@testing-library/user-event';
-import type { RouteConfig } from '../redux/slices/routes/routes.types';
-import { routesReducer } from '../redux/slices/routes/routes';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { Provider } from "react-redux";
+import { configureStore } from "@reduxjs/toolkit";
+import userEvent from "@testing-library/user-event";
+import type { RouteConfig } from "../redux/slices/routes/routes.types";
+import { routesReducer } from "../redux/slices/routes/routes";
 
 // Import App component
-import App from '../App';
+import App from "../App";
 
 // Mock useRoutes hook to control routing state
-vi.mock('../redux/hooks/useRoutes', () => ({
+vi.mock("../redux/hooks/useRoutes", () => ({
   useRoutes: vi.fn(),
 }));
 
-import { useRoutes } from '../redux/hooks/useRoutes';
+import { useRoutes } from "../redux/hooks/useRoutes";
 
 // Mock the Pages barrel export
-vi.mock('../components/Pages', () => ({
-  ComplexHabits: () => <div data-testid="complex-habits-page">Complex Habits Page</div>,
-  CreateHabits: () => <div data-testid="create-habits-component">Create Habits</div>,
-  HabitsSelection: () => <div data-testid="habits-selection-component">Habits Selection</div>,
-  SimpleHabits: () => <div data-testid="simple-habits-page">Simple Habits Page</div>,
-  WithoutIntervalsHabits: () => <div data-testid="without-intervals-page">Without Intervals Page</div>,
+vi.mock("../components/Pages", () => ({
+  ComplexHabits: () => (
+    <div data-testid="complex-habits-page">Complex Habits Page</div>
+  ),
+  CreateHabits: () => (
+    <div data-testid="create-habits-component">Create Habits</div>
+  ),
+  HabitsSelection: () => (
+    <div data-testid="habits-selection-component">Habits Selection</div>
+  ),
+  SimpleHabits: () => (
+    <div data-testid="simple-habits-page">Simple Habits Page</div>
+  ),
+  WithoutIntervalsHabits: () => (
+    <div data-testid="without-intervals-page">Without Intervals Page</div>
+  ),
 }));
 
 // Mock Material-UI components
-vi.mock('@mui/material/CircularProgress', () => ({
+vi.mock("@mui/material/CircularProgress", () => ({
   default: () => <div data-testid="loading-spinner">Loading...</div>,
 }));
 
-vi.mock('@mui/material/Typography', () => ({
-  default: ({ children, color }: { children: React.ReactNode; color?: string }) => (
+vi.mock("@mui/material/Typography", () => ({
+  default: ({
+    children,
+    color,
+  }: {
+    children: React.ReactNode;
+    color?: string;
+  }) => (
     <p data-testid="typography" data-color={color}>
       {children}
     </p>
   ),
 }));
 
-vi.mock('@mui/material/Button', () => ({
-  default: ({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) => (
+vi.mock("@mui/material/Button", () => ({
+  default: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
     <button onClick={onClick} data-testid="retry-button">
       {children}
     </button>
   ),
 }));
 
-describe('US-005: Dynamic Route Rendering in App.tsx', () => {
+describe("US-005: Dynamic Route Rendering in App.tsx", () => {
   let store: ReturnType<typeof configureStore>;
   const mockFetchRoutes = vi.fn();
   const mockClearError = vi.fn();
@@ -128,8 +150,8 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
     vi.resetAllMocks();
   });
 
-  describe('Initial Render and Component Structure', () => {
-    it('should render the App component without crashing', () => {
+  describe("Initial Render and Component Structure", () => {
+    it("should render the App component without crashing", () => {
       // Arrange: Default mocks already set in beforeEach
 
       // Act: Render App
@@ -137,10 +159,10 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
 
       // Assert: App should render successfully
       // Since isLoading is false and no error, should show routes
-      expect(screen.queryByTestId('loading-spinner')).not.toBeInTheDocument();
+      expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
     });
 
-    it('should wrap content in BrowserRouter', () => {
+    it("should wrap content in BrowserRouter", () => {
       // Arrange & Act
       const { container } = renderApp();
 
@@ -148,17 +170,17 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       expect(container).toBeTruthy();
     });
 
-    it('should render the container div with correct styles', () => {
+    it("should render the container div with correct styles", () => {
       // Arrange & Act
       const { container } = renderApp();
 
       // Assert: Container div with styles class should exist
-      const containerDiv = container.querySelector('.container');
+      const containerDiv = container.querySelector(".container");
       expect(containerDiv).toBeInTheDocument();
     });
   });
 
-  describe('Static Root Route', () => {
+  describe("Static Root Route", () => {
     it('should render CreateHabits component on root "/" route', () => {
       // Arrange: Default mocks
       // Note: In actual implementation, need to be on root route
@@ -168,7 +190,7 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
 
       // Assert: CreateHabits should be present
       // This will fail initially as App hasn't been refactored yet
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
     });
 
     it('should render HabitsSelection component on root "/" route', () => {
@@ -176,27 +198,31 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: HabitsSelection should be present
-      expect(screen.getByTestId('habits-selection-component')).toBeInTheDocument();
+      expect(
+        screen.getByTestId("habits-selection-component")
+      ).toBeInTheDocument();
     });
 
-    it('should render both CreateHabits and HabitsSelection on root route simultaneously', () => {
+    it("should render both CreateHabits and HabitsSelection on root route simultaneously", () => {
       // Arrange & Act
       renderApp();
 
       // Assert: Both components should be present (Fragment/array rendering)
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
-      expect(screen.getByTestId('habits-selection-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("habits-selection-component")
+      ).toBeInTheDocument();
     });
 
-    it('should keep root route static even when dynamic routes are loaded', () => {
+    it("should keep root route static even when dynamic routes are loaded", () => {
       // Arrange: Mock routes with dynamic routes
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/programming',
-          component: 'ComplexHabits',
-          habitName: 'Programming',
-          habitType: 'complex',
-          actionTypes: ['for work', 'personal'],
+          path: "/programming",
+          component: "ComplexHabits",
+          habitName: "Programming",
+          habitType: "complex",
+          actionTypes: ["for work", "personal"],
         },
       ];
 
@@ -212,13 +238,15 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Root route should still render static components
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
-      expect(screen.getByTestId('habits-selection-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("habits-selection-component")
+      ).toBeInTheDocument();
     });
   });
 
-  describe('Loading State', () => {
-    it('should show loading state when isLoading is true', () => {
+  describe("Loading State", () => {
+    it("should show loading state when isLoading is true", () => {
       // Arrange: Mock loading state
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
@@ -232,10 +260,10 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Loading spinner should be visible
-      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+      expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
     });
 
-    it('should display loading text while fetching routes', () => {
+    it("should display loading text while fetching routes", () => {
       // Arrange: Mock loading state
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
@@ -252,24 +280,24 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       expect(screen.getByText(/loading/i)).toBeInTheDocument();
     });
 
-    it('should hide loading state when isLoading is false', () => {
+    it("should hide loading state when isLoading is false", () => {
       // Arrange: Default mocks (isLoading: false)
 
       // Act: Render App
       renderApp();
 
       // Assert: Loading should not be visible
-      expect(screen.queryByTestId('loading-spinner')).not.toBeInTheDocument();
+      expect(screen.queryByTestId("loading-spinner")).not.toBeInTheDocument();
     });
 
-    it('should not show routes when loading', () => {
+    it("should not show routes when loading", () => {
       // Arrange: Mock loading state with routes
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/programming',
-          component: 'ComplexHabits',
-          habitName: 'Programming',
-          habitType: 'complex',
+          path: "/programming",
+          component: "ComplexHabits",
+          habitName: "Programming",
+          habitType: "complex",
           actionTypes: [],
         },
       ];
@@ -286,18 +314,20 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Only loading should show, not routes
-      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-      expect(screen.queryByTestId('create-habits-component')).not.toBeInTheDocument();
+      expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
+      expect(
+        screen.queryByTestId("create-habits-component")
+      ).not.toBeInTheDocument();
     });
   });
 
-  describe('Error Handling', () => {
-    it('should show error message when error is present', () => {
+  describe("Error Handling", () => {
+    it("should show error message when error is present", () => {
       // Arrange: Mock error state
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
         isLoading: false,
-        error: 'Unable to load routes. Please check your connection.',
+        error: "Unable to load routes. Please check your connection.",
         fetchRoutes: mockFetchRoutes,
         clearError: mockClearError,
       });
@@ -306,16 +336,16 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Error message should be displayed
-      expect(screen.getByTestId('typography')).toBeInTheDocument();
+      expect(screen.getByTestId("typography")).toBeInTheDocument();
       expect(screen.getByText(/unable to load/i)).toBeInTheDocument();
     });
 
-    it('should display retry button when error is present', () => {
+    it("should display retry button when error is present", () => {
       // Arrange: Mock error state
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
         isLoading: false,
-        error: 'Failed to load routes',
+        error: "Failed to load routes",
         fetchRoutes: mockFetchRoutes,
         clearError: mockClearError,
       });
@@ -324,16 +354,16 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Retry button should be present
-      expect(screen.getByTestId('retry-button')).toBeInTheDocument();
+      expect(screen.getByTestId("retry-button")).toBeInTheDocument();
       expect(screen.getByText(/retry/i)).toBeInTheDocument();
     });
 
-    it('should call fetchRoutes when retry button is clicked', async () => {
+    it("should call fetchRoutes when retry button is clicked", async () => {
       // Arrange: Mock error state
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
         isLoading: false,
-        error: 'Network error',
+        error: "Network error",
         fetchRoutes: mockFetchRoutes,
         clearError: mockClearError,
       });
@@ -343,19 +373,19 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       // Act: Render App and click retry
       renderApp();
 
-      const retryButton = screen.getByTestId('retry-button');
+      const retryButton = screen.getByTestId("retry-button");
       await user.click(retryButton);
 
       // Assert: fetchRoutes should be called
       expect(mockFetchRoutes).toHaveBeenCalledTimes(1);
     });
 
-    it('should not show routes when error is present', () => {
+    it("should not show routes when error is present", () => {
       // Arrange: Mock error state
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
         isLoading: false,
-        error: 'Error message',
+        error: "Error message",
         fetchRoutes: mockFetchRoutes,
         clearError: mockClearError,
       });
@@ -364,16 +394,18 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Routes should not be shown
-      expect(screen.queryByTestId('create-habits-component')).not.toBeInTheDocument();
-      expect(screen.getByTestId('typography')).toBeInTheDocument();
+      expect(
+        screen.queryByTestId("create-habits-component")
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId("typography")).toBeInTheDocument();
     });
 
-    it('should handle different error messages correctly', () => {
+    it("should handle different error messages correctly", () => {
       // Arrange: Mock timeout error
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
         isLoading: false,
-        error: 'Request timed out. Please try again.',
+        error: "Request timed out. Please try again.",
         fetchRoutes: mockFetchRoutes,
         clearError: mockClearError,
       });
@@ -386,8 +418,8 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
     });
   });
 
-  describe('useEffect and fetchRoutes Integration', () => {
-    it('should call fetchRoutes on component mount', () => {
+  describe("useEffect and fetchRoutes Integration", () => {
+    it("should call fetchRoutes on component mount", () => {
       // Arrange: Mock useEffect behavior
       // Note: This tests that useEffect with fetchRoutes is implemented
 
@@ -399,7 +431,7 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       expect(mockFetchRoutes).toHaveBeenCalledTimes(1);
     });
 
-    it('should call fetchRoutes only once on mount', () => {
+    it("should call fetchRoutes only once on mount", () => {
       // Arrange & Act
       const { rerender } = renderApp();
 
@@ -417,7 +449,7 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       expect(mockFetchRoutes).toHaveBeenCalledTimes(1);
     });
 
-    it('should have fetchRoutes in useEffect dependency array', () => {
+    it("should have fetchRoutes in useEffect dependency array", () => {
       // Arrange: Create a new mock function reference
       const firstFetchRoutes = vi.fn();
 
@@ -456,16 +488,16 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
     });
   });
 
-  describe('Dynamic Route Rendering', () => {
-    it('should render dynamic routes from backend configuration', () => {
+  describe("Dynamic Route Rendering", () => {
+    it("should render dynamic routes from backend configuration", () => {
       // Arrange: Mock routes with one complex habit
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/programming',
-          component: 'ComplexHabits',
-          habitName: 'Programming',
-          habitType: 'complex',
-          actionTypes: ['for work', 'personal project'],
+          path: "/programming",
+          component: "ComplexHabits",
+          habitName: "Programming",
+          habitType: "complex",
+          actionTypes: ["for work", "personal project"],
         },
       ];
 
@@ -483,10 +515,10 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
 
       // Assert: Dynamic routes should be created
       // We can't test navigation directly, but we can verify no errors
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
     });
 
-    it('should handle empty routes array gracefully', () => {
+    it("should handle empty routes array gracefully", () => {
       // Arrange: Empty routes
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
@@ -500,33 +532,35 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Should render root route only
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
-      expect(screen.getByTestId('habits-selection-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("habits-selection-component")
+      ).toBeInTheDocument();
     });
 
-    it('should render multiple dynamic routes correctly', () => {
+    it("should render multiple dynamic routes correctly", () => {
       // Arrange: Mock routes with multiple habits
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/programming',
-          component: 'ComplexHabits',
-          habitName: 'Programming',
-          habitType: 'complex',
-          actionTypes: ['for work', 'personal'],
+          path: "/programming",
+          component: "ComplexHabits",
+          habitName: "Programming",
+          habitType: "complex",
+          actionTypes: ["for work", "personal"],
         },
         {
-          path: '/reading',
-          component: 'ComplexHabits',
-          habitName: 'Reading',
-          habitType: 'complex',
-          actionTypes: ['fiction', 'non-fiction'],
+          path: "/reading",
+          component: "ComplexHabits",
+          habitName: "Reading",
+          habitType: "complex",
+          actionTypes: ["fiction", "non-fiction"],
         },
         {
-          path: '/exercise',
-          component: 'SimpleHabits',
-          habitName: 'Exercise',
-          habitType: 'simple',
-          actionTypes: ['cardio', 'strength'],
+          path: "/exercise",
+          component: "SimpleHabits",
+          habitName: "Exercise",
+          habitType: "simple",
+          actionTypes: ["cardio", "strength"],
         },
       ];
 
@@ -542,18 +576,18 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Should handle multiple routes without errors
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
     });
 
-    it('should not override static root route with dynamic routes', () => {
+    it("should not override static root route with dynamic routes", () => {
       // Arrange: Mock routes (should not include root path)
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/programming',
-          component: 'ComplexHabits',
-          habitName: 'Programming',
-          habitType: 'complex',
-          actionTypes: ['work'],
+          path: "/programming",
+          component: "ComplexHabits",
+          habitName: "Programming",
+          habitType: "complex",
+          actionTypes: ["work"],
         },
       ];
 
@@ -569,27 +603,29 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Root route should maintain static components
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
-      expect(screen.getByTestId('habits-selection-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
+      expect(
+        screen.getByTestId("habits-selection-component")
+      ).toBeInTheDocument();
     });
   });
 
-  describe('Component Mapping from Pages', () => {
-    it('should use Pages barrel export for component mapping', () => {
+  describe("Component Mapping from Pages", () => {
+    it("should use Pages barrel export for component mapping", () => {
       // Arrange: Mock routes with different component types
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/complex-habit',
-          component: 'ComplexHabits',
-          habitName: 'Complex Habit',
-          habitType: 'complex',
+          path: "/complex-habit",
+          component: "ComplexHabits",
+          habitName: "Complex Habit",
+          habitType: "complex",
           actionTypes: [],
         },
         {
-          path: '/simple-habit',
-          component: 'SimpleHabits',
-          habitName: 'Simple Habit',
-          habitType: 'simple',
+          path: "/simple-habit",
+          component: "SimpleHabits",
+          habitName: "Simple Habit",
+          habitType: "simple",
           actionTypes: [],
         },
       ];
@@ -607,17 +643,17 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
 
       // Assert: Should map component names from Pages
       // Implementation should use: Pages[route.component as PageComponentName]
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
     });
 
-    it('should handle component name lookup via bracket notation', () => {
+    it("should handle component name lookup via bracket notation", () => {
       // Arrange: Test that dynamic component lookup works
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/test',
-          component: 'ComplexHabits',
-          habitName: 'Test',
-          habitType: 'complex',
+          path: "/test",
+          component: "ComplexHabits",
+          habitName: "Test",
+          habitType: "complex",
           actionTypes: [],
         },
       ];
@@ -634,17 +670,17 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Should not crash with component lookup
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
     });
 
-    it('should handle invalid component names gracefully', () => {
+    it("should handle invalid component names gracefully", () => {
       // Arrange: Mock route with invalid component name
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/invalid',
-          component: 'NonExistentComponent' as any,
-          habitName: 'Invalid',
-          habitType: 'complex',
+          path: "/invalid",
+          component: "NonExistentComponent" as any,
+          habitName: "Invalid",
+          habitType: "complex",
           actionTypes: [],
         },
       ];
@@ -661,19 +697,19 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Should not crash (if (Component) check should handle this)
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
     });
   });
 
-  describe('TypeScript Type Safety', () => {
-    it('should use PageComponentName type for component lookup', () => {
+  describe("TypeScript Type Safety", () => {
+    it("should use PageComponentName type for component lookup", () => {
       // Arrange: This tests that type PageComponentName = keyof typeof Pages is used
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/programming',
-          component: 'ComplexHabits',
-          habitName: 'Programming',
-          habitType: 'complex',
+          path: "/programming",
+          component: "ComplexHabits",
+          habitName: "Programming",
+          habitType: "complex",
           actionTypes: [],
         },
       ];
@@ -690,19 +726,19 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: TypeScript should compile without errors
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
     });
   });
 
-  describe('Edge Cases', () => {
-    it('should handle routes with null or undefined values', () => {
+  describe("Edge Cases", () => {
+    it("should handle routes with null or undefined values", () => {
       // Arrange: Mock routes with potential null values
       const mockRoutes: RouteConfig[] = [
         {
-          path: '/test',
-          component: 'ComplexHabits',
-          habitName: 'Test',
-          habitType: 'complex',
+          path: "/test",
+          component: "ComplexHabits",
+          habitName: "Test",
+          habitType: "complex",
           actionTypes: [],
         },
         null as any,
@@ -721,10 +757,10 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Should not crash
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
     });
 
-    it('should handle rapid state changes', () => {
+    it("should handle rapid state changes", () => {
       // Arrange: Start with loading
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
@@ -737,13 +773,13 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       // Act: Render and change states
       const { rerender } = renderApp();
 
-      expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
+      expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
 
       // Change to error
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
         isLoading: false,
-        error: 'Error',
+        error: "Error",
         fetchRoutes: mockFetchRoutes,
         clearError: mockClearError,
       });
@@ -754,7 +790,7 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
         </Provider>
       );
 
-      expect(screen.getByTestId('retry-button')).toBeInTheDocument();
+      expect(screen.getByTestId("retry-button")).toBeInTheDocument();
 
       // Change to success
       vi.mocked(useRoutes).mockReturnValue({
@@ -772,10 +808,10 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       );
 
       // Assert: Should handle all state transitions
-      expect(screen.getByTestId('create-habits-component')).toBeInTheDocument();
+      expect(screen.getByTestId("create-habits-component")).toBeInTheDocument();
     });
 
-    it('should handle unmounting gracefully', () => {
+    it("should handle unmounting gracefully", () => {
       // Arrange & Act
       const { unmount } = renderApp();
 
@@ -784,8 +820,8 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
     });
   });
 
-  describe('Accessibility', () => {
-    it('should have accessible loading state', () => {
+  describe("Accessibility", () => {
+    it("should have accessible loading state", () => {
       // Arrange: Mock loading
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
@@ -799,16 +835,16 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Loading should be accessible
-      const loadingElement = screen.getByTestId('loading-spinner');
+      const loadingElement = screen.getByTestId("loading-spinner");
       expect(loadingElement).toBeInTheDocument();
     });
 
-    it('should have accessible error messages', () => {
+    it("should have accessible error messages", () => {
       // Arrange: Mock error
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
         isLoading: false,
-        error: 'Error message',
+        error: "Error message",
         fetchRoutes: mockFetchRoutes,
         clearError: mockClearError,
       });
@@ -817,16 +853,16 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Error should be accessible
-      const errorElement = screen.getByTestId('typography');
+      const errorElement = screen.getByTestId("typography");
       expect(errorElement).toBeInTheDocument();
     });
 
-    it('should have keyboard-accessible retry button', () => {
+    it("should have keyboard-accessible retry button", () => {
       // Arrange: Mock error
       vi.mocked(useRoutes).mockReturnValue({
         routes: [],
         isLoading: false,
-        error: 'Error',
+        error: "Error",
         fetchRoutes: mockFetchRoutes,
         clearError: mockClearError,
       });
@@ -835,9 +871,9 @@ describe('US-005: Dynamic Route Rendering in App.tsx', () => {
       renderApp();
 
       // Assert: Retry button should be accessible
-      const retryButton = screen.getByTestId('retry-button');
+      const retryButton = screen.getByTestId("retry-button");
       expect(retryButton).toBeInTheDocument();
-      expect(retryButton.tagName).toBe('BUTTON');
+      expect(retryButton.tagName).toBe("BUTTON");
     });
   });
 });
