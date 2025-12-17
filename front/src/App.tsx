@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import styles from "./app.module.css";
 import { useRoutes } from "./redux/hooks/useRoutes";
-import * as Pages from "./components/Pages";
+import * as Pages from "./components/pages/Pages";
 
 type PageComponentName = keyof typeof Pages;
 
