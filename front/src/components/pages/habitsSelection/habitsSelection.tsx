@@ -1,11 +1,11 @@
 import styles from "./habitsSelection.module.css";
-import complex from "../../assets/complexIcon.png";
-import simple from "../../assets/simplicityIcon.png";
-import eternety from "../../assets/eternety.png";
+import complex from "../../../assets/complexIcon.png";
+import simple from "../../../assets/simplicityIcon.png";
+import eternety from "../../../assets/eternety.png";
 import React from "react";
 import { Link } from "react-router-dom";
 
-import { useCustomSelector } from "../../redux/hooks/hooks";
+import { useCustomSelector } from "../../../redux/hooks/hooks";
 
 const HabitsSelection: React.FC = () => {
   const { formState: form } = useCustomSelector((state) => state.form);

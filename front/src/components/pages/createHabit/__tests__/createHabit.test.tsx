@@ -67,8 +67,8 @@ vi.mock("@/hooks", () => ({
 import {
   useCustomSelector,
   useCustomDispatch,
-} from "../../../redux/hooks/hooks";
-import { manageForm } from "../../../redux/slices/form/form";
+} from "../../../../redux/hooks/hooks";
+import { manageForm } from "../../../../redux/slices/form/form";
 import { useHabitForm } from "@/hooks";
 
 describe("CH-004: Refactor createHabit.tsx to use useHabitForm hook", () => {

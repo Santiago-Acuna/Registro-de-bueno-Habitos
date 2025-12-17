@@ -1,0 +1,237 @@
+@keyframes scanLine {
+    0% {
+        left: -100%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes pulseGlow {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 30px rgba(255, 0, 0, 0.4),
+            inset 0 0 20px rgba(255, 0, 0, 0.2);
+    }
+
+    50% {
+        box-shadow:
+            0 0 50px rgba(255, 0, 0, 0.8),
+            inset 0 0 30px rgba(255, 0, 0, 0.4);
+    }
+}
+
+@keyframes cornerPulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes textGlitch {
+
+    0%,
+    90%,
+    100% {
+        transform: translate(0, 0);
+        opacity: 1;
+    }
+
+    91% {
+        transform: translate(-2px, 1px);
+        opacity: 0.8;
+    }
+
+    93% {
+        transform: translate(2px, -1px);
+        opacity: 0.9;
+    }
+
+    95% {
+        transform: translate(-1px, 2px);
+        opacity: 0.85;
+    }
+}
+
+.terminatorBtn {
+    position: absolute;
+    padding: 20px 60px;
+    background: linear-gradient(145deg, rgba(255, 0, 0, 0.8), rgba(180, 0, 0, 0.8));
+    border: 3px solid #ff0000;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow:
+        0 0 30px rgba(255, 0, 0, 0.4),
+        inset 0 0 20px rgba(255, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.terminatorBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: linear-gradient(145deg, rgba(100, 0, 0, 0.5), rgba(80, 0, 0, 0.5));
+}
+
+.terminatorBtn:not(:disabled):hover {
+    transform: scale(1.05);
+    animation: pulseGlow 0.5s ease-in-out;
+}
+
+.terminatorBtn:not(:disabled):active {
+    transform: scale(0.98);
+}
+
+.btnScanLine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    pointer-events: none;
+}
+
+.terminatorBtn:not(:disabled):hover .btnScanLine {
+    animation: scanLine 0.6s ease;
+}
+
+.btnGrid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg,
+            transparent,
+            transparent 2px,
+            rgba(255, 0, 0, 0.1) 2px,
+            rgba(255, 0, 0, 0.1) 4px);
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+.btnCorners {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    pointer-events: none;
+}
+
+.btnCorner {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+}
+
+.terminatorBtn:not(:disabled):hover .btnCorner {
+    border-color: rgba(255, 255, 255, 1);
+    animation: cornerPulse 0.5s ease-in-out;
+}
+
+.cornerTl {
+    top: 0;
+    left: 0;
+    border-right: none;
+    border-bottom: none;
+}
+
+.corner-tr {
+    top: 0;
+    right: 0;
+    border-left: none;
+    border-bottom: none;
+}
+
+.corner-bl {
+    bottom: 0;
+    left: 0;
+    border-right: none;
+    border-top: none;
+}
+
+.corner-br {
+    bottom: 0;
+    right: 0;
+    border-left: none;
+    border-top: none;
+}
+
+.btn-text {
+    position: relative;
+    z-index: 2;
+    text-shadow:
+        0 0 10px rgba(255, 255, 255, 0.5),
+        2px 2px 0 #000;
+}
+
+.terminatorBtn:not(:disabled):hover .btn-text {
+    animation: textGlitch 2s infinite;
+}
+
+.btn-status-dots {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+    z-index: 3;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ff0000;
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
+    animation: dotBlink 1.5s ease-in-out infinite;
+}
+
+.status-dot:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.status-dot:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+@keyframes dotBlink {
+
+    0%,
+    49%,
+    100% {
+        opacity: 1;
+    }
+
+    50%,
+    99% {
+        opacity: 0.3;
+    }
+}
+
+.btn-code {
+    position: absolute;
+    bottom: 5px;
+    left: 10px;
+    font-size: 0.6rem;
+    color: rgba(255, 0, 0, 0.5);
+    letter-spacing: 1px;
+    z-index: 2;
+    font-weight: 700;
+}

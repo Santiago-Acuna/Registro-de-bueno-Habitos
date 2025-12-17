@@ -1,7 +1,7 @@
 import React from "react";
-import { Habit } from "../../../habits-types";
+import { Habit } from "../../../../habits-types";
 import styles from "./habitsCard.module.css";
-import { useCustomSelector } from "../../../redux/hooks/hooks";
+import { useCustomSelector } from "../../../../redux/hooks/hooks";
 import { Link } from "react-router-dom";
 
 interface HabitsCardProps {
