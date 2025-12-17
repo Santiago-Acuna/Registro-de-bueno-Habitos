@@ -43,15 +43,6 @@ const App: React.FC = () => {
     <BrowserRouter basename="/">
       <div className={styles.container}>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <Pages.CreateHabits />
-                <Pages.HabitsSelection />
-              </>
-            }
-          />
           {routes.map((route) => {
             const componentName = route.component as PageComponentName;
             if (!(componentName in Pages)) return null;
@@ -65,6 +56,16 @@ const App: React.FC = () => {
               />
             );
           })}
+          <Route path="/Complex" element={<Pages.ComplexHabits />} />
+          <Route
+            path="/"
+            element={
+              <>
+                <Pages.CreateHabits />
+                <Pages.HabitsSelection />
+              </>
+            }
+          />
         </Routes>
       </div>
     </BrowserRouter>
