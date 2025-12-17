@@ -13,7 +13,7 @@ const ComplexHabits: React.FC = () => {
   const { habits: allHabits } = useCustomSelector((state) => state.habit);
   const { formState: form } = useCustomSelector((state) => state.form);
   const complexHabits =
-    allHabits.length && allHabits.filter((h) => h.habitType === "complex");
+    allHabits.length && allHabits.filter((h) => h.habitType === "Complex");
 
   useEffect(() => {
     dispatch(fetchHabits());
