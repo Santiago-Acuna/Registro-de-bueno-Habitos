@@ -140,7 +140,7 @@ export const fetchRoutes = createAsyncThunk<
 >("routes/fetchRoutes", async (_, { rejectWithValue }) => {
   try {
     const response = await axios.get<HabitsByTypeResponse>(
-      "/api/v1/front-config/habits-by-type",
+      "http://localhost:3000/api/v1/front-config/habits-by-type",
       {
         timeout: 10000, // 10 second timeout
       }
