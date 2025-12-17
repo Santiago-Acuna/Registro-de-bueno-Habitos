@@ -16,7 +16,7 @@ const App: React.FC = () => {
     if (!isLoading && !error) {
       fetchRoutes();
     }
-  }, [fetchRoutes, isLoading, error]);
+  }, []);
 
   if (isLoading) {
     return (
