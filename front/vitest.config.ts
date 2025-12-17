@@ -37,6 +37,13 @@ export default defineConfig({
 
     // Reporter configuration
     reporters: ["verbose"],
+
+    // CSS handling for tests
+    css: {
+      modules: {
+        classNameStrategy: "non-scoped",
+      },
+    },
   },
   resolve: {
     alias: {

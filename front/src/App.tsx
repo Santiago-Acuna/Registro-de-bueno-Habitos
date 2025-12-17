@@ -1,22 +1,70 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import CircularProgress from "@mui/material/CircularProgress";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
 import styles from "./app.module.css";
-import HabitsSelection from "./components/habitsSelection/habitsSelection";
-import CreateHabits from "./components/createHabit/createHabit";
-import ComplexHabits from "./components/complex habits/complex-habits";
-import ReadingDashboard from "./components/reading/reading";
-import Books from "./components/reading/book/books";
+import { useRoutes } from "./redux/hooks/useRoutes";
+import * as Pages from "./components/Pages";
+
+type PageComponentName = keyof typeof Pages;
 
 const App: React.FC = () => {
+  const { routes, isLoading, error, fetchRoutes } = useRoutes();
+
+  useEffect(() => {
+    if (!isLoading && !error) {
+      fetchRoutes();
+    }
+  }, [fetchRoutes, isLoading, error]);
+
+  if (isLoading) {
+    return (
+      <BrowserRouter basename="/">
+        <div className={styles.container}>
+          <CircularProgress />
+        </div>
+      </BrowserRouter>
+    );
+  }
+
+  if (error) {
+    return (
+      <BrowserRouter basename="/">
+        <div className={styles.container}>
+          <Typography color="error">{error}</Typography>
+          <Button onClick={fetchRoutes}>Retry</Button>
+        </div>
+      </BrowserRouter>
+    );
+  }
+
   return (
     <BrowserRouter basename="/">
       <div className={styles.container}>
         <Routes>
-          <Route path="/Complex" element={<ComplexHabits />} />
-          <Route path="/Reading/" element={<ReadingDashboard />} />
-          <Route path="/Reading" element={<ReadingDashboard />} />
-          <Route path="/books" element={<Books />} />
-          <Route path="/" element={[<CreateHabits />, <HabitsSelection />]} />
+          <Route
+            path="/"
+            element={
+              <>
+                <Pages.CreateHabits />
+                <Pages.HabitsSelection />
+              </>
+            }
+          />
+          {routes.map((route) => {
+            const componentName = route.component as PageComponentName;
+            if (!(componentName in Pages)) return null;
+            const Component = Pages[componentName];
+            if (!Component) return null;
+            return (
+              <Route
+                key={route.path}
+                path={route.path}
+                element={<Component />}
+              />
+            );
+          })}
         </Routes>
       </div>
     </BrowserRouter>
