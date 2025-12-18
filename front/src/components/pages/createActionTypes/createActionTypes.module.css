@@ -5,8 +5,4 @@
   flex-direction: column;
   overflow-y: auto;
 }
-.createButton {
-  align-self: end;
-  margin-right: 2%;
-  z-index: 1;
-}
+

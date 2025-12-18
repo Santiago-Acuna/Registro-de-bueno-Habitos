@@ -8,35 +8,14 @@ import styles from "./createActionTypes.module.css";
 
 const CreateActionTypes: FC = () => {
     const { formState: form } = useCustomSelector((state) => state.form);
-    const dispatch = useCustomDispatch();
 
     // Use the useHabitForm hook for CREATE mode
     useHabitForm({ formType: "CREATE" });
 
-    const display = {
-        display: form !== "" ? "none" : "flex",
-        justifyContent: "flex-end",
-    };
-    const openCreateForm = (
-        e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-    ) => {
-        e.preventDefault();
-        dispatch(manageForm("CREATE"));
-    };
-    const closeCreateForm = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-        e.preventDefault();
-        dispatch(manageForm(""));
-    };
+
 
     return (
         <div className={styles.create} >
-            {form === "" && (
-                <div className={styles.createButton}>
-                    <TerminatorButton text="Create Action" onClick={openCreateForm}
-
-                    />
-                </div>
-            )}
 
             {form !== "" && <ActionTypesForm />}
         </div>
