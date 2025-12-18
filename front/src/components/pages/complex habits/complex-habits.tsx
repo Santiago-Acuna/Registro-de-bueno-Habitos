@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styles from "./complex-habits.module.css";
 import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
 import { fetchHabits } from "../../../redux/slices/habits/asyncActions";
@@ -13,6 +13,7 @@ const ComplexHabits: React.FC = () => {
   const dispatch = useCustomDispatch();
   const { habits: allHabits } = useCustomSelector((state) => state.habit);
   const { formState: form } = useCustomSelector((state) => state.form);
+
   const complexHabits =
     allHabits.length && allHabits.filter((h) => h.habitType === "Complex");
 
@@ -21,11 +22,9 @@ const ComplexHabits: React.FC = () => {
   }, [dispatch]);
   return (
     <SpaceBackground className={styles.container}>
-      {form === "" && (
-        <Link to="/" className={styles.backButton}>
-          <Button variant="contained">Back</Button>
-        </Link>
-      )}
+      <Link to="/" className={styles.backButton}>
+        <Button variant="contained">Back</Button>
+      </Link>
       {allHabits.length === 0 && (
         <div>
           <p className={styles.noHabits}>There are no habits</p>
@@ -39,7 +38,7 @@ const ComplexHabits: React.FC = () => {
         </div>
       )}
       {/* <ActionTypesForm/> */}
-      <TerminatorButton text="Create Action"/>
+      <TerminatorButton text="Create Action" />
     </SpaceBackground>
   );
 };
