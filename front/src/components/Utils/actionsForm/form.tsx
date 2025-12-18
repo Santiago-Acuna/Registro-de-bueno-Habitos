@@ -1,5 +1,5 @@
 import { FC, useState, useRef, DragEvent, ChangeEvent } from "react";
-import styles from "./actionTypesForm.module.css";
+import styles from "./form.module.css";
 
 const ActionTypesForm: FC = () => {
   const [unitName, setUnitName] = useState("");
