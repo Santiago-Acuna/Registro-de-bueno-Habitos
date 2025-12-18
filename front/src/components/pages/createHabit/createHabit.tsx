@@ -1,6 +1,6 @@
 import Button from "@mui/material/Button";
 import { FC } from "react";
-import HabitForm from "../../../utils/habitsForm/form";
+import HabitForm from "../../Utils/habitsForm/form";
 import { useCustomSelector, useCustomDispatch } from "../../../redux/hooks/hooks";
 import { manageForm } from "../../../redux/slices/form/form";
 import { useHabitForm } from "@/hooks";

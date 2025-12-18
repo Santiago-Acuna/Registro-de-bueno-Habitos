@@ -3,7 +3,7 @@ import {
   ValidateProps,
   EnableProps,
   HabitBody,
-} from "../../habits-types";
+} from "../../../habits-types";
 
 const enable = ({ accumulatedErrors, setDisabled }: EnableProps): void => {
   !Object.keys(accumulatedErrors).length && setDisabled(false);

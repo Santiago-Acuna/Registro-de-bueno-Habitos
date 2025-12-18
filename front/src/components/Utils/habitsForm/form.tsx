@@ -2,14 +2,14 @@ import { useState, type FC, useEffect } from "react";
 import InputForm from "./inputForm";
 import styles from "./form.module.css";
 import { handleChange, checkBeforeSubmit } from "./formUtils";
-import { HabitBody } from "../../habits-types";
+import { HabitBody } from "../../../habits-types";
 import SelectComplexityInput from "./selectComplexityInput";
 import { useNavigate } from "react-router-dom";
 import {
   postHabits,
   patchHabits,
-} from "../../redux/slices/habits/asyncActions";
-import { useCustomDispatch, useCustomSelector } from "../../redux/hooks/hooks";
+} from "../../../redux/slices/habits/asyncActions";
+import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
 import DragDropFiles from "../uploadImage/dragUploadImage";
 
 const HabitForm: FC = () => {
