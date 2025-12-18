@@ -16,6 +16,7 @@ const TerminatorButton: React.FC<TerminatorButtonProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   return (
+    <div className={styles.container}>
     <button
       className={styles.terminatorBtn}
       onClick={onClick}
@@ -43,6 +44,7 @@ const TerminatorButton: React.FC<TerminatorButtonProps> = ({
 
       <div className={styles.btnCode}>{text}</div>
     </button>
+    </div>
   );
 };
 
