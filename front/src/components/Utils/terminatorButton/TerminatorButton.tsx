@@ -2,10 +2,10 @@ import { useState } from "react";
 import styles from "./terminatorButton.module.css";
 
 interface TerminatorButtonProps {
-  onClick?: React.MouseEvent<HTMLButtonElement, MouseEvent>;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   children?: React.ReactNode;
   disabled?: boolean;
-  text: string
+  text: string;
 }
 
 const TerminatorButton: React.FC<TerminatorButtonProps> = ({
