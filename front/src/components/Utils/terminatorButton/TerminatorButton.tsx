@@ -2,7 +2,7 @@ import { useState } from "react";
 import styles from "./terminatorButton.module.css";
 
 interface TerminatorButtonProps {
-  onClick?: () => void;
+  onClick?: React.MouseEvent<HTMLButtonElement, MouseEvent>;
   children?: React.ReactNode;
   disabled?: boolean;
   text: string
@@ -10,7 +10,6 @@ interface TerminatorButtonProps {
 
 const TerminatorButton: React.FC<TerminatorButtonProps> = ({
   onClick,
-  children = "EXECUTE",
   disabled = false,
   text
 }) => {
