@@ -1,5 +1,7 @@
 import { FC, useState, useRef, useEffect, DragEvent, ChangeEvent } from "react";
 import styles from "./form.module.css";
+import { manageForm } from "../../../redux/slices/form/form";
+import { useCustomDispatch } from "../../../redux/hooks/hooks";
 
 const ActionTypesForm: FC = () => {
   const [unitName, setUnitName] = useState("");
@@ -8,6 +10,7 @@ const ActionTypesForm: FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const formContainerRef = useRef<HTMLDivElement>(null);
+  const dispatch = useCustomDispatch();
 
   useEffect(() => {
     if (containerRef.current) {
@@ -87,10 +90,39 @@ SKYNET PROTOCOL: ACTIVE`);
     setHasFile(false);
   };
 
+  const handleClose = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (window.confirm("TERMINATE SESSION?\nALL UNSAVED DATA WILL BE LOST")) {
+      // Reset form
+      setUnitName("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      setPreviewSrc("");
+      setHasFile(false);
+      alert("SESSION TERMINATED\nSKYNET PROTOCOL: STANDBY");
+      e.preventDefault();
+      dispatch(manageForm(""));
+    }
+  };
+
   return (
 
       <div className={styles.container} ref={containerRef}>
         <div className={styles.formContainer} ref={formContainerRef}>
+          <button
+            className={styles.closeButton}
+            onClick={handleClose}
+            title="Close"
+            type="button"
+          >
+            <div className={styles.closeButtonCorners}>
+              <div className={styles.closeCorner}></div>
+              <div className={styles.closeCorner}></div>
+              <div className={styles.closeCorner}></div>
+              <div className={styles.closeCorner}></div>
+            </div>
+          </button>
+
           <div className={styles.targetingLine}></div>
           <div className={styles.formCorners}>
             <div className={styles.corner}></div>

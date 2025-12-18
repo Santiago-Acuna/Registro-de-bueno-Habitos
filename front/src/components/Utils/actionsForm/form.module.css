@@ -100,6 +100,105 @@
   }
 }
 
+.closeButton {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 0, 0, 0.2);
+  border: 2px solid #ff0000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+}
+
+.closeButton::before,
+.closeButton::after {
+  content: "";
+  position: absolute;
+  width: 24px;
+  height: 2px;
+  background: #ff0000;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+}
+
+.closeButton::before {
+  transform: rotate(45deg);
+}
+
+.closeButton::after {
+  transform: rotate(-45deg);
+}
+
+.closeButton:hover {
+  background: rgba(255, 0, 0, 0.4);
+  transform: rotate(90deg);
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
+}
+
+.closeButton:hover::before,
+.closeButton:hover::after {
+  box-shadow: 0 0 10px rgba(255, 0, 0, 1);
+}
+
+.closeButton:active {
+  transform: rotate(90deg) scale(0.9);
+}
+
+.closeButtonCorners {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  pointer-events: none;
+}
+
+.closeCorner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 1px solid rgba(255, 0, 0, 0.5);
+  transition: border-color 0.3s ease;
+}
+
+.closeButton:hover .closeCorner {
+  border-color: rgba(255, 0, 0, 1);
+}
+
+.closeCorner:nth-child(1) {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+}
+
+.closeCorner:nth-child(2) {
+  top: 0;
+  right: 0;
+  border-left: none;
+  border-bottom: none;
+}
+
+.closeCorner:nth-child(3) {
+  bottom: 0;
+  left: 0;
+  border-right: none;
+  border-top: none;
+}
+
+.closeCorner:nth-child(4) {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+}
+
 .formContainer::before {
   content: "";
   position: absolute;
