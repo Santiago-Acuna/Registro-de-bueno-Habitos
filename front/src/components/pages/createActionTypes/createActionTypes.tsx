@@ -6,11 +6,7 @@ import { manageForm } from "../../../redux/slices/form/form";
 import { useHabitForm } from "@/hooks";
 import styles from "./createActionTypes.module.css";
 
-interface CreateActionTypesProps{
-    style?: React.CSSProperties | undefined
-}
-
-const CreateActionTypes: FC<CreateActionTypesProps> = ({ style }) => {
+const CreateActionTypes: FC = () => {
     const { formState: form } = useCustomSelector((state) => state.form);
     const dispatch = useCustomDispatch();
 
@@ -31,10 +27,11 @@ const CreateActionTypes: FC<CreateActionTypesProps> = ({ style }) => {
         e.preventDefault();
         dispatch(manageForm(""));
     };
+
     return (
-        <div className={styles.create} style={style}>
+        <div className={styles.create} >
             {form === "" && (
-                <div className={styles.createButton} style={display}>
+                <div className={styles.createButton}>
                     <TerminatorButton text="Create Action" onClick={openCreateForm}
 
                     />

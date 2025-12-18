@@ -16,16 +16,14 @@ const ComplexHabits: React.FC = () => {
   const complexHabits =
     allHabits.length && allHabits.filter((h) => h.habitType === "Complex");
     
-      const display = { display: form !== "" ? "none" : "flex" };
-
   useEffect(() => {
     dispatch(fetchHabits());
   }, [dispatch]);
   return (
     <SpaceBackground className={styles.container} >
-      <Link to="/" className={styles.backButton} style={display}>
+      {form === "" && <Link to="/" className={styles.backButton}>
         <Button variant="contained">Back</Button>
-      </Link>
+      </Link>}
       <CreateActionTypes />
       {allHabits.length === 0 && (
         <div>
