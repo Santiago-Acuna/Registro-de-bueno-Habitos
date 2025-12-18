@@ -116,7 +116,7 @@ export const useHabitForm = ({
     }
 
     if (formType === "CREATE") {
-      await dispatch(postHabits(habit));
+      await dispatch(postHabits({ habit, File }));
       window.alert("Habit Created Successfully");
       navigate("/");
     } else if (formType === "UPDATE") {
