@@ -14,7 +14,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCustomDispatch } from "../redux/hooks/hooks";
 import { postHabits, patchHabits } from "../redux/slices/habits/asyncActions";
-import { checkBeforeSubmit } from "../utils/habitsForm/formUtils";
+import { checkBeforeSubmit } from "../components/Utils/habitsForm/formUtils";
 import type { HabitBody } from "../habits-types";
 
 interface UseHabitFormParams {
@@ -51,7 +51,7 @@ export const useHabitForm = ({
   const emptyHabit: HabitBody = {
     name: "",
     icon: "",
-    habit_type: "",
+    habitType: "",
   };
 
   const [habit, setHabit] = useState<HabitBody>(initialHabit || emptyHabit);
@@ -109,7 +109,7 @@ export const useHabitForm = ({
   ): Promise<void> => {
     e.preventDefault();
 
-    const isValid = checkBeforeSubmit(errors, habit, setErrors, setDisabled);
+    const isValid = checkBeforeSubmit(errors, habit, setErrors, setDisabled, File, formType);
 
     if (!isValid) {
       return;
