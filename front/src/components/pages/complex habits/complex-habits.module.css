@@ -10,10 +10,14 @@
   position: fixed;
   background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
 }
-.backButton {
-  align-self: start;
-  margin: 3% 3% 0% 2%;
+.buttonContainer{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+   width: 100%;
+  padding: 2% 3%; 
 }
+
 .cardsContainers {
   display: grid;
 
@@ -25,4 +29,8 @@
 
   height: 70%;
   width: 90%;
+}
+.createButton {
+  /* Positioned by parent's justify-content: space-between */
+  z-index: 1;
 }
