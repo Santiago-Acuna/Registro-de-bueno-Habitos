@@ -6,17 +6,7 @@ import { manageForm } from "@/redux/slices/form/form";
 import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
-
-export interface ActionType {
-  id: string;
-  name: string;
-  icon: string;
-  habitId: string;
-  totalActionsCount: number;
-  lastActionDate: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import type { ActionType } from "@/redux/slices/action-types";
 
 interface ActionTypesDisplayProps {
   actionTypes: ActionType[];
@@ -80,8 +70,19 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
         {form === "" ? <TerminatorButton text="Create Action" onClick={openCreateForm} />
           : <CreateActionTypes />}
       </div>
-      <div className={styles.cardsGrid}>
-        {actionTypes.map((actionType, index) => {
+
+      {actionTypes.length === 0 && form === "" && (
+        <div className={styles.noActionTypesContainer}>
+          <p className={styles.noActionTypes}>NO ACTION TYPES DETECTED</p>
+          <p className={styles.noActionTypesSubtext}>
+            Create your first action type to begin tracking
+          </p>
+        </div>
+      )}
+
+      {actionTypes.length > 0 && (
+        <div className={styles.cardsGrid}>
+          {actionTypes.map((actionType, index) => {
           const threatLevel = getThreatLevel(actionType.totalActionsCount);
 
           return (
@@ -141,7 +142,8 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

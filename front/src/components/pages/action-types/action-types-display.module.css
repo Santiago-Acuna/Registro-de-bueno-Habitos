@@ -132,6 +132,46 @@
   text-transform: uppercase;
 }
 
+.noActionTypesContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  position: relative;
+  z-index: 1;
+  gap: 20px;
+}
+
+.noActionTypes {
+  font-size: 2.5rem;
+  color: #ff0000;
+  letter-spacing: 10px;
+  text-transform: uppercase;
+  font-weight: 900;
+  text-shadow:
+    0 0 20px rgba(255, 0, 0, 0.8),
+    0 0 40px rgba(255, 0, 0, 0.5),
+    0 0 60px rgba(255, 0, 0, 0.3),
+    3px 3px 0 #000;
+  animation: titleGlitch 5s infinite;
+  margin: 0;
+}
+
+.noActionTypesSubtext {
+  font-size: 1rem;
+  color: #666;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin: 0;
+  animation: subtextPulse 3s infinite;
+}
+
+@keyframes subtextPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
 .cardsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
