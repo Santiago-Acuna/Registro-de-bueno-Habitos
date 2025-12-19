@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import styles from "./upload-image.module.css";
 import UploadImage from "./uploadImage";
 import { BookBody } from "../../reading types";
-import { HandleChangeProps } from "../formUtils";
+import { HandleChangeProps } from "../form-utils";
 
 interface DragDropFilesProps {
   File: File | null;

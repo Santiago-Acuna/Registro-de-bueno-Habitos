@@ -24,7 +24,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import CreateHabits from "../createHabit";
+import CreateHabits from "../create-habit";
 
 // Mock dependencies
 vi.mock("@mui/material/Button", () => ({

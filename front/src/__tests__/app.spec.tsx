@@ -41,7 +41,7 @@ import type { RouteConfig } from "../redux/slices/routes/routes.types";
 import { routesReducer } from "../redux/slices/routes/routes";
 
 // Import App component
-import App from "../App";
+import App from "../app";
 
 // Mock useRoutes hook to control routing state
 vi.mock("../redux/hooks/use-routes", () => ({
@@ -50,8 +50,8 @@ vi.mock("../redux/hooks/use-routes", () => ({
 
 import { useRoutes } from "../redux/hooks/use-routes";
 
-// Mock the Pages barrel export
-vi.mock("../components/Pages", () => ({
+// Mock the pages barrel export
+vi.mock("../components/pages", () => ({
   WithoutIntervalsHabits: () => (
     <div data-testid="without-intervals-page">Without Intervals Habits Page</div>
   ),
@@ -610,8 +610,8 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
     });
   });
 
-  describe("Component Mapping from Pages", () => {
-    it("should use Pages barrel export for component mapping", () => {
+  describe("Component Mapping from pages", () => {
+    it("should use pages barrel export for component mapping", () => {
       // Arrange: Mock routes with different component types
       const mockRoutes: RouteConfig[] = [
         {
