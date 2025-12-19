@@ -15,6 +15,12 @@ export interface ActionType {
   updatedAt: Date;
 }
 
+export interface CreateActionTypeDTO {
+  name: string;
+  habitId: string;
+  icon: File;
+}
+
 export interface ActionTypesState {
   actionTypes: ActionType[];
   isLoading: boolean;

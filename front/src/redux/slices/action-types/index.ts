@@ -12,4 +12,9 @@ export {
   type ActionType,
 } from "./action-types";
 
-export { fetchActionTypesByHabitId } from "./async-actions";
+export {
+  fetchActionTypesByHabitId,
+  createActionType,
+} from "./async-actions";
+
+export type { CreateActionTypeDTO } from "./action-types.types";
