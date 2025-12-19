@@ -13,6 +13,7 @@ export { default as ComplexHabits } from "./complex-habits/complex-habits";
 export { default as WithoutIntervalsHabits } from "./without-intervals-habits/without-intervals-habits";
 export { default as CreateHabits } from "./create-habit/create-habit";
 export { default as HabitsSelection } from "./habits-selection/habits-selection";
+export { default as ActionTypes } from "./action-types/action-types"
 
 // Future Components (to be implemented):
 // export { default as SimpleHabits } from './simpleHabits/simpleHabits';

@@ -56,6 +56,7 @@ const App: React.FC = () => {
               />
             );
           })}
+          <Route path="/Complex/" element={<Pages.ActionTypes />} />
           <Route path="/Complex" element={<Pages.ComplexHabits />} />
           <Route path="/WithoutIntervals" element={<Pages.WithoutIntervalsHabits />} />
           <Route
