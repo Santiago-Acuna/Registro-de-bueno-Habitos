@@ -1,5 +1,11 @@
 import { FC } from "react";
 import styles from "./action-types-display.module.css";
+import CreateActionTypes from "../create-action-types/create-action-types";
+import { TerminatorButton } from "@/components/utils";
+import { manageForm } from "@/redux/slices/form/form";
+import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
+import Button from "@mui/material/Button";
+import { Link } from "react-router-dom";
 
 export interface ActionType {
   id: string;
@@ -21,6 +27,7 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
   actionTypes,
   onActionTypeClick,
 }) => {
+  const dispatch = useCustomDispatch();
   const getThreatLevel = (totalActions: number): number => {
     if (totalActions === 0) return 0;
     if (totalActions <= 5) return 1;
@@ -48,6 +55,14 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
     ];
     return categories[index % categories.length];
   };
+  const { formState: form } = useCustomSelector((state) => state.form);
+
+  const openCreateForm = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    e.preventDefault();
+    dispatch(manageForm("CREATE"));
+  };
 
   return (
     <div className={styles.container}>
@@ -56,7 +71,15 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
         <h1 className={styles.title}>ACTION TYPES</h1>
         <div className={styles.subtitle}>Skynet Tactical Division</div>
       </div>
-
+      <div className={styles.buttonContainer}>
+        <Link to="/complex" className={styles.backButton}>
+          <Button variant="contained" className={styles.navButton}>
+            Back
+          </Button>
+        </Link>
+        {form === "" ? <TerminatorButton text="Create Action" onClick={openCreateForm} />
+          : <CreateActionTypes />}
+      </div>
       <div className={styles.cardsGrid}>
         {actionTypes.map((actionType, index) => {
           const threatLevel = getThreatLevel(actionType.totalActionsCount);
@@ -108,9 +131,8 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
                     {[1, 2, 3, 4, 5].map((level) => (
                       <div
                         key={level}
-                        className={`${styles.threatBar} ${
-                          level <= threatLevel ? styles.active : ""
-                        }`}
+                        className={`${styles.threatBar} ${level <= threatLevel ? styles.active : ""
+                          }`}
                       ></div>
                     ))}
                   </div>

@@ -50,6 +50,38 @@
   z-index: 1;
 }
 
+.buttonContainer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 30px auto 40px;
+  padding: 0 20px;
+}
+
+.backButton {
+  text-decoration: none;
+}
+
+.navButton {
+  background: rgba(255, 0, 0, 0.2) !important;
+  border: 1px solid #ff0000 !important;
+  color: #ff0000 !important;
+  font-family: 'Courier New', monospace !important;
+  letter-spacing: 2px !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.8) !important;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3) !important;
+  transition: all 0.3s ease !important;
+}
+
+.navButton:hover {
+  background: rgba(255, 0, 0, 0.3) !important;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.6) !important;
+}
+
 .systemAlert {
   display: inline-block;
   padding: 8px 20px;
