@@ -1,58 +1,65 @@
-import { FC, useState, useEffect } from "react";
-import ActionTypesDisplay, { ActionType } from "./action-types-display";
+import { FC, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import ActionTypesDisplay from "./action-types-display";
+import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
+import { fetchActionTypesByHabitId } from "../../../redux/slices/action-types";
 
 /**
  * Action Types Page Component
  *
  * This is a container component that handles data fetching and state management
- * for the action types display.
- *
- * TODO: Integrate with backend API to fetch real action types data
- * TODO: Add Redux integration for state management
- * TODO: Add error handling and loading states
+ * for the action types display using Redux.
  */
 const ActionTypes: FC = () => {
-  const [actionTypes, setActionTypes] = useState<ActionType[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { habit: habitId } = useParams<{ habit: string }>();
+  const dispatch = useCustomDispatch();
+  const { actionTypes, isLoading, error } = useCustomSelector(
+    (state) => state.actionTypes
+  );
 
   useEffect(() => {
-    // TODO: Replace with actual API call
-    // Example: fetchActionTypes()
+    if (habitId) {
+      dispatch(fetchActionTypesByHabitId(habitId));
+    }
+  }, [habitId, dispatch]);
 
-    // For now, using sample data for demonstration
-    const sampleActionTypes: ActionType[] = [
-      // {
-      //   id: "550e8400-e29b-41d4-a716-446655440001",
-      //   name: "Morning Push-ups",
-      //   icon: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=400&fit=crop",
-      //   habitId: "550e8400-e29b-41d4-a716-446655440000",
-      //   totalActionsCount: 15,
-      //   lastActionDate: new Date("2025-01-15"),
-      //   createdAt: new Date("2025-01-01"),
-      //   updatedAt: new Date("2025-01-15"),
-      // },
-    ];
-
-    setActionTypes(sampleActionTypes);
-  }, []);
-
-  const handleActionTypeClick = (actionType: ActionType) => {
+  const handleActionTypeClick = (actionType: any) => {
     console.log("Action Type clicked:", actionType);
     // TODO: Navigate to action type details page or show modal
   };
 
   if (isLoading) {
     return (
-      <div style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        background: "#000",
-        color: "#ff0000",
-        fontFamily: "Courier New, monospace"
-      }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "#000",
+          color: "#ff0000",
+          fontFamily: "Courier New, monospace",
+        }}
+      >
         LOADING ACTION TYPES...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "#000",
+          color: "#ff0000",
+          fontFamily: "Courier New, monospace",
+        }}
+      >
+        ERROR: {error}
       </div>
     );
   }
