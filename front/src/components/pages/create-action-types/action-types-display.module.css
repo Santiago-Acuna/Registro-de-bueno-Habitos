@@ -1,0 +1,539 @@
+.container {
+  font-family: 'Courier New', monospace;
+  background: #000000;
+  min-height: 100vh;
+  padding: 60px 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.container::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(ellipse at top, rgba(139, 0, 0, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom, rgba(100, 0, 0, 0.15) 0%, transparent 50%);
+  z-index: 0;
+}
+
+.container::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent,
+    transparent 100px,
+    rgba(255, 0, 0, 0.03) 100px,
+    rgba(255, 0, 0, 0.03) 101px
+  );
+  animation: horizontalDrift 20s linear infinite;
+  z-index: 0;
+}
+
+@keyframes horizontalDrift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100px); }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+  z-index: 1;
+}
+
+.systemAlert {
+  display: inline-block;
+  padding: 8px 20px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid #ff0000;
+  border-left: 4px solid #ff0000;
+  color: #ff0000;
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+  animation: alertBlink 2s infinite;
+}
+
+@keyframes alertBlink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0.6; }
+}
+
+.title {
+  font-size: 4rem;
+  color: #ff0000;
+  font-weight: 900;
+  letter-spacing: 15px;
+  text-transform: uppercase;
+  position: relative;
+  text-shadow:
+    0 0 20px rgba(255, 0, 0, 1),
+    0 0 40px rgba(255, 0, 0, 0.8),
+    0 0 60px rgba(255, 0, 0, 0.5),
+    3px 3px 0 #000;
+  margin-bottom: 15px;
+  animation: titleGlitch 5s infinite;
+}
+
+@keyframes titleGlitch {
+  0%, 90%, 100% { transform: translate(0, 0); }
+  91% { transform: translate(-3px, 2px); }
+  92% { transform: translate(3px, -2px); }
+  93% { transform: translate(-2px, 3px); }
+  94% { transform: translate(2px, -3px); }
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: #888;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 40px;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.card {
+  position: relative;
+  height: 500px;
+  background: #000000;
+  border: 3px solid #1a0000;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  box-shadow:
+    0 15px 40px rgba(0, 0, 0, 0.9),
+    inset 0 0 50px rgba(255, 0, 0, 0.05);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #ff0000, #8b0000, #ff0000, #8b0000);
+  background-size: 400% 400%;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  border-color: #ff0000;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.9),
+    0 0 60px rgba(255, 0, 0, 0.5),
+    inset 0 0 80px rgba(255, 0, 0, 0.1);
+}
+
+.cardHeader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.95) 0%, transparent 100%);
+  z-index: 4;
+}
+
+.cardCode {
+  display: inline-block;
+  padding: 5px 12px;
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid #ff0000;
+  border-left: 3px solid #ff0000;
+  color: #ff0000;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+  margin-bottom: 10px;
+}
+
+.cardImageWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.cardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%) contrast(1.4) brightness(0.5);
+  transition: all 0.5s ease;
+}
+
+.card:hover .cardImage {
+  filter: grayscale(80%) contrast(1.5) brightness(0.6);
+  transform: scale(1.15);
+}
+
+.redOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg,
+    rgba(255, 0, 0, 0.3) 0%,
+    transparent 40%,
+    transparent 60%,
+    rgba(139, 0, 0, 0.3) 100%);
+  mix-blend-mode: multiply;
+  z-index: 1;
+}
+
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 4px,
+    rgba(0, 0, 0, 0.5) 4px,
+    rgba(0, 0, 0, 0.5) 5px
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+
+.targetingGrid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(255, 0, 0, 0.1) 49px, rgba(255, 0, 0, 0.1) 50px),
+    repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(255, 0, 0, 0.1) 49px, rgba(255, 0, 0, 0.1) 50px);
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.card:hover .targetingGrid {
+  opacity: 1;
+}
+
+.crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80px;
+  height: 80px;
+  border: 2px solid #ff0000;
+  border-radius: 50%;
+  z-index: 4;
+  opacity: 0;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+}
+
+.crosshair::before,
+.crosshair::after {
+  content: '';
+  position: absolute;
+  background: #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 1);
+}
+
+.crosshair::before {
+  top: 50%;
+  left: -30px;
+  right: -30px;
+  height: 2px;
+  transform: translateY(-50%);
+}
+
+.crosshair::after {
+  left: 50%;
+  top: -30px;
+  bottom: -30px;
+  width: 2px;
+  transform: translateX(-50%);
+}
+
+.card:hover .crosshair {
+  opacity: 1;
+  animation: crosshairPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes crosshairPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.diagonalScan {
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: linear-gradient(45deg,
+    transparent 40%,
+    rgba(255, 0, 0, 0.3) 50%,
+    transparent 60%);
+  z-index: 5;
+  animation: diagonalSweep 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes diagonalSweep {
+  0% { transform: translate(-100%, -100%); }
+  100% { transform: translate(100%, 100%); }
+}
+
+.cardFooter {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 30px 25px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.95) 80%, transparent 100%);
+  z-index: 4;
+  border-top: 2px solid #1a0000;
+  transition: border-color 0.4s ease;
+}
+
+.card:hover .cardFooter {
+  border-top-color: #ff0000;
+}
+
+.cardFooter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 1);
+  transition: width 0.6s ease;
+}
+
+.card:hover .cardFooter::before {
+  width: 100%;
+}
+
+.actionCategory {
+  font-size: 0.7rem;
+  color: #ff0000;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionCategory::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  animation: categoryBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes categoryBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.cardTitle {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  line-height: 1.2;
+  text-shadow:
+    0 0 10px rgba(255, 0, 0, 0.5),
+    3px 3px 0 #000;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.card:hover .cardTitle {
+  color: #ff0000;
+  text-shadow:
+    0 0 20px rgba(255, 0, 0, 1),
+    0 0 40px rgba(255, 0, 0, 0.8),
+    3px 3px 0 #000;
+}
+
+.actionStats {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.statsLabel {
+  font-size: 0.65rem;
+  color: #666;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.statsValue {
+  font-size: 0.9rem;
+  color: #ff0000;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+}
+
+.threatLevel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.threatLabel {
+  font-size: 0.65rem;
+  color: #666;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.threatBars {
+  display: flex;
+  gap: 4px;
+}
+
+.threatBar {
+  width: 30px;
+  height: 6px;
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.threatBar.active {
+  background: #ff0000;
+  border-color: #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+.threatBar.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  animation: barShine 2s linear infinite;
+}
+
+@keyframes barShine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.cornerMarkers {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  right: 15px;
+  bottom: 15px;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.card:hover .cornerMarkers {
+  opacity: 1;
+}
+
+.cornerMarker {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  border: 3px solid #ff0000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+}
+
+.cornerMarker.tl {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+}
+
+.cornerMarker.tr {
+  top: 0;
+  right: 0;
+  border-left: none;
+  border-bottom: none;
+}
+
+.cornerMarker.bl {
+  bottom: 0;
+  left: 0;
+  border-right: none;
+  border-top: none;
+}
+
+.cornerMarker.br {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2.5rem;
+    letter-spacing: 8px;
+  }
+
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .card {
+    height: 480px;
+  }
+}
