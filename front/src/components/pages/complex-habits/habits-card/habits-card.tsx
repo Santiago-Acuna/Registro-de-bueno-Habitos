@@ -36,7 +36,7 @@ const HabitsCard: React.FC<HabitsCardProps> = ({ habits }: HabitsCardProps) => {
 
       <div className={styles.scanLine}></div>
 
-      <Link to="/Reading" className={styles.link}>
+      <Link to={`/complex/${habits.id}`} className={styles.link}>
         <img
           src={habits.icon}
           alt={habits.name}
