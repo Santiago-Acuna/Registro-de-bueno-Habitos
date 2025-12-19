@@ -197,7 +197,7 @@ describe("US-003: useRoutes Custom Hook", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/programming",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Programming",
           habitType: "complex",
           actionTypes: ["for work", "personal project"],
@@ -264,7 +264,7 @@ describe("US-003: useRoutes Custom Hook", () => {
       const newRoutes: RouteConfig[] = [
         {
           path: "/reading",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Reading",
           habitType: "complex",
           actionTypes: ["fiction", "non-fiction"],
@@ -374,7 +374,7 @@ describe("US-003: useRoutes Custom Hook", () => {
       );
       expect(programmingRoute).toBeDefined();
       expect(programmingRoute?.path).toBe("/programming");
-      expect(programmingRoute?.component).toBe("ComplexHabits");
+      expect(programmingRoute?.component).toBe("WithoutIntervalsHabits");
       expect(programmingRoute?.habitType).toBe("complex");
     });
 
@@ -475,7 +475,7 @@ describe("US-003: useRoutes Custom Hook", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/programming",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Programming",
           habitType: "complex",
           actionTypes: [],

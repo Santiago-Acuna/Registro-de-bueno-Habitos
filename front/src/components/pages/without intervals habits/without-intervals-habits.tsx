@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import styles from "./complex-habits.module.css";
+import styles from "./without-intervals-habits.module.css";
 import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
 import { fetchHabits } from "../../../redux/slices/habits/asyncActions";
 import HabitsCard from "./habitsCard/habitsCard";
@@ -10,7 +10,7 @@ import CreateActionTypes from "../createActionTypes/createActionTypes";
 import { TerminatorButton } from "@/components/Utils";
 import { manageForm } from "@/redux/slices/form/form";
 
-const ComplexHabits: React.FC = () => {
+const WithoutIntervalsHabits: React.FC = () => {
   const dispatch = useCustomDispatch();
   const { habits: allHabits } = useCustomSelector((state) => state.habit);
   const { formState: form } = useCustomSelector((state) => state.form);
@@ -60,4 +60,4 @@ const ComplexHabits: React.FC = () => {
   );
 };
 
-export default ComplexHabits;
+export default WithoutIntervalsHabits;

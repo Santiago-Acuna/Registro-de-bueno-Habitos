@@ -77,7 +77,7 @@ describe("fetchRoutes Async Thunk", () => {
       );
       expect(programmingRoute).toBeDefined();
       expect(programmingRoute?.path).toBe("/programming");
-      expect(programmingRoute?.component).toBe("ComplexHabits");
+      expect(programmingRoute?.component).toBe("WithoutIntervalsHabits");
       expect(programmingRoute?.habitType).toBe("complex");
       expect(programmingRoute?.actionTypes).toEqual([
         "for work",
@@ -596,7 +596,7 @@ describe("fetchRoutes Async Thunk", () => {
   });
 
   describe("Component Mapping", () => {
-    it("should map complex habitType to ComplexHabits component", async () => {
+    it("should map complex habitType to WithoutIntervalsHabits component", async () => {
       // Arrange: Mock API response with complex habits
       const mockApiResponse = {
         data: {
@@ -611,11 +611,11 @@ describe("fetchRoutes Async Thunk", () => {
       // Act: Dispatch the async thunk
       await store.dispatch(fetchRoutes());
 
-      // Assert: All complex habits should map to ComplexHabits
+      // Assert: All complex habits should map to WithoutIntervalsHabits
       const state = store.getState().routes;
       expect(state.routes).toHaveLength(2);
       state.routes.forEach((route) => {
-        expect(route.component).toBe("ComplexHabits");
+        expect(route.component).toBe("WithoutIntervalsHabits");
         expect(route.habitType).toBe("complex");
       });
     });

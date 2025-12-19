@@ -16,13 +16,12 @@
  * 7. Edge Cases - Handle invalid component names and missing exports
  *
  * Components Under Test:
- * - ComplexHabits (existing, from './complex habits/complex-habits')
+ * - WithoutIntervalsHabits (existing, from './without intervals habits/without-intervals-habits')
  * - CreateHabits (existing, from './createHabit/createHabit')
  * - HabitsSelection (existing, from './habitsSelection/habitsSelection')
  *
  * Future Components (placeholders):
  * - SimpleHabits (to be implemented)
- * - WithoutIntervalsHabits (to be implemented)
  */
 
 import { describe, it, expect } from "vitest";
@@ -51,11 +50,11 @@ describe("Component Barrel Export (Pages.ts)", () => {
   });
 
   describe("Required Component Exports", () => {
-    it("should export ComplexHabits component", async () => {
-      // ComplexHabits is required for complex habit type routes
-      const { ComplexHabits } = await import("../Pages");
-      expect(ComplexHabits).toBeDefined();
-      expect(ComplexHabits).not.toBeNull();
+    it("should export WithoutIntervalsHabits component", async () => {
+      // WithoutIntervalsHabits is required for complex habit type routes
+      const { WithoutIntervalsHabits } = await import("../Pages");
+      expect(WithoutIntervalsHabits).toBeDefined();
+      expect(WithoutIntervalsHabits).not.toBeNull();
     });
 
     it("should export CreateHabits component", async () => {
@@ -77,7 +76,7 @@ describe("Component Barrel Export (Pages.ts)", () => {
       const Pages = await import("../Pages");
       const exportedKeys = Object.keys(Pages);
 
-      expect(exportedKeys).toContain("ComplexHabits");
+      expect(exportedKeys).toContain("WithoutIntervalsHabits");
       expect(exportedKeys).toContain("CreateHabits");
       expect(exportedKeys).toContain("HabitsSelection");
     });
@@ -94,14 +93,14 @@ describe("Component Barrel Export (Pages.ts)", () => {
   });
 
   describe("React Component Type Validation", () => {
-    it("should export ComplexHabits as a valid React component", async () => {
-      const { ComplexHabits } = await import("../Pages");
+    it("should export WithoutIntervalsHabits as a valid React component", async () => {
+      const { WithoutIntervalsHabits } = await import("../Pages");
 
       // React components are functions
-      expect(typeof ComplexHabits).toBe("function");
+      expect(typeof WithoutIntervalsHabits).toBe("function");
 
       // Should have component-like properties
-      const componentName = ComplexHabits.displayName || ComplexHabits.name;
+      const componentName = WithoutIntervalsHabits.displayName || WithoutIntervalsHabits.name;
       expect(componentName).toBeTruthy();
       expect(typeof componentName).toBe("string");
     });
@@ -127,36 +126,36 @@ describe("Component Barrel Export (Pages.ts)", () => {
     });
 
     it("should export components that can be used with React.createElement", async () => {
-      const { ComplexHabits, CreateHabits, HabitsSelection } = await import(
+      const { WithoutIntervalsHabits, CreateHabits, HabitsSelection } = await import(
         "../Pages"
       );
 
       // Test that components can be instantiated (this validates React component structure)
-      expect(() => React.createElement(ComplexHabits)).not.toThrow();
+      expect(() => React.createElement(WithoutIntervalsHabits)).not.toThrow();
       expect(() => React.createElement(CreateHabits)).not.toThrow();
       expect(() => React.createElement(HabitsSelection)).not.toThrow();
     });
 
     it("should export all components with correct display names or function names", async () => {
-      const { ComplexHabits, CreateHabits, HabitsSelection } = await import(
+      const { WithoutIntervalsHabits, CreateHabits, HabitsSelection } = await import(
         "../Pages"
       );
 
-      const complexName = ComplexHabits.displayName || ComplexHabits.name;
+      const complexName = WithoutIntervalsHabits.displayName || WithoutIntervalsHabits.name;
       const createName = CreateHabits.displayName || CreateHabits.name;
       const selectionName = HabitsSelection.displayName || HabitsSelection.name;
 
-      expect(complexName).toBe("ComplexHabits");
+      expect(complexName).toBe("WithoutIntervalsHabits");
       expect(createName).toBe("CreateHabits");
       expect(selectionName).toBe("HabitsSelection");
     });
   });
 
   describe("Dynamic Component Access Pattern", () => {
-    it("should allow access to ComplexHabits via string key", async () => {
+    it("should allow access to WithoutIntervalsHabits via string key", async () => {
       // This is the pattern used in dynamic routing: Pages[route.component]
       const Pages = await import("../Pages");
-      const componentName = "ComplexHabits";
+      const componentName = "WithoutIntervalsHabits";
 
       const Component = Pages[componentName as keyof typeof Pages];
 
@@ -188,7 +187,7 @@ describe("Component Barrel Export (Pages.ts)", () => {
       // Simulate the pattern: const Component = Pages[route.component as PageComponentName];
       const Pages = await import("../Pages");
       const mockRouteComponents = [
-        "ComplexHabits",
+        "WithoutIntervalsHabits",
         "CreateHabits",
         "HabitsSelection",
       ];
@@ -215,7 +214,7 @@ describe("Component Barrel Export (Pages.ts)", () => {
 
     it("should return undefined for components not yet implemented", async () => {
       const Pages = await import("../Pages");
-      const futureComponents = ["SimpleHabits", "WithoutIntervalsHabits"];
+      const futureComponents = ["SimpleHabits"];
 
       futureComponents.forEach((componentName) => {
         const Component = Pages[componentName as keyof typeof Pages];
@@ -227,13 +226,13 @@ describe("Component Barrel Export (Pages.ts)", () => {
 
   describe("TypeScript Type Safety", () => {
     it("should export components with proper TypeScript types", async () => {
-      const { ComplexHabits, CreateHabits, HabitsSelection } = await import(
+      const { WithoutIntervalsHabits, CreateHabits, HabitsSelection } = await import(
         "../Pages"
       );
 
       // TypeScript should recognize these as React components
       // This is validated at compile time, but we can verify runtime behavior
-      const components = [ComplexHabits, CreateHabits, HabitsSelection];
+      const components = [WithoutIntervalsHabits, CreateHabits, HabitsSelection];
 
       components.forEach((Component) => {
         expect(typeof Component).toBe("function");
@@ -247,12 +246,12 @@ describe("Component Barrel Export (Pages.ts)", () => {
       const Pages = await import("../Pages");
 
       type PageComponentName =
-        | "ComplexHabits"
+        | "WithoutIntervalsHabits"
         | "CreateHabits"
         | "HabitsSelection";
 
       const componentNames: PageComponentName[] = [
-        "ComplexHabits",
+        "WithoutIntervalsHabits",
         "CreateHabits",
         "HabitsSelection",
       ];
@@ -265,7 +264,7 @@ describe("Component Barrel Export (Pages.ts)", () => {
     });
 
     it("should maintain proper types for each exported component", async () => {
-      const { ComplexHabits, CreateHabits, HabitsSelection } = await import(
+      const { WithoutIntervalsHabits, CreateHabits, HabitsSelection } = await import(
         "../Pages"
       );
 
@@ -275,20 +274,20 @@ describe("Component Barrel Export (Pages.ts)", () => {
         return true;
       };
 
-      expect(testFunctionType(ComplexHabits)).toBe(true);
+      expect(testFunctionType(WithoutIntervalsHabits)).toBe(true);
       expect(testFunctionType(CreateHabits)).toBe(true);
       expect(testFunctionType(HabitsSelection)).toBe(true);
     });
   });
 
   describe("Export Names Match Component Names", () => {
-    it("should export ComplexHabits with exact name matching component", async () => {
+    it("should export WithoutIntervalsHabits with exact name matching component", async () => {
       // Export name must match backend route config component name
       const Pages = await import("../Pages");
-      const exportedName = "ComplexHabits";
+      const exportedName = "WithoutIntervalsHabits";
 
       expect(exportedName in Pages).toBe(true);
-      expect(Object.keys(Pages)).toContain("ComplexHabits");
+      expect(Object.keys(Pages)).toContain("WithoutIntervalsHabits");
     });
 
     it("should export CreateHabits with exact name matching component", async () => {
@@ -335,7 +334,7 @@ describe("Component Barrel Export (Pages.ts)", () => {
       // Simulate route objects from backend
       const Pages = await import("../Pages");
       const mockRoutes = [
-        { component: "ComplexHabits", path: "/habits/complex" },
+        { component: "WithoutIntervalsHabits", path: "/habits/complex" },
         { component: "CreateHabits", path: "/" },
         { component: "HabitsSelection", path: "/" },
       ];
@@ -349,11 +348,11 @@ describe("Component Barrel Export (Pages.ts)", () => {
 
     it("should provide components ready for React Router rendering", async () => {
       // Components must be renderable by React Router
-      const { ComplexHabits, CreateHabits, HabitsSelection } = await import(
+      const { WithoutIntervalsHabits, CreateHabits, HabitsSelection } = await import(
         "../Pages"
       );
 
-      const components = [ComplexHabits, CreateHabits, HabitsSelection];
+      const components = [WithoutIntervalsHabits, CreateHabits, HabitsSelection];
 
       components.forEach((Component) => {
         // Should not throw when creating element
@@ -379,15 +378,12 @@ describe("Component Barrel Export (Pages.ts)", () => {
     });
 
     it("should be structured to easily add WithoutIntervalsHabits component", async () => {
-      // Placeholder test: When WithoutIntervalsHabits is implemented, just add export to Pages.ts
+      // WithoutIntervalsHabits is now implemented
       const Pages = await import("../Pages");
 
-      // Currently should not exist
-      expect(Pages.WithoutIntervalsHabits).toBeUndefined();
-
-      // Future expectation: After implementation, this will pass
-      // expect(Pages.WithoutIntervalsHabits).toBeDefined();
-      // expect(typeof Pages.WithoutIntervalsHabits).toBe('function');
+      // Should exist now
+      expect(Pages.WithoutIntervalsHabits).toBeDefined();
+      expect(typeof Pages.WithoutIntervalsHabits).toBe('function');
     });
 
     it("should maintain single file modification for adding new components", async () => {
@@ -410,7 +406,7 @@ describe("Component Barrel Export (Pages.ts)", () => {
       // Validate that the pattern works for current components
       const Pages = await import("../Pages");
       const componentPatterns = {
-        complexType: "ComplexHabits",
+        complexType: "WithoutIntervalsHabits",
         createAction: "CreateHabits",
         selectionView: "HabitsSelection",
       };
@@ -500,13 +496,13 @@ describe("Component Barrel Export (Pages.ts)", () => {
 
     it("should successfully import all three components independently", async () => {
       // Each component should be importable without causing conflicts
-      const [ComplexHabits, CreateHabits, HabitsSelection] = await Promise.all([
-        import("../Pages").then((m) => m.ComplexHabits),
+      const [WithoutIntervalsHabits, CreateHabits, HabitsSelection] = await Promise.all([
+        import("../Pages").then((m) => m.WithoutIntervalsHabits),
         import("../Pages").then((m) => m.CreateHabits),
         import("../Pages").then((m) => m.HabitsSelection),
       ]);
 
-      expect(ComplexHabits).toBeDefined();
+      expect(WithoutIntervalsHabits).toBeDefined();
       expect(CreateHabits).toBeDefined();
       expect(HabitsSelection).toBeDefined();
     });
@@ -521,18 +517,18 @@ describe("Component Barrel Export (Pages.ts)", () => {
       expect(Pages.default).toBeUndefined();
 
       // Should have individual named exports
-      expect(Pages.ComplexHabits).toBeDefined();
+      expect(Pages.WithoutIntervalsHabits).toBeDefined();
       expect(Pages.CreateHabits).toBeDefined();
       expect(Pages.HabitsSelection).toBeDefined();
     });
 
     it("should allow importing only specific components", async () => {
       // Test named import pattern for tree-shaking
-      const { ComplexHabits } = await import("../Pages");
+      const { WithoutIntervalsHabits } = await import("../Pages");
 
       // Should successfully import just one component
-      expect(ComplexHabits).toBeDefined();
-      expect(typeof ComplexHabits).toBe("function");
+      expect(WithoutIntervalsHabits).toBeDefined();
+      expect(typeof WithoutIntervalsHabits).toBe("function");
     });
 
     it("should allow importing multiple specific components", async () => {
@@ -570,8 +566,8 @@ describe("Component Barrel Export (Pages.ts)", () => {
 
     it("should export components that are referentially equal across imports", async () => {
       // Components should be the same reference when imported multiple times
-      const { ComplexHabits: CH1 } = await import("../Pages");
-      const { ComplexHabits: CH2 } = await import("../Pages");
+      const { WithoutIntervalsHabits: CH1 } = await import("../Pages");
+      const { WithoutIntervalsHabits: CH2 } = await import("../Pages");
 
       expect(CH1).toBe(CH2);
     });
@@ -585,7 +581,7 @@ describe("Component Barrel Export (Pages.ts)", () => {
       );
 
       const requiredComponents = [
-        "ComplexHabits",
+        "WithoutIntervalsHabits",
         "CreateHabits",
         "HabitsSelection",
       ];
@@ -605,7 +601,7 @@ describe("Component Barrel Export (Pages.ts)", () => {
       expect(availableComponents.length).toBe(3);
       expect(availableComponents).toEqual(
         expect.arrayContaining([
-          "ComplexHabits",
+          "WithoutIntervalsHabits",
           "CreateHabits",
           "HabitsSelection",
         ])

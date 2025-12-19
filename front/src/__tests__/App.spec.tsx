@@ -18,7 +18,7 @@
  * 4. Dynamic routes rendered based on backend configuration
  * 5. Loading state shows while fetching routes
  * 6. Error state shows if route fetch fails
- * 7. Route components map correctly (ComplexHabits for complex habits)
+ * 7. Route components map correctly (WithoutIntervalsHabits for complex habits)
  * 8. useRoutes hook integration (fetchRoutes called on mount)
  * 9. Pages barrel export integration
  * 10. Retry functionality on error
@@ -52,8 +52,8 @@ import { useRoutes } from "../redux/hooks/useRoutes";
 
 // Mock the Pages barrel export
 vi.mock("../components/Pages", () => ({
-  ComplexHabits: () => (
-    <div data-testid="complex-habits-page">Complex Habits Page</div>
+  WithoutIntervalsHabits: () => (
+    <div data-testid="without-intervals-page">Without Intervals Habits Page</div>
   ),
   CreateHabits: () => (
     <div data-testid="create-habits-component">Create Habits</div>
@@ -219,7 +219,7 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/programming",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Programming",
           habitType: "complex",
           actionTypes: ["for work", "personal"],
@@ -295,7 +295,7 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/programming",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Programming",
           habitType: "complex",
           actionTypes: [],
@@ -494,7 +494,7 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/programming",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Programming",
           habitType: "complex",
           actionTypes: ["for work", "personal project"],
@@ -543,14 +543,14 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/programming",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Programming",
           habitType: "complex",
           actionTypes: ["for work", "personal"],
         },
         {
           path: "/reading",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Reading",
           habitType: "complex",
           actionTypes: ["fiction", "non-fiction"],
@@ -584,7 +584,7 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/programming",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Programming",
           habitType: "complex",
           actionTypes: ["work"],
@@ -616,7 +616,7 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/complex-habit",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Complex Habit",
           habitType: "complex",
           actionTypes: [],
@@ -651,7 +651,7 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/test",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Test",
           habitType: "complex",
           actionTypes: [],
@@ -707,7 +707,7 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/programming",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Programming",
           habitType: "complex",
           actionTypes: [],
@@ -736,7 +736,7 @@ describe("US-005: Dynamic Route Rendering in App.tsx", () => {
       const mockRoutes: RouteConfig[] = [
         {
           path: "/test",
-          component: "ComplexHabits",
+          component: "WithoutIntervalsHabits",
           habitName: "Test",
           habitType: "complex",
           actionTypes: [],

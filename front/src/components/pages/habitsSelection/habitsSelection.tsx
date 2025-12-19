@@ -13,7 +13,7 @@ const HabitsSelection: React.FC = () => {
   const display = { display: form !== "" ? "none" : "flex" };
   return (
     <div className={styles["container"]} style={display}>
-      <Link to="/Complex" className={styles.link}>
+      <Link to="/WithoutIntervals" className={styles.link}>
         <div className={`${styles["habitOptionCard"]}`}>
           <img src={complex} className={styles["habitImg"]} alt="complex img" />
           <button className={`${styles["habitBtn"]} ${styles["button-85"]}`}>
@@ -21,7 +21,7 @@ const HabitsSelection: React.FC = () => {
           </button>
         </div>
       </Link>
-      <Link to="/Complex" className={styles.link}>
+      <Link to="/WithoutIntervals" className={styles.link}>
         <div className={`${styles["habitOptionCard"]}`}>
           <img
             src={simple}
@@ -36,7 +36,7 @@ const HabitsSelection: React.FC = () => {
           </button>
         </div>
       </Link>
-      <Link to="/Complex" className={styles.link}>
+      <Link to="/WithoutIntervals" className={styles.link}>
         <div className={`${styles["habitOptionCard"]}`}>
           <img
             src={eternety}

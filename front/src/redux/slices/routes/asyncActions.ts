@@ -38,7 +38,7 @@ const getComponentName = (
   habitType: "complex" | "simple" | "withoutintervals"
 ): string => {
   const componentMap: Record<string, string> = {
-    complex: "ComplexHabits",
+    complex: "WithoutIntervalsHabits",
     simple: "SimpleHabits",
     withoutintervals: "WithoutIntervalsHabits",
   };
