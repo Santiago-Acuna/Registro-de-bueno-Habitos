@@ -1,6 +1,6 @@
 import React from "react";
 import { Habit } from "../../../../habits-types";
-import styles from "./habitsCard.module.css";
+import styles from "./habits-card.module.css";
 import { useCustomSelector } from "../../../../redux/hooks/hooks";
 import { Link } from "react-router-dom";
 

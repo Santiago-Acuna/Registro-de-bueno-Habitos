@@ -1,9 +1,9 @@
 import { useState, type FC, useEffect } from "react";
-import InputForm from "./inputForm";
+import InputForm from "./input-form";
 import styles from "./form.module.css";
-import { handleChange, checkBeforeSubmit } from "./formUtils";
+import { handleChange, checkBeforeSubmit } from "./form-utils";
 import { HabitBody } from "../../../habits-types";
-import SelectComplexityInput from "./selectComplexityInput";
+import SelectComplexityInput from "./select-complexity-input";
 import { useNavigate } from "react-router-dom";
 import {
   postHabits,
