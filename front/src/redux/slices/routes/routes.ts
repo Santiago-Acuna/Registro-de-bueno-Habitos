@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { RouteConfig, RoutesState } from "./routes.types";
-import { fetchRoutes } from "./asyncActions";
+import { fetchRoutes } from "./async-actions";
 
 const initialState: RoutesState = {
   routes: [],

@@ -3,7 +3,7 @@ import {
   useCustomDispatch,
   useCustomSelector,
 } from "../../../redux/hooks/hooks";
-import { fetchBooks } from "../../../redux/slices/book/asyncActions";
+import { fetchBooks } from "../../../redux/slices/book/async-actions";
 import { manageForm } from "../../../redux/slices/book/book";
 import { Link } from "react-router-dom";
 import Button from "@mui/material/Button";

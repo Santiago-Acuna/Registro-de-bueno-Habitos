@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import asyncActions from "./asyncActions";
+import asyncActions from "./async-actions";
 import { Habit } from "../../../habits-types";
 
 interface State {

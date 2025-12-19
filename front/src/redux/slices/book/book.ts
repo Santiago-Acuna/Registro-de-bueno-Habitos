@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { BookBody, BookType } from "../../../components/reading/reading types";
-import asyncActions from "./asyncActions";
+import asyncActions from "./async-actions";
 enum formType {
   CREATE = "CREATE",
   UPDATE = "UPDATE",
