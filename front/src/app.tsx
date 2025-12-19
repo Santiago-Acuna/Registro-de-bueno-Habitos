@@ -1,48 +1,49 @@
-import React, { useEffect } from "react";
+// import { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import CircularProgress from "@mui/material/CircularProgress";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
+// import CircularProgress from "@mui/material/CircularProgress";
+// import Typography from "@mui/material/Typography";
+// import Button from "@mui/material/Button";
 import styles from "./app.module.css";
-import { useRoutes } from "./redux/hooks/use-routes";
+// import { useRoutes } from "./redux/hooks/use-routes";
 import * as Pages from "./components/pages/pages";
 
-type PageComponentName = keyof typeof Pages;
+// type PageComponentName = keyof typeof Pages;
 
 const App: React.FC = () => {
-  const { routes, isLoading, error, fetchRoutes } = useRoutes();
+  // const { routes, isLoading, error, fetchRoutes } = useRoutes();
 
-  useEffect(() => {
-    if (!isLoading && !error) {
-      fetchRoutes();
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!isLoading && !error) {
+  //     fetchRoutes();
+  //   }
+  // }, []);
 
-  if (isLoading) {
-    return (
-      <BrowserRouter basename="/">
-        <div className={styles.container}>
-          <CircularProgress />
-        </div>
-      </BrowserRouter>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <BrowserRouter basename="/">
+  //       <div className={styles.container}>
+  //         <CircularProgress />
+  //       </div>
+  //     </BrowserRouter>
+  //   );
+  // }
 
-  if (error) {
-    return (
-      <BrowserRouter basename="/">
-        <div className={styles.container}>
-          <Typography color="error">{error}</Typography>
-          <Button onClick={fetchRoutes}>Retry</Button>
-        </div>
-      </BrowserRouter>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <BrowserRouter basename="/">
+  //       <div className={styles.container}>
+  //         <Typography color="error">{error}</Typography>
+  //         <Button onClick={fetchRoutes}>Retry</Button>
+  //       </div>
+  //     </BrowserRouter>
+  //   );
+  // }
 
   return (
     <BrowserRouter basename="/">
       <div className={styles.container}>
-        <Routes>
+       <Routes>
+{/*          
           {routes.map((route) => {
             const componentName = route.component as PageComponentName;
             if (!(componentName in Pages)) return null;
@@ -55,10 +56,10 @@ const App: React.FC = () => {
                 element={<Component />}
               />
             );
-          })}
-          <Route path="/Complex/" element={<Pages.ActionTypes />} />
-          <Route path="/Complex" element={<Pages.ComplexHabits />} />
-          <Route path="/WithoutIntervals" element={<Pages.WithoutIntervalsHabits />} />
+          })} */}
+          <Route path="/complex/:habit" element={<Pages.ActionTypes />} />
+          <Route path="/complex" element={<Pages.ComplexHabits />} />
+          <Route path="/withoutintervals" element={<Pages.WithoutIntervalsHabits />} />
           <Route
             path="/"
             element={
