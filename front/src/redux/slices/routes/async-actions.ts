@@ -68,7 +68,7 @@ const transformResponse = (data: HabitsByTypeResponse): RouteConfig[] => {
 
       if (habitName) {
         routes.push({
-          path: `/${toKebabCase(habitName)}`,
+          path: `/${habitType}/${toKebabCase(habitName)}`,
           component: getComponentName(habitType),
           habitName,
           habitType,
