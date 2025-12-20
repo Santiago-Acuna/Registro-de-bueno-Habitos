@@ -1,16 +1,21 @@
 import { FC, useState, useRef, useEffect, DragEvent, ChangeEvent } from "react";
+import { useParams } from "react-router-dom";
 import styles from "./form.module.css";
 import { manageForm } from "../../../redux/slices/form/form";
-import { useCustomDispatch } from "../../../redux/hooks/hooks";
+import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
+import { createActionType } from "../../../redux/slices/action-types";
 
 const ActionTypesForm: FC = () => {
+  const { habit: habitId } = useParams<{ habit: string }>();
   const [unitName, setUnitName] = useState("");
   const [previewSrc, setPreviewSrc] = useState("");
   const [hasFile, setHasFile] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const formContainerRef = useRef<HTMLDivElement>(null);
   const dispatch = useCustomDispatch();
+  const { isLoading } = useCustomSelector((state) => state.actionTypes);
 
   useEffect(() => {
     if (containerRef.current) {
@@ -28,6 +33,7 @@ const ActionTypesForm: FC = () => {
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && file.type.startsWith("image/")) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (event) => {
         setPreviewSrc(event.target?.result as string);
@@ -44,6 +50,7 @@ const ActionTypesForm: FC = () => {
     }
     setPreviewSrc("");
     setHasFile(false);
+    setSelectedFile(null);
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -54,6 +61,7 @@ const ActionTypesForm: FC = () => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file && file.type.startsWith("image/")) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (event) => {
         setPreviewSrc(event.target?.result as string);
@@ -63,7 +71,7 @@ const ActionTypesForm: FC = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const name = unitName.trim();
 
     if (!name) {
@@ -71,23 +79,45 @@ const ActionTypesForm: FC = () => {
       return;
     }
 
-    if (!previewSrc) {
+    if (!selectedFile) {
       alert("ERROR: UNIT IMAGE REQUIRED");
       return;
     }
 
-    alert(`UNIT CREATED SUCCESSFULLY
-DESIGNATION: ${name}
+    if (!habitId) {
+      alert("ERROR: HABIT ID NOT FOUND");
+      return;
+    }
+
+    try {
+      const result = await dispatch(
+        createActionType({
+          name,
+          habitId,
+          icon: selectedFile,
+        })
+      ).unwrap();
+
+      alert(`UNIT CREATED SUCCESSFULLY
+DESIGNATION: ${result.name}
 STATUS: OPERATIONAL
 SKYNET PROTOCOL: ACTIVE`);
 
-    // Reset form
-    setUnitName("");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      // Reset form
+      setUnitName("");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      setPreviewSrc("");
+      setHasFile(false);
+      setSelectedFile(null);
+
+      // Close form
+      dispatch(manageForm(""));
+    } catch (error) {
+      alert(`ERROR: FAILED TO CREATE UNIT
+${error}`);
     }
-    setPreviewSrc("");
-    setHasFile(false);
   };
 
   const handleClose = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -99,6 +129,7 @@ SKYNET PROTOCOL: ACTIVE`);
       }
       setPreviewSrc("");
       setHasFile(false);
+      setSelectedFile(null);
       alert("SESSION TERMINATED\nSKYNET PROTOCOL: STANDBY");
       e.preventDefault();
       dispatch(manageForm(""));
@@ -189,8 +220,12 @@ SKYNET PROTOCOL: ACTIVE`);
             </div>
 
             <div className={styles.submitContainer}>
-              <button className={styles.submitButton} onClick={handleSubmit}>
-                Create Unit
+              <button
+                className={styles.submitButton}
+                onClick={handleSubmit}
+                disabled={isLoading}
+              >
+                {isLoading ? "CREATING..." : "Create Unit"}
               </button>
             </div>
           </div>
