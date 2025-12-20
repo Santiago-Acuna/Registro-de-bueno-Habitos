@@ -76,7 +76,7 @@ export const createActionType = createAsyncThunk<
       formData.append("habitId", payload.habitId);
       formData.append("icon", payload.icon);
 
-      const response = await axios.post<{ data: ActionType }>(
+      const response = await axios.post<ActionType>(
         "http://localhost:3000/api/v1/action-types",
         formData,
         {
@@ -85,19 +85,21 @@ export const createActionType = createAsyncThunk<
           },
         }
       );
+      console.log(response, "response")
 
       // Transform date strings to Date objects
       const actionType = {
-        ...response.data.data,
-        lastActionDate: response.data.data.lastActionDate
-          ? new Date(response.data.data.lastActionDate)
+        ...response.data,
+        lastActionDate: response.data.lastActionDate
+          ? new Date(response.data.lastActionDate)
           : null,
-        createdAt: new Date(response.data.data.createdAt),
-        updatedAt: new Date(response.data.data.updatedAt),
+        createdAt: new Date(response.data.createdAt),
+        updatedAt: new Date(response.data.updatedAt),
       };
 
       return actionType;
     } catch (error) {
+      console.log(error, "error")
       if (axios.isAxiosError(error)) {
         const message =
           error.response?.data?.message ||
