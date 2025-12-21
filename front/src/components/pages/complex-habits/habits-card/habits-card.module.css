@@ -1,0 +1,350 @@
+.card {
+  position: relative;
+  height: 500px;
+  border-radius: 0;
+  overflow: hidden;
+  cursor: crosshair;
+  transition: all 0.3s ease;
+  background: linear-gradient(145deg, #1a1a1f 0%, #0d0d12 100%);
+  border: 2px solid #2a2a2f;
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.8),
+    inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 0, 0, 0.03) 2px,
+    rgba(255, 0, 0, 0.03) 4px
+  );
+  z-index: 1;
+  pointer-events: none;
+}
+
+.link {
+  text-decoration: none;
+  display: block;
+  height: 100%;
+  position: relative;
+}
+
+.targetingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover .targetingOverlay {
+  opacity: 1;
+}
+
+.crosshairH {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 0, 0, 0.6);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+.crosshairV {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 100%;
+  background: rgba(255, 0, 0, 0.6);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+.targetingCorner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+.targetingCorner:nth-child(3) {
+  top: 10px;
+  left: 10px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.targetingCorner:nth-child(4) {
+  top: 10px;
+  right: 10px;
+  border-left: none;
+  border-bottom: none;
+}
+
+.targetingCorner:nth-child(5) {
+  bottom: 10px;
+  left: 10px;
+  border-right: none;
+  border-top: none;
+}
+
+.targetingCorner:nth-child(6) {
+  bottom: 10px;
+  right: 10px;
+  border-left: none;
+  border-top: none;
+}
+
+.card:hover {
+  transform: scale(1.02);
+  border-color: #ff0000;
+  box-shadow:
+    0 15px 40px rgba(0,0,0,0.9),
+    0 0 30px rgba(255, 0, 0, 0.3),
+    inset 0 0 30px rgba(255, 0, 0, 0.05);
+}
+
+.cardId {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  font-size: 0.75rem;
+  color: #ff0000;
+  letter-spacing: 2px;
+  z-index: 5;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+}
+
+.cardStatus {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
+
+.statusDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+.statusDot:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.statusDot:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+}
+
+.cardImage {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  position: relative;
+  z-index: 2;
+  filter: grayscale(70%) contrast(1.3) brightness(0.7);
+  border-bottom: 2px solid #2a2a2f;
+  transition: all 0.3s ease;
+}
+
+.card:hover .cardImage {
+  filter: grayscale(50%) contrast(1.4) brightness(0.8) hue-rotate(-10deg);
+}
+
+.scanLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 0, 0, 0.8) 50%,
+    transparent 100%);
+  z-index: 3;
+  animation: scanDown 3s linear infinite;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+@keyframes scanDown {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(320px); }
+}
+
+.cardContent {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 25px;
+  background: linear-gradient(to bottom, #1a1a1f 0%, #0d0d12 100%);
+  border-top: 2px solid #2a2a2f;
+  z-index: 4;
+  height: 180px;
+}
+
+.cardContent::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255, 0, 0, 0.5) 50%,
+    transparent 100%);
+  animation: dataStream 2s linear infinite;
+  box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+@keyframes dataStream {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.cardTitle {
+  font-size: 1.7rem;
+  font-weight: 900;
+  color: #d0d0d0;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  line-height: 1.2;
+  text-shadow:
+    0 0 5px rgba(255, 0, 0, 0.3),
+    2px 2px 0 #000;
+  margin-bottom: 15px;
+}
+
+.cardData {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.dataLine {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #666;
+  letter-spacing: 1px;
+}
+
+.dataLabel {
+  color: #888;
+}
+
+.dataValue {
+  color: #ff0000;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+}
+
+.assemblyIndicator {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border: 2px solid #ff0000;
+  border-radius: 50%;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(255, 0, 0, 0.1) 0%, transparent 70%);
+  box-shadow:
+    0 0 15px rgba(255, 0, 0, 0.3),
+    inset 0 0 15px rgba(255, 0, 0, 0.2);
+  animation: assemblyRotate 8s linear infinite;
+}
+
+.assemblyIndicator::before {
+  content: '';
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 2px solid rgba(255, 0, 0, 0.5);
+  border-radius: 50%;
+  border-top-color: #ff0000;
+  animation: assemblyRotate 2s linear infinite;
+}
+
+.assemblyIndicator::after {
+  content: 'H';
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #ff0000;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+}
+
+@keyframes assemblyRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.card:hover .assemblyIndicator {
+  animation: assemblyRotateFast 3s linear infinite;
+  box-shadow:
+    0 0 25px rgba(255, 0, 0, 0.6),
+    inset 0 0 25px rgba(255, 0, 0, 0.3);
+}
+
+@keyframes assemblyRotateFast {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.threatLevel {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  padding: 5px 12px;
+  background: rgba(255, 0, 0, 0.2);
+  border: 1px solid #ff0000;
+  color: #ff0000;
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  font-weight: 700;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.8);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+  z-index: 5;
+}
+
+@media (max-width: 768px) {
+  .card {
+    height: 470px;
+  }
+}
