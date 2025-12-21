@@ -1,0 +1,36 @@
+.noHabits {
+  color: white;
+  font-size: 2rem;
+}
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  flex-direction: column;
+  position: fixed;
+  background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+}
+.buttonContainer{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+   width: 100%;
+  padding: 2% 3%; 
+}
+
+.cardsContainers {
+  display: grid;
+
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5%;
+
+  height: 70%;
+  width: 90%;
+}
+.createButton {
+  /* Positioned by parent's justify-content: space-between */
+  z-index: 1;
+}

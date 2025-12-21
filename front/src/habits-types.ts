@@ -10,7 +10,6 @@ interface HabitBody {
   icon: string;
 }
 
-
 interface Habit {
   id: string;
   name: string;

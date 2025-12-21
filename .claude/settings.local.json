@@ -15,8 +15,14 @@
       "Bash(node:*)",
       "Bash(cat:*)",
       "Bash(npx prettier:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(npm run test:*)",
+      "Bash(test:*)"
     ],
     "deny": []
+  },
+  "enabledPlugins": {
+    "frontend-design@claude-plugins-official": true
   }
 }
