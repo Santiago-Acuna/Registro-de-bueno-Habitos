@@ -106,6 +106,27 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
                 <div className={styles.targetingGrid}></div>
                 <div className={styles.crosshair}></div>
                 <div className={styles.diagonalScan}></div>
+
+                <div className={styles.actionButtons}>
+                  <button
+                    className={styles.actionButton}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Add log action here
+                    }}
+                  >
+                    <span className={styles.buttonText}>Add log</span>
+                  </button>
+                  <button
+                    className={styles.actionButton}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Statistics action here
+                    }}
+                  >
+                    <span className={styles.buttonText}>Statistics</span>
+                  </button>
+                </div>
               </div>
 
               <div className={styles.cornerMarkers}>
