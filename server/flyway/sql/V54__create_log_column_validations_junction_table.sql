@@ -701,7 +701,7 @@ END $$;
 --            errors.push({
 --                column: columnWithValidations.name,
 --                validator: validation.validationFunction.name,
---                message: `Validation failed: ${validation.validationFunction.name}`
+--                message: `Validation failed: $${validation.validationFunction.name}`
 --            });
 --        }
 --    }

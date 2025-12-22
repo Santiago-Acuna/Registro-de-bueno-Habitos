@@ -447,14 +447,14 @@ END $$;
 --    -- 2. Execute in sandboxed environment (VM2):
 --    const { VM } = require('vm2');
 --    const vm = new VM({ timeout: 1000, sandbox: {} });
---    const validator = vm.run(`(${validatorRecord.function})`);
+--    const validator = vm.run(`($${validatorRecord.function})`);
 --    const isValid = validator(emailValue);
 --
 --    -- 3. Or use isolated-vm for better security:
 --    const ivm = require('isolated-vm');
 --    const isolate = new ivm.Isolate({ memoryLimit: 8 });
 --    const context = await isolate.createContext();
---    const script = await isolate.compileScript(`(${validatorRecord.function})(value)`);
+--    const script = await isolate.compileScript(`($${validatorRecord.function})(value)`);
 --    const isValid = await script.run(context, { timeout: 1000 });
 --
 -- 12. FUNCTION SIGNATURE GUIDELINES:
