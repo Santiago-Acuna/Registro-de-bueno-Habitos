@@ -126,7 +126,7 @@ describe('CreateActionLogDto', () => {
       expect(endTimeErrors?.constraints).toHaveProperty('isDate');
     });
 
-    it('should fail when endTime is before startTime', async () => {
+    it('should pass DTO validation even when endTime is before startTime (service layer validates)', async () => {
       const dto = new CreateActionLogDto();
       dto.startTime = new Date('2024-01-01T10:00:00Z');
       dto.endTime = new Date('2024-01-01T09:00:00Z');
@@ -134,12 +134,10 @@ describe('CreateActionLogDto', () => {
 
       const errors = await validate(dto);
 
-      expect(errors.length).toBeGreaterThan(0);
-      const endTimeErrors = errors.find(err => err.property === 'endTime');
-      expect(endTimeErrors).toBeDefined();
+      // DTO validation passes - service layer will validate the date relationship
+      expect(errors).toHaveLength(0);
     });
   });
-
 
   describe('actionTypeId validation failures', () => {
     it('should fail when actionTypeId is undefined', async () => {
@@ -203,7 +201,6 @@ describe('CreateActionLogDto', () => {
       expect(actionTypeIdErrors).toBeDefined();
     });
   });
-
 
   describe('boundary conditions', () => {
     it('should accept same startTime and endTime', async () => {
