@@ -37,11 +37,11 @@ model actionTypes {
   updatedAt                DateTime                   @map("updated_at") @default(now()) @db.Timestamptz(6)
   habitId                  String                     @map("habit_id") @db.Uuid
   globalIdentifierId      String?                    @map("global_identifier_id") @db.Uuid
-  logTypeId               String?                    @map("log_type_id") @unique(map: "action_types_log_type_id_unique") @db.Uuid
+  logTypeId               String                     @map("log_type_id") @unique(map: "action_types_log_type_id_unique") @db.Uuid
   actionLogs               actionLogs[]
   globalEntityIdentifiers globalEntityIdentifiers? @relation(fields: [globalIdentifierId], references: [id], onDelete: Restrict, map: "fk_action_types_global_identifier")
   habits                    habits                     @relation(fields: [habitId], references: [id], onDelete: Cascade, map: "fk_action_types_habit_id")
-  logTypes                 logTypes?                 @relation(fields: [logTypeId], references: [id], map: "fk_action_types_log_type_id")
+  logTypes                 logTypes                  @relation(fields: [logTypeId], references: [id], onDelete: SetNull, map: "fk_action_types_log_type_id")
 
   @@index([createdAt], map: "idx_action_types_created_at")
   @@index([globalIdentifierId], map: "idx_action_types_global_identifier_id")
@@ -148,10 +148,41 @@ model habits {
   @@index([globalIdentifierId], map: "idx_habits_global_identifier_id")
 }
 
+model logColumnValidations {
+  id                     String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  logColumnId          String               @map("log_column_id") @db.Uuid
+  validationFunctionId String               @map("validation_function_id") @db.Uuid
+  logColumns            logColumns          @relation(fields: [logColumnId], references: [id], onDelete: Cascade, map: "fk_log_column_validations_log_column")
+  validationFunctions   validationFunctions @relation(fields: [validationFunctionId], references: [id], onDelete: Cascade, map: "fk_log_column_validations_validation_function")
+
+  @@unique([logColumnId, validationFunctionId], map: "log_column_validations_unique")
+  @@index([logColumnId], map: "idx_log_column_validations_log_column_id")
+  @@index([validationFunctionId], map: "idx_log_column_validations_validation_function_id")
+
+  @@map("log_column_validations")
+}
+
+model logColumns {
+  id                     String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String
+  type                   columnLogType
+  logTypeId            String                   @map("log_type_id") @db.Uuid
+  logColumnValidations logColumnValidations[]
+  logTypes              logTypes                @relation(fields: [logTypeId], references: [id], onDelete: Cascade, map: "fk_log_columns_log_type_id")
+
+  @@index([logTypeId], map: "idx_log_columns_log_type_id")
+  @@index([name], map: "idx_log_columns_name")
+  @@index([name, type], map: "idx_log_columns_name_type")
+  @@index([type], map: "idx_log_columns_type")
+
+  @@map("log_columns")
+}
+
 model logTypes {
   id           String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name         String        @unique(map: "log_types_name_unique") @db.VarChar(50)
   actionTypes actionTypes?
+  logColumns  logColumns[]
 
   @@index([name], map: "idx_log_types_name")
 
@@ -225,6 +256,24 @@ model types {
   name        String     @db.VarChar(100)
   description String     @db.VarChar(1000)
   subtypes    subtypes[]
+}
+
+model validationFunctions {
+  id                     String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                   String                   @unique(map: "idx_validation_functions_name_unique")
+  function               String
+  isForFront           Boolean                  @map("is_for_front") @default(false)
+  logColumnValidations logColumnValidations[]
+
+  @@map("validation_functions")
+}
+
+enum columnLogType {
+  text
+  number
+  boolean
+
+  @@map("column_log_type")
 }
 
 enum habitComplexity {
