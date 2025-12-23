@@ -127,9 +127,7 @@ describe('ActionLogsController', () => {
 
     it('should handle NotFoundError when action type does not exist', async () => {
       // Arrange
-      actionLogsService.create.mockRejectedValue(
-        new NotFoundError('ActionType', mockActionTypeId)
-      );
+      actionLogsService.create.mockRejectedValue(new NotFoundError('ActionType', mockActionTypeId));
 
       // Act & Assert
       await expect(controller.create(createActionLogDto)).rejects.toThrow(NotFoundError);
