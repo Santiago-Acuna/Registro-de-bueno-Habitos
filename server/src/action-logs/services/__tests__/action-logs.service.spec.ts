@@ -2,11 +2,7 @@ import { Logger } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 
 import { ActionLog } from '../../../domain/entities/action-log.entity';
-import {
-  UUID,
-  PaginatedResult,
-  FilterOptions,
-} from '../../../domain/shared/types/common';
+import { UUID, PaginatedResult, FilterOptions } from '../../../domain/shared/types/common';
 import { PaginatedResponseDto } from '../../../infrastructure/dto/paginated-response.dto';
 import { PaginationQueryDto } from '../../../infrastructure/dto/pagination-query.dto';
 import {
@@ -161,7 +157,6 @@ describe('ActionLogsService', () => {
       expect(actionLogsRepository.create).not.toHaveBeenCalled();
     });
 
-
     it('should throw NotFoundError when action type does not exist', async () => {
       // Arrange
       actionLogsRepository.create.mockRejectedValue(
@@ -173,7 +168,6 @@ describe('ActionLogsService', () => {
 
       expect(actionLogsRepository.create).toHaveBeenCalled();
     });
-
 
     it('should rethrow unexpected errors', async () => {
       // Arrange
@@ -236,7 +230,7 @@ describe('ActionLogsService', () => {
       // Assert
       expect(actionLogsRepository.findAll).toHaveBeenCalledWith({ page: 1, limit: 10 }, filters);
       expect(result.data).toHaveLength(1);
-      expect(result.data[0].actionTypeId).toBe(mockActionTypeId);
+      expect(result.data[0]!.actionTypeId).toBe(mockActionTypeId);
     });
 
     it('should return paginated list with date range filter', async () => {
