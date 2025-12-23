@@ -106,8 +106,6 @@ describe('ActionLogs API Integration Tests', () => {
     const createActionLogDto: CreateActionLogDto = {
       startTime: fixedStartTime,
       endTime: fixedEndTime,
-      durationSeconds: 3600,
-      actionDate: fixedActionDate,
       actionTypeId: mockActionTypeId,
     };
 
@@ -233,24 +231,6 @@ describe('ActionLogs API Integration Tests', () => {
       );
     });
 
-    it('should return 400 when durationSeconds is negative', async () => {
-      // Act & Assert
-      const response = await request(app.getHttpServer())
-        .post('/api/v1/action-logs')
-        .send({
-          startTime: fixedStartTime,
-          durationSeconds: -100,
-          actionTypeId: mockActionTypeId,
-        })
-        .expect(400);
-
-      expect(response.body).toEqual(
-        expect.objectContaining({
-          statusCode: 400,
-          message: expect.any(Array),
-        })
-      );
-    });
 
     it('should return 404 when action type does not exist', async () => {
       // Arrange

@@ -87,8 +87,6 @@ describe('ActionLogsService', () => {
     const createActionLogDto: CreateActionLogDto = {
       startTime: fixedStartTime,
       endTime: fixedEndTime,
-      durationSeconds: 3600,
-      actionDate: fixedActionDate,
       actionTypeId: mockActionTypeId,
     };
 
@@ -105,8 +103,6 @@ describe('ActionLogsService', () => {
         expect.objectContaining({
           startTime: fixedStartTime,
           endTime: fixedEndTime,
-          durationSeconds: 3600,
-          actionDate: fixedActionDate,
           actionTypeId: mockActionTypeId,
         })
       );
@@ -165,22 +161,6 @@ describe('ActionLogsService', () => {
       expect(actionLogsRepository.create).not.toHaveBeenCalled();
     });
 
-    it('should throw ValidationException when durationSeconds is negative', async () => {
-      // Arrange
-      const invalidDto: CreateActionLogDto = {
-        startTime: fixedStartTime,
-        durationSeconds: -100,
-        actionTypeId: mockActionTypeId,
-      };
-
-      // Act & Assert
-      await expect(service.create(invalidDto)).rejects.toThrow(ValidationException);
-      await expect(service.create(invalidDto)).rejects.toThrow(
-        'Duration seconds must be a positive number'
-      );
-
-      expect(actionLogsRepository.create).not.toHaveBeenCalled();
-    });
 
     it('should throw NotFoundError when action type does not exist', async () => {
       // Arrange
@@ -194,40 +174,6 @@ describe('ActionLogsService', () => {
       expect(actionLogsRepository.create).toHaveBeenCalled();
     });
 
-    it('should calculate duration from startTime and endTime if not provided', async () => {
-      // Arrange
-      const dtoWithoutDuration: CreateActionLogDto = {
-        startTime: fixedStartTime,
-        endTime: fixedEndTime,
-        actionTypeId: mockActionTypeId,
-      };
-      const expectedActionLog = createMockActionLog({ durationSeconds: 3600 });
-      actionLogsRepository.create.mockResolvedValue(expectedActionLog);
-
-      // Act
-      const result = await service.create(dtoWithoutDuration);
-
-      // Assert
-      expect(result.durationSeconds).toBe(3600);
-    });
-
-    it('should use provided actionDate', async () => {
-      // Arrange
-      const customDate = new Date('2024-06-15');
-      const dtoWithDate: CreateActionLogDto = {
-        startTime: fixedStartTime,
-        actionDate: customDate,
-        actionTypeId: mockActionTypeId,
-      };
-      const expectedActionLog = createMockActionLog({ actionDate: customDate });
-      actionLogsRepository.create.mockResolvedValue(expectedActionLog);
-
-      // Act
-      const result = await service.create(dtoWithDate);
-
-      // Assert
-      expect(result.actionDate).toEqual(customDate);
-    });
 
     it('should rethrow unexpected errors', async () => {
       // Arrange

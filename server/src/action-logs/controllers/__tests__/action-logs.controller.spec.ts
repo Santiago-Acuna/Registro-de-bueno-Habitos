@@ -76,8 +76,6 @@ describe('ActionLogsController', () => {
     const createActionLogDto: CreateActionLogDto = {
       startTime: fixedStartTime,
       endTime: fixedEndTime,
-      durationSeconds: 3600,
-      actionDate: fixedActionDate,
       actionTypeId: mockActionTypeId,
     };
 
