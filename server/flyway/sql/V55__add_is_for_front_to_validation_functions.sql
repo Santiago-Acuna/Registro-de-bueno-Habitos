@@ -419,7 +419,7 @@ END $$;
 --        for (const validation of column.validations) {
 --            const validator = executeInSandbox(validation.validationFunction.function);
 --            if (!validator(value)) {
---                throw new ValidationError(`Validation failed: ${validation.validationFunction.name}`);
+--                throw new ValidationError(`Validation failed: $${validation.validationFunction.name}`);
 --            }
 --        }
 --    }
@@ -444,9 +444,9 @@ END $$;
 --        );
 --
 --        for (const validation of validations) {
---            const validator = new Function('value', `return (${validation.function})(value)`);
+--            const validator = new Function('value', `return ($${validation.function})(value)`);
 --            if (!validator(value)) {
---                return { valid: false, message: `${validation.name} failed` };
+--                return { valid: false, message: `$${validation.name} failed` };
 --            }
 --        }
 --
