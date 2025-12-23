@@ -231,12 +231,9 @@ describe('ActionLogs API Integration Tests', () => {
       );
     });
 
-
     it('should return 404 when action type does not exist', async () => {
       // Arrange
-      actionLogsRepository.create.mockRejectedValue(
-        new Error('ActionType not found')
-      );
+      actionLogsRepository.create.mockRejectedValue(new Error('ActionType not found'));
 
       // Act & Assert
       await request(app.getHttpServer())
@@ -260,9 +257,7 @@ describe('ActionLogs API Integration Tests', () => {
       actionLogsRepository.findAll.mockResolvedValue(mockPaginatedResult);
 
       // Act & Assert
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/action-logs')
-        .expect(200);
+      const response = await request(app.getHttpServer()).get('/api/v1/action-logs').expect(200);
 
       expect(response.body).toEqual(
         expect.objectContaining({
@@ -435,9 +430,7 @@ describe('ActionLogs API Integration Tests', () => {
 
     it('should return 400 for invalid UUID format', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/api/v1/action-logs/invalid-uuid')
-        .expect(400);
+      await request(app.getHttpServer()).get('/api/v1/action-logs/invalid-uuid').expect(400);
     });
 
     it('should handle different valid UUIDs', async () => {
@@ -458,9 +451,7 @@ describe('ActionLogs API Integration Tests', () => {
   describe('API versioning', () => {
     it('should require API version in URL', async () => {
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/api/action-logs')
-        .expect(404); // No version specified
+      await request(app.getHttpServer()).get('/api/action-logs').expect(404); // No version specified
     });
 
     it('should accept version 1', async () => {
@@ -474,9 +465,7 @@ describe('ActionLogs API Integration Tests', () => {
       });
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/api/v1/action-logs')
-        .expect(200);
+      await request(app.getHttpServer()).get('/api/v1/action-logs').expect(200);
     });
   });
 
@@ -492,9 +481,7 @@ describe('ActionLogs API Integration Tests', () => {
       });
 
       // Act & Assert
-      await request(app.getHttpServer())
-        .get('/api/v1/action-logs')
-        .expect(200);
+      await request(app.getHttpServer()).get('/api/v1/action-logs').expect(200);
 
       // The ThrottlerGuard should be applied (tested in unit tests)
     });
@@ -503,14 +490,10 @@ describe('ActionLogs API Integration Tests', () => {
   describe('error handling and validation', () => {
     it('should handle database errors gracefully', async () => {
       // Arrange
-      actionLogsRepository.findAll.mockRejectedValue(
-        new Error('Database connection failed')
-      );
+      actionLogsRepository.findAll.mockRejectedValue(new Error('Database connection failed'));
 
       // Act & Assert
-      const response = await request(app.getHttpServer())
-        .get('/api/v1/action-logs')
-        .expect(500);
+      const response = await request(app.getHttpServer()).get('/api/v1/action-logs').expect(500);
 
       expect(response.body).toEqual(
         expect.objectContaining({
@@ -618,9 +601,7 @@ describe('ActionLogs API Integration Tests', () => {
       // Act
       const requests = Array(5)
         .fill(null)
-        .map(() =>
-          request(app.getHttpServer()).get(`/api/v1/action-logs/${mockActionLogId}`)
-        );
+        .map(() => request(app.getHttpServer()).get(`/api/v1/action-logs/${mockActionLogId}`));
 
       const responses = await Promise.all(requests);
 
