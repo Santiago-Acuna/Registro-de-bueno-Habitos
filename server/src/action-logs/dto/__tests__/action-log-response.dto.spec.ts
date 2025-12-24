@@ -1,5 +1,5 @@
-import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 
 import { ActionLogResponseDto } from '../action-log-response.dto';
 import { LogColumnResponseDto, LogColumnValidationResponseDto } from '../log-columns-response.dto';
@@ -368,11 +368,11 @@ describe('LogColumnsResponseDto', () => {
             createValidValidation({ functionName: 'isNotEmpty' }),
             createValidValidation({
               id: 'b1ffce00-ad1c-4f89-8c7e-7cc0ce491b22',
-              functionName: 'isEmail'
+              functionName: 'isEmail',
             }),
             createValidValidation({
               id: 'c2aadf11-be2d-4f80-9d8f-8dd1df502c33',
-              functionName: 'maxLength'
+              functionName: 'maxLength',
             }),
           ],
         };

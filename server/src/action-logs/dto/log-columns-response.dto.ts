@@ -1,6 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEnum, IsNotEmpty, IsString, IsUUID, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
 
 import { UUID } from '../../domain/shared/types/common';
 
@@ -49,7 +57,8 @@ export class LogColumnValidationResponseDto {
   functionCode!: string;
 
   @ApiProperty({
-    description: 'Indicates if this validation should be executed on the frontend (read-only configuration)',
+    description:
+      'Indicates if this validation should be executed on the frontend (read-only configuration)',
     example: true,
     type: Boolean,
   })
@@ -103,7 +112,8 @@ export class LogColumnResponseDto {
   logTypeId!: UUID;
 
   @ApiProperty({
-    description: 'Array of validation functions for this column (read-only configuration from database)',
+    description:
+      'Array of validation functions for this column (read-only configuration from database)',
     type: [LogColumnValidationResponseDto],
     isArray: true,
   })

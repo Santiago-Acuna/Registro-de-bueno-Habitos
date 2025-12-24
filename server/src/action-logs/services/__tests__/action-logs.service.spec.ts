@@ -487,7 +487,9 @@ describe('ActionLogsService', () => {
   });
 
   describe('getLogColumnsByActionTypeId()', () => {
-    const createMockLogColumn = (overrides: Partial<LogColumnResponseDto> = {}): LogColumnResponseDto => ({
+    const createMockLogColumn = (
+      overrides: Partial<LogColumnResponseDto> = {}
+    ): LogColumnResponseDto => ({
       id: '123e4567-e89b-12d3-a456-426614174000',
       name: 'commitName',
       type: 'text',
@@ -498,7 +500,10 @@ describe('ActionLogsService', () => {
 
     it('should return log columns for valid action type id', async () => {
       // Arrange
-      const mockColumns = [createMockLogColumn(), createMockLogColumn({ name: 'pageCount', type: 'number' })];
+      const mockColumns = [
+        createMockLogColumn(),
+        createMockLogColumn({ name: 'pageCount', type: 'number' }),
+      ];
       mockActionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue(mockColumns);
       const logSpy = jest.spyOn(service['logger'], 'log');
 
@@ -507,8 +512,12 @@ describe('ActionLogsService', () => {
 
       // Assert
       expect(result).toEqual(mockColumns);
-      expect(mockActionLogsRepository.getLogColumnsByActionTypeId).toHaveBeenCalledWith(mockActionTypeId);
-      expect(logSpy).toHaveBeenCalledWith(`Fetching log columns for action type: ${mockActionTypeId}`);
+      expect(mockActionLogsRepository.getLogColumnsByActionTypeId).toHaveBeenCalledWith(
+        mockActionTypeId
+      );
+      expect(logSpy).toHaveBeenCalledWith(
+        `Fetching log columns for action type: ${mockActionTypeId}`
+      );
     });
 
     it('should return empty array when log type has no columns', async () => {
@@ -530,7 +539,9 @@ describe('ActionLogsService', () => {
       );
 
       // Act & Assert
-      await expect(service.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(NotFoundError);
+      await expect(service.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(
+        NotFoundError
+      );
       await expect(service.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(
         `ActionType with id ${mockActionTypeId} not found`
       );

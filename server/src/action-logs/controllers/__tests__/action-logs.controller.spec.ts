@@ -426,7 +426,9 @@ describe('ActionLogsController', () => {
   });
 
   describe('getLogColumnsByActionTypeId()', () => {
-    const createMockLogColumn = (overrides: Partial<LogColumnResponseDto> = {}): LogColumnResponseDto => ({
+    const createMockLogColumn = (
+      overrides: Partial<LogColumnResponseDto> = {}
+    ): LogColumnResponseDto => ({
       id: '123e4567-e89b-12d3-a456-426614174000',
       name: 'commitName',
       type: 'text',
@@ -437,7 +439,10 @@ describe('ActionLogsController', () => {
 
     it('should return log columns for valid action type id', async () => {
       // Arrange
-      const mockColumns = [createMockLogColumn(), createMockLogColumn({ name: 'pageCount', type: 'number' })];
+      const mockColumns = [
+        createMockLogColumn(),
+        createMockLogColumn({ name: 'pageCount', type: 'number' }),
+      ];
       actionLogsService.getLogColumnsByActionTypeId.mockResolvedValue(mockColumns);
 
       // Act
@@ -468,7 +473,9 @@ describe('ActionLogsController', () => {
       );
 
       // Act & Assert
-      await expect(controller.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(NotFoundError);
+      await expect(controller.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(
+        NotFoundError
+      );
       await expect(controller.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(
         `ActionType with id ${mockActionTypeId} not found`
       );
@@ -483,7 +490,9 @@ describe('ActionLogsController', () => {
       await controller.getLogColumnsByActionTypeId(differentActionTypeId);
 
       // Assert
-      expect(actionLogsService.getLogColumnsByActionTypeId).toHaveBeenCalledWith(differentActionTypeId);
+      expect(actionLogsService.getLogColumnsByActionTypeId).toHaveBeenCalledWith(
+        differentActionTypeId
+      );
     });
 
     it('should return columns with validations', async () => {
