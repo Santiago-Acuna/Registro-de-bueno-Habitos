@@ -6,6 +6,7 @@ import {
   FilterOptions,
 } from '../../domain/shared/types/common';
 import { CreateActionLogDto } from '../dto/create-action-log.dto';
+import { LogColumnResponseDto } from '../dto/log-columns-response.dto';
 
 export interface IActionLogsRepository {
   create(data: CreateActionLogDto): Promise<ActionLog>;
@@ -15,4 +16,5 @@ export interface IActionLogsRepository {
     filters?: FilterOptions
   ): Promise<PaginatedResult<ActionLog>>;
   findByActionTypeId(actionTypeId: UUID): Promise<ActionLog[]>;
+  getLogColumnsByActionTypeId(actionTypeId: UUID): Promise<LogColumnResponseDto[]>;
 }
