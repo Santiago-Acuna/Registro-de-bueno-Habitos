@@ -7,6 +7,7 @@ import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dt
 import { NotFoundError, ValidationException } from '../../infrastructure/exceptions/app.exceptions';
 import { ActionLogResponseDto } from '../dto/action-log-response.dto';
 import { CreateActionLogDto } from '../dto/create-action-log.dto';
+import { LogColumnResponseDto } from '../dto/log-columns-response.dto';
 import { IActionLogsRepository } from '../interfaces/action-logs-repository.interface';
 
 @Injectable()
@@ -45,8 +46,8 @@ export class ActionLogsService {
     paginationQuery: PaginationQueryDto,
     filters?: FilterOptions
   ): Promise<PaginatedResponseDto<ActionLogResponseDto>> {
-    const page = paginationQuery.page || 1;
-    const limit = paginationQuery.limit || 10;
+    const page = paginationQuery.page ?? 1;
+    const limit = paginationQuery.limit ?? 10;
 
     this.logger.log(`Fetching action logs - page: ${page}, limit: ${limit}`);
 
@@ -72,6 +73,20 @@ export class ActionLogsService {
     }
 
     return this.mapToResponse(actionLog);
+  }
+
+  async getLogColumnsByActionTypeId(actionTypeId: UUID): Promise<LogColumnResponseDto[]> {
+    this.logger.log(`Fetching log columns for action type: ${actionTypeId}`);
+
+    try {
+      const logColumns = await this.actionLogsRepository.getLogColumnsByActionTypeId(actionTypeId);
+      return logColumns;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('ActionType not found')) {
+        throw new NotFoundError(`ActionType with id ${actionTypeId} not found`);
+      }
+      throw error;
+    }
   }
 
   private mapToResponse(actionLog: ActionLog): ActionLogResponseDto {
