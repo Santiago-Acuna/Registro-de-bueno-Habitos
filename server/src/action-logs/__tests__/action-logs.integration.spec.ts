@@ -6,8 +6,8 @@ import request from 'supertest';
 import { ActionLog } from '../../domain/entities/action-log.entity';
 import { UUID, PaginatedResult } from '../../domain/shared/types/common';
 import { HttpExceptionFilter } from '../../infrastructure/filters/http-exception.filter';
-import { CreateActionLogDto } from '../dto/create-action-log.dto';
 import { ActionLogsModule } from '../action-logs.module';
+import { CreateActionLogDto } from '../dto/create-action-log.dto';
 import { IActionLogsRepository } from '../interfaces/action-logs-repository.interface';
 
 // Mock implementations for integration tests
@@ -615,7 +615,19 @@ describe('ActionLogs API Integration Tests', () => {
   });
 
   describe('GET /action-logs/action-types/:actionTypeId/log-columns', () => {
-    const mockLogColumns = [
+    const mockLogColumns: Array<{
+      id: string;
+      name: string;
+      type: 'text' | 'number' | 'boolean';
+      logTypeId: string;
+      validations: Array<{
+        id: string;
+        validationFunctionId: string;
+        functionName: string;
+        functionCode: string;
+        isForFront: boolean;
+      }>;
+    }> = [
       {
         id: '123e4567-e89b-12d3-a456-426614174000',
         name: 'commitName',
@@ -701,7 +713,19 @@ describe('ActionLogs API Integration Tests', () => {
 
     it('should return columns with multiple validations', async () => {
       // Arrange
-      const columnsWithValidations = [
+      const columnsWithValidations: Array<{
+        id: string;
+        name: string;
+        type: 'text' | 'number' | 'boolean';
+        logTypeId: string;
+        validations: Array<{
+          id: string;
+          validationFunctionId: string;
+          functionName: string;
+          functionCode: string;
+          isForFront: boolean;
+        }>;
+      }> = [
         {
           ...mockLogColumns[0]!,
           validations: [
@@ -730,13 +754,25 @@ describe('ActionLogs API Integration Tests', () => {
 
     it('should handle different column types (text, number, boolean)', async () => {
       // Arrange
-      const differentTypes = [
-        { ...mockLogColumns[0]!, type: 'text' },
-        { ...mockLogColumns[1]!, type: 'number' },
+      const differentTypes: Array<{
+        id: string;
+        name: string;
+        type: 'text' | 'number' | 'boolean';
+        logTypeId: string;
+        validations: Array<{
+          id: string;
+          validationFunctionId: string;
+          functionName: string;
+          functionCode: string;
+          isForFront: boolean;
+        }>;
+      }> = [
+        { ...mockLogColumns[0]!, type: 'text' as const },
+        { ...mockLogColumns[1]!, type: 'number' as const },
         {
           id: 'c2ggdf11-be2d-6gh0-dd8f-8dd1df502c33',
           name: 'isActive',
-          type: 'boolean',
+          type: 'boolean' as const,
           logTypeId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
           validations: [],
         },
