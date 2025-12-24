@@ -10,6 +10,7 @@ import {
 } from '../../../infrastructure/exceptions/app.exceptions';
 import { ActionLogResponseDto } from '../../dto/action-log-response.dto';
 import { CreateActionLogDto } from '../../dto/create-action-log.dto';
+import { LogColumnResponseDto } from '../../dto/log-columns-response.dto';
 import { ActionLogsService } from '../../services/action-logs.service';
 import { ActionLogsController } from '../action-logs.controller';
 
@@ -18,6 +19,7 @@ const mockActionLogsService = {
   create: jest.fn(),
   findAll: jest.fn(),
   findOne: jest.fn(),
+  getLogColumnsByActionTypeId: jest.fn(),
 };
 
 // Mock ThrottlerGuard
@@ -420,6 +422,91 @@ describe('ActionLogsController', () => {
       // Assert
       expect(results).toHaveLength(3);
       expect(actionLogsService.findOne).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('getLogColumnsByActionTypeId()', () => {
+    const createMockLogColumn = (overrides: Partial<LogColumnResponseDto> = {}): LogColumnResponseDto => ({
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      name: 'commitName',
+      type: 'text',
+      logTypeId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      validations: [],
+      ...overrides,
+    });
+
+    it('should return log columns for valid action type id', async () => {
+      // Arrange
+      const mockColumns = [createMockLogColumn(), createMockLogColumn({ name: 'pageCount', type: 'number' })];
+      actionLogsService.getLogColumnsByActionTypeId.mockResolvedValue(mockColumns);
+
+      // Act
+      const result = await controller.getLogColumnsByActionTypeId(mockActionTypeId);
+
+      // Assert
+      expect(result).toEqual(mockColumns);
+      expect(actionLogsService.getLogColumnsByActionTypeId).toHaveBeenCalledWith(mockActionTypeId);
+      expect(actionLogsService.getLogColumnsByActionTypeId).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return empty array when log type has no columns', async () => {
+      // Arrange
+      actionLogsService.getLogColumnsByActionTypeId.mockResolvedValue([]);
+
+      // Act
+      const result = await controller.getLogColumnsByActionTypeId(mockActionTypeId);
+
+      // Assert
+      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
+    });
+
+    it('should propagate NotFoundError when action type does not exist', async () => {
+      // Arrange
+      actionLogsService.getLogColumnsByActionTypeId.mockRejectedValue(
+        new NotFoundError('ActionType', mockActionTypeId)
+      );
+
+      // Act & Assert
+      await expect(controller.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(NotFoundError);
+      await expect(controller.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(
+        `ActionType with id ${mockActionTypeId} not found`
+      );
+    });
+
+    it('should call service with correct action type id', async () => {
+      // Arrange
+      const differentActionTypeId: UUID = 'b1ffce00-ad1c-5fg9-cc7e-7cc0ce491b22';
+      actionLogsService.getLogColumnsByActionTypeId.mockResolvedValue([]);
+
+      // Act
+      await controller.getLogColumnsByActionTypeId(differentActionTypeId);
+
+      // Assert
+      expect(actionLogsService.getLogColumnsByActionTypeId).toHaveBeenCalledWith(differentActionTypeId);
+    });
+
+    it('should return columns with validations', async () => {
+      // Arrange
+      const mockColumn = createMockLogColumn({
+        validations: [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            validationFunctionId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+            functionName: 'isNotEmpty',
+            functionCode: 'return value !== "";',
+            isForFront: true,
+          },
+        ],
+      });
+      actionLogsService.getLogColumnsByActionTypeId.mockResolvedValue([mockColumn]);
+
+      // Act
+      const result = await controller.getLogColumnsByActionTypeId(mockActionTypeId);
+
+      // Assert
+      expect(result[0]!.validations).toHaveLength(1);
+      expect(result[0]!.validations[0]!.functionName).toBe('isNotEmpty');
     });
   });
 });
