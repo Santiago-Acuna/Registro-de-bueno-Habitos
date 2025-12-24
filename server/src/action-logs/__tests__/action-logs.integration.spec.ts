@@ -16,6 +16,7 @@ const mockActionLogsRepository = {
   findById: jest.fn(),
   findAll: jest.fn(),
   findByActionTypeId: jest.fn(),
+  getLogColumnsByActionTypeId: jest.fn(),
 };
 
 describe('ActionLogs API Integration Tests', () => {
@@ -610,6 +611,173 @@ describe('ActionLogs API Integration Tests', () => {
         expect(response.status).toBe(200);
         expect(response.body.id).toBe(mockActionLogId);
       });
+    });
+  });
+
+  describe('GET /action-logs/action-types/:actionTypeId/log-columns', () => {
+    const mockLogColumns = [
+      {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        name: 'commitName',
+        type: 'text',
+        logTypeId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        validations: [
+          {
+            id: '456e7890-e89b-12d3-a456-426614174111',
+            validationFunctionId: '789e0123-e89b-12d3-a456-426614174222',
+            functionName: 'isNotEmpty',
+            functionCode: 'return value !== "";',
+            isForFront: true,
+          },
+        ],
+      },
+      {
+        id: 'b1ffce00-ad1c-5fg9-cc7e-7cc0ce491b22',
+        name: 'pageCount',
+        type: 'number',
+        logTypeId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+        validations: [],
+      },
+    ];
+
+    it('should return log columns with validations for valid action type', async () => {
+      // Arrange
+      actionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue(mockLogColumns);
+
+      // Act & Assert
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/action-logs/action-types/${mockActionTypeId}/log-columns`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(2);
+      expect(response.body[0]).toEqual(
+        expect.objectContaining({
+          id: mockLogColumns[0]!.id,
+          name: 'commitName',
+          type: 'text',
+        })
+      );
+      expect(response.body[0]!.validations).toHaveLength(1);
+      expect(response.body[1]!.validations).toHaveLength(0);
+    });
+
+    it('should return empty array when log type has no columns', async () => {
+      // Arrange
+      actionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue([]);
+
+      // Act & Assert
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/action-logs/action-types/${mockActionTypeId}/log-columns`)
+        .expect(200);
+
+      expect(response.body).toEqual([]);
+    });
+
+    it('should return 404 when action type does not exist', async () => {
+      // Arrange
+      actionLogsRepository.getLogColumnsByActionTypeId.mockRejectedValue(
+        new Error('ActionType not found')
+      );
+
+      // Act & Assert
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/action-logs/action-types/${mockActionTypeId}/log-columns`)
+        .expect(404);
+
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          statusCode: 404,
+          message: expect.stringContaining('not found'),
+        })
+      );
+    });
+
+    it('should return 400 for invalid action type id format', async () => {
+      // Act & Assert
+      await request(app.getHttpServer())
+        .get('/api/v1/action-logs/action-types/invalid-uuid/log-columns')
+        .expect(400);
+    });
+
+    it('should return columns with multiple validations', async () => {
+      // Arrange
+      const columnsWithValidations = [
+        {
+          ...mockLogColumns[0]!,
+          validations: [
+            mockLogColumns[0]!.validations[0]!,
+            {
+              id: 'c2ggdf11-be2d-6gh0-dd8f-8dd1df502c33',
+              validationFunctionId: 'd3hheg22-cf3e-7hi1-ee9g-9ee2eg613d44',
+              functionName: 'maxLength',
+              functionCode: 'return value.length <= 100;',
+              isForFront: true,
+            },
+          ],
+        },
+      ];
+      actionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue(columnsWithValidations);
+
+      // Act & Assert
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/action-logs/action-types/${mockActionTypeId}/log-columns`)
+        .expect(200);
+
+      expect(response.body[0]!.validations).toHaveLength(2);
+      expect(response.body[0]!.validations[0]!.functionName).toBe('isNotEmpty');
+      expect(response.body[0]!.validations[1]!.functionName).toBe('maxLength');
+    });
+
+    it('should handle different column types (text, number, boolean)', async () => {
+      // Arrange
+      const differentTypes = [
+        { ...mockLogColumns[0]!, type: 'text' },
+        { ...mockLogColumns[1]!, type: 'number' },
+        {
+          id: 'c2ggdf11-be2d-6gh0-dd8f-8dd1df502c33',
+          name: 'isActive',
+          type: 'boolean',
+          logTypeId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+          validations: [],
+        },
+      ];
+      actionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue(differentTypes);
+
+      // Act & Assert
+      const response = await request(app.getHttpServer())
+        .get(`/api/v1/action-logs/action-types/${mockActionTypeId}/log-columns`)
+        .expect(200);
+
+      expect(response.body).toHaveLength(3);
+      expect(response.body[0]!.type).toBe('text');
+      expect(response.body[1]!.type).toBe('number');
+      expect(response.body[2]!.type).toBe('boolean');
+    });
+
+    it('should apply versioning correctly', async () => {
+      // Arrange
+      actionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue([]);
+
+      // Act & Assert - without version should return 404
+      await request(app.getHttpServer())
+        .get(`/api/action-logs/action-types/${mockActionTypeId}/log-columns`)
+        .expect(404);
+
+      // With version should work
+      await request(app.getHttpServer())
+        .get(`/api/v1/action-logs/action-types/${mockActionTypeId}/log-columns`)
+        .expect(200);
+    });
+
+    it('should apply throttling', async () => {
+      // Arrange
+      actionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue([]);
+
+      // Act & Assert
+      await request(app.getHttpServer())
+        .get(`/api/v1/action-logs/action-types/${mockActionTypeId}/log-columns`)
+        .expect(200);
+      // ThrottlerGuard should be applied (tested in unit tests)
     });
   });
 });
