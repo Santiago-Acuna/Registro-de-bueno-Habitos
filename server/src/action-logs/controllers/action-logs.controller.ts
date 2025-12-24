@@ -9,8 +9,8 @@ import {
   UseGuards,
   Version,
 } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { UUID, FilterOptions } from '../../domain/shared/types/common';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
@@ -18,6 +18,7 @@ import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dt
 import { ActionLogResponseDto } from '../dto/action-log-response.dto';
 import { ActionLogsQueryDto } from '../dto/action-logs-query.dto';
 import { CreateActionLogDto } from '../dto/create-action-log.dto';
+import { LogColumnResponseDto } from '../dto/log-columns-response.dto';
 import { ActionLogsService } from '../services/action-logs.service';
 
 @ApiTags('action-logs')
@@ -56,12 +57,12 @@ export class ActionLogsController {
     const { page, limit, actionTypeId, startDate, endDate } = query;
 
     const paginationQuery: PaginationQueryDto = {
-      page: page || 1,
-      limit: limit || 10,
+      page: page ?? 1,
+      limit: limit ?? 10,
     };
 
     const filters: FilterOptions | undefined =
-      actionTypeId || startDate || endDate
+      (actionTypeId ?? startDate ?? endDate)
         ? {
             ...(actionTypeId && { actionTypeId }),
             ...(startDate && { startDate }),
@@ -90,5 +91,27 @@ export class ActionLogsController {
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
   async findOne(@Param('id', ParseUUIDPipe) id: UUID): Promise<ActionLogResponseDto> {
     return this.actionLogsService.findOne(id);
+  }
+
+  @Get('action-types/:actionTypeId/log-columns')
+  @Version('1')
+  @ApiOperation({ summary: 'Get log columns and validation functions by action type ID' })
+  @ApiParam({
+    name: 'actionTypeId',
+    type: 'string',
+    format: 'uuid',
+    description: 'Action type ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Log columns retrieved successfully',
+    type: [LogColumnResponseDto],
+  })
+  @ApiResponse({ status: 404, description: 'Action type not found' })
+  @ApiResponse({ status: 400, description: 'Invalid UUID format' })
+  async getLogColumnsByActionTypeId(
+    @Param('actionTypeId', ParseUUIDPipe) actionTypeId: UUID
+  ): Promise<LogColumnResponseDto[]> {
+    return this.actionLogsService.getLogColumnsByActionTypeId(actionTypeId);
   }
 }
