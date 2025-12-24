@@ -10,6 +10,7 @@ import {
   ValidationException,
 } from '../../../infrastructure/exceptions/app.exceptions';
 import { CreateActionLogDto } from '../../dto/create-action-log.dto';
+import { LogColumnResponseDto } from '../../dto/log-columns-response.dto';
 import { IActionLogsRepository } from '../../interfaces/action-logs-repository.interface';
 import { ActionLogsService } from '../action-logs.service';
 
@@ -18,6 +19,7 @@ const mockActionLogsRepository = {
   create: jest.fn(),
   findById: jest.fn(),
   findAll: jest.fn(),
+  getLogColumnsByActionTypeId: jest.fn(),
   findByActionTypeId: jest.fn(),
 };
 
@@ -481,6 +483,107 @@ describe('ActionLogsService', () => {
 
       // Act & Assert
       await expect(service.create(invalidDto)).rejects.toThrow(ValidationException);
+    });
+  });
+
+  describe('getLogColumnsByActionTypeId()', () => {
+    const createMockLogColumn = (overrides: Partial<LogColumnResponseDto> = {}): LogColumnResponseDto => ({
+      id: '123e4567-e89b-12d3-a456-426614174000',
+      name: 'commitName',
+      type: 'text',
+      logTypeId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+      validations: [],
+      ...overrides,
+    });
+
+    it('should return log columns for valid action type id', async () => {
+      // Arrange
+      const mockColumns = [createMockLogColumn(), createMockLogColumn({ name: 'pageCount', type: 'number' })];
+      mockActionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue(mockColumns);
+      const logSpy = jest.spyOn(service['logger'], 'log');
+
+      // Act
+      const result = await service.getLogColumnsByActionTypeId(mockActionTypeId);
+
+      // Assert
+      expect(result).toEqual(mockColumns);
+      expect(mockActionLogsRepository.getLogColumnsByActionTypeId).toHaveBeenCalledWith(mockActionTypeId);
+      expect(logSpy).toHaveBeenCalledWith(`Fetching log columns for action type: ${mockActionTypeId}`);
+    });
+
+    it('should return empty array when log type has no columns', async () => {
+      // Arrange
+      mockActionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue([]);
+
+      // Act
+      const result = await service.getLogColumnsByActionTypeId(mockActionTypeId);
+
+      // Assert
+      expect(result).toEqual([]);
+      expect(result).toHaveLength(0);
+    });
+
+    it('should throw NotFoundError when action type does not exist', async () => {
+      // Arrange
+      mockActionLogsRepository.getLogColumnsByActionTypeId.mockRejectedValue(
+        new Error('ActionType not found')
+      );
+
+      // Act & Assert
+      await expect(service.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(NotFoundError);
+      await expect(service.getLogColumnsByActionTypeId(mockActionTypeId)).rejects.toThrow(
+        `ActionType with id ${mockActionTypeId} not found`
+      );
+    });
+
+    it('should return columns with multiple validations', async () => {
+      // Arrange
+      const mockColumn = createMockLogColumn({
+        validations: [
+          {
+            id: '123e4567-e89b-12d3-a456-426614174000',
+            validationFunctionId: 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11',
+            functionName: 'isNotEmpty',
+            functionCode: 'return value !== "";',
+            isForFront: true,
+          },
+          {
+            id: 'b1ffce00-ad1c-5fg9-cc7e-7cc0ce491b22',
+            validationFunctionId: 'c2ggdf11-be2d-6gh0-dd8f-8dd1df502c33',
+            functionName: 'maxLength',
+            functionCode: 'return value.length <= 100;',
+            isForFront: true,
+          },
+        ],
+      });
+      mockActionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue([mockColumn]);
+
+      // Act
+      const result = await service.getLogColumnsByActionTypeId(mockActionTypeId);
+
+      // Assert
+      expect(result[0]!.validations).toHaveLength(2);
+      expect(result[0]!.validations[0]!.functionName).toBe('isNotEmpty');
+      expect(result[0]!.validations[1]!.functionName).toBe('maxLength');
+    });
+
+    it('should handle different column types', async () => {
+      // Arrange
+      const mockColumns = [
+        createMockLogColumn({ name: 'name', type: 'text' }),
+        createMockLogColumn({ name: 'count', type: 'number' }),
+        createMockLogColumn({ name: 'isActive', type: 'boolean' }),
+      ];
+      mockActionLogsRepository.getLogColumnsByActionTypeId.mockResolvedValue(mockColumns);
+
+      // Act
+      const result = await service.getLogColumnsByActionTypeId(mockActionTypeId);
+
+      // Assert
+      expect(result).toHaveLength(3);
+      expect(result[0]!.type).toBe('text');
+      expect(result[1]!.type).toBe('number');
+      expect(result[2]!.type).toBe('boolean');
     });
   });
 });
