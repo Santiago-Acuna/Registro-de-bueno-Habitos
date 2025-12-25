@@ -26,14 +26,22 @@ export class ActionTypesRepository implements IActionTypesRepository {
         throw new Error('habitId is required and must be a valid UUID');
       }
 
-      // Step 1: Create action type with ONLY habitId
-      const createdActionType = await this.prisma.actionTypes.create({
+      // Step 1: Create a log type for this action type
+      const logType = await this.prisma.logTypes.create({
         data: {
-          habitId: data.habitId,
+          name: `${data.name}_log_type`,
         },
       });
 
-      // Step 2: Create global identifier with name, icon, entityType, entityId
+      // Step 2: Create action type with habitId and logTypeId
+      const createdActionType = await this.prisma.actionTypes.create({
+        data: {
+          habitId: data.habitId,
+          logTypeId: logType.id,
+        },
+      });
+
+      // Step 3: Create global identifier with name, icon, entityType, entityId
       const globalIdentifier = await this.prisma.globalEntityIdentifiers.create({
         data: {
           name: data.name,
@@ -43,7 +51,7 @@ export class ActionTypesRepository implements IActionTypesRepository {
         },
       });
 
-      // Step 3: Update action type to link globalIdentifierId
+      // Step 4: Update action type to link globalIdentifierId
       const updatedActionType = await this.prisma.actionTypes.update({
         where: { id: createdActionType.id },
         data: { globalIdentifierId: globalIdentifier.id },
