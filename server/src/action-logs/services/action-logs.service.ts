@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 
 import { ActionLog } from '../../domain/entities/action-log.entity';
 import { UUID, FilterOptions } from '../../domain/shared/types/common';
+import { PrismaService } from '../../infrastructure/database/prisma.service';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
 import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
 import { NotFoundError, ValidationException } from '../../infrastructure/exceptions/app.exceptions';
@@ -10,13 +11,17 @@ import { CreateActionLogDto } from '../dto/create-action-log.dto';
 import { LogColumnResponseDto } from '../dto/log-columns-response.dto';
 import { IActionLogsRepository } from '../interfaces/action-logs-repository.interface';
 
+import { LogValidationService } from './log-validation.service';
+
 @Injectable()
 export class ActionLogsService {
   private readonly logger = new Logger(ActionLogsService.name);
 
   constructor(
     @Inject('IActionLogsRepository')
-    private readonly actionLogsRepository: IActionLogsRepository
+    private readonly actionLogsRepository: IActionLogsRepository,
+    private readonly logValidationService: LogValidationService,
+    private readonly prisma: PrismaService
   ) {}
 
   async create(dto: CreateActionLogDto): Promise<ActionLogResponseDto> {
@@ -28,6 +33,28 @@ export class ActionLogsService {
     }
 
     try {
+      // Get logTypeId from action type if not provided
+      let logTypeId = dto.logTypeId;
+      if (!logTypeId) {
+        const actionType = await this.prisma.actionTypes.findUnique({
+          where: { id: dto.actionTypeId },
+          select: { logTypeId: true },
+        });
+
+        if (!actionType) {
+          throw new NotFoundError('ActionType', dto.actionTypeId);
+        }
+
+        logTypeId = actionType.logTypeId;
+      }
+
+      // Validate logTypeInfo if provided
+      if (dto.logTypeInfo && logTypeId) {
+        this.logger.log(`Validating logTypeInfo for log type: ${logTypeId}`);
+        await this.logValidationService.validateLogTypeInfo(logTypeId, dto.logTypeInfo);
+      }
+
+      // Create the action log (repository will handle specialized log creation)
       const actionLog = await this.actionLogsRepository.create(dto);
 
       this.logger.log(`Successfully created action log with id: ${actionLog.id}`);
