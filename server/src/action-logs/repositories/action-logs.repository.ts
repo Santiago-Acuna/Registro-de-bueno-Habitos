@@ -15,9 +15,14 @@ import {
 } from '../dto/log-columns-response.dto';
 import { IActionLogsRepository } from '../interfaces/action-logs-repository.interface';
 
+import { LogTableStrategyRegistry } from './strategies/log-table-strategy.registry';
+
 @Injectable()
 export class ActionLogsRepository implements IActionLogsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly strategyRegistry: LogTableStrategyRegistry
+  ) {}
 
   async create(data: CreateActionLogDto): Promise<ActionLog> {
     try {
@@ -143,6 +148,7 @@ export class ActionLogsRepository implements IActionLogsRepository {
 
   /**
    * Inserts data into the appropriate specialized log table based on log type name
+   * Uses the Strategy Pattern to delegate to the appropriate strategy
    * @param logTypeName - Name of the log type
    * @param data - Data to insert
    */
@@ -150,21 +156,8 @@ export class ActionLogsRepository implements IActionLogsRepository {
     logTypeName: string,
     data: Record<string, unknown>
   ): Promise<void> {
-    const lowerCaseLogTypeName = logTypeName.toLowerCase();
-
-    // Map log type names to their corresponding Prisma table models
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const prismaData = data as any;
-
-    if (lowerCaseLogTypeName.includes('development')) {
-      await this.prisma.developmentLogs.create({ data: prismaData });
-    } else if (lowerCaseLogTypeName.includes('reading')) {
-      await this.prisma.readingLogs.create({ data: prismaData });
-    } else if (lowerCaseLogTypeName.includes('pronunciation')) {
-      await this.prisma.pronunciationLogs.create({ data: prismaData });
-    } else {
-      throw new Error(`Unsupported log type: ${logTypeName}`);
-    }
+    const strategy = this.strategyRegistry.getStrategy(logTypeName);
+    await strategy.create(data);
   }
 
   async findById(id: UUID): Promise<ActionLog | null> {
