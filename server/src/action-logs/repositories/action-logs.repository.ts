@@ -21,14 +21,20 @@ export class ActionLogsRepository implements IActionLogsRepository {
 
   async create(data: CreateActionLogDto): Promise<ActionLog> {
     try {
+      // Verify action type exists and get its log type
       const actionType = await this.prisma.actionTypes.findUnique({
         where: { id: data.actionTypeId },
+        include: { logTypes: true },
       });
 
       if (!actionType) {
         throw new Error('ActionType not found');
       }
 
+      // Use provided logTypeId or get it from action type
+      const logTypeId = data.logTypeId ?? actionType.logTypeId;
+
+      // Create the action log first
       const createdActionLog = await this.prisma.actionLogs.create({
         data: {
           startTime: data.startTime,
@@ -37,9 +43,127 @@ export class ActionLogsRepository implements IActionLogsRepository {
         },
       });
 
+      // If logTypeInfo is provided, create specialized log entry
+      if (data.logTypeInfo && logTypeId) {
+        await this.createSpecializedLog(
+          createdActionLog.id,
+          logTypeId,
+          actionType.logTypes?.name,
+          data.logTypeInfo
+        );
+      }
+
       return this.mapToDomain(createdActionLog);
     } catch (error) {
       throw error;
+    }
+  }
+
+  /**
+   * Creates a specialized log entry based on the log type using dynamic column mapping
+   * @param actionLogId - The ID of the created action log
+   * @param logTypeId - The ID of the log type
+   * @param logTypeName - The name of the log type (to determine which table to use)
+   * @param logTypeInfo - The data for the specialized log
+   */
+  private async createSpecializedLog(
+    actionLogId: UUID,
+    logTypeId: UUID,
+    logTypeName: string | undefined,
+    logTypeInfo: Record<string, unknown>
+  ): Promise<void> {
+    if (!logTypeName) {
+      // If no log type name, fetch it
+      const logType = await this.prisma.logTypes.findUnique({
+        where: { id: logTypeId },
+        select: { name: true },
+      });
+      logTypeName = logType?.name;
+    }
+
+    if (!logTypeName) {
+      throw new Error('Log type name not found');
+    }
+
+    // Fetch log columns to build data dynamically
+    const logColumns = await this.prisma.logColumns.findMany({
+      where: { logTypeId },
+      select: { name: true, type: true },
+    });
+
+    // Build data object dynamically based on log columns
+    const data = this.buildLogData(actionLogId, logTypeInfo, logColumns);
+
+    // Determine which table to use and insert
+    await this.insertIntoSpecializedTable(logTypeName, data);
+  }
+
+  /**
+   * Builds log data object dynamically based on log columns
+   * @param actionLogId - The action log ID to associate with
+   * @param logTypeInfo - The input data
+   * @param logColumns - Column definitions from database
+   * @returns Data object ready for insertion
+   */
+  private buildLogData(
+    actionLogId: UUID,
+    logTypeInfo: Record<string, unknown>,
+    logColumns: Array<{ name: string; type: string }>
+  ): Record<string, unknown> {
+    const data: Record<string, unknown> = {
+      actionId: actionLogId,
+    };
+
+    for (const column of logColumns) {
+      const value = logTypeInfo[column.name];
+
+      if (value === undefined || value === null) {
+        data[column.name] = null;
+        continue;
+      }
+
+      // Type conversion based on column type
+      switch (column.type) {
+        case 'text':
+          data[column.name] = String(value);
+          break;
+        case 'number':
+          data[column.name] = Number(value);
+          break;
+        case 'boolean':
+          data[column.name] = Boolean(value);
+          break;
+        default:
+          data[column.name] = value;
+      }
+    }
+
+    return data;
+  }
+
+  /**
+   * Inserts data into the appropriate specialized log table based on log type name
+   * @param logTypeName - Name of the log type
+   * @param data - Data to insert
+   */
+  private async insertIntoSpecializedTable(
+    logTypeName: string,
+    data: Record<string, unknown>
+  ): Promise<void> {
+    const lowerCaseLogTypeName = logTypeName.toLowerCase();
+
+    // Map log type names to their corresponding Prisma table models
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const prismaData = data as any;
+
+    if (lowerCaseLogTypeName.includes('development')) {
+      await this.prisma.developmentLogs.create({ data: prismaData });
+    } else if (lowerCaseLogTypeName.includes('reading')) {
+      await this.prisma.readingLogs.create({ data: prismaData });
+    } else if (lowerCaseLogTypeName.includes('pronunciation')) {
+      await this.prisma.pronunciationLogs.create({ data: prismaData });
+    } else {
+      throw new Error(`Unsupported log type: ${logTypeName}`);
     }
   }
 
