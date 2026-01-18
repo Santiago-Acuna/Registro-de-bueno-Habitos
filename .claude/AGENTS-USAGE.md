@@ -19,8 +19,6 @@ Launch Claude with `--agents` flag for true isolated context windows.
 claude --agents "$(cat .claude/agents.json)"
 ```
 
----
-
 ## Available Custom Agents
 
 Your project has 12 custom agents configured in `.claude/agents/`:
