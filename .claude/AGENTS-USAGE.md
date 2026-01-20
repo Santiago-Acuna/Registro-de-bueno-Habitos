@@ -218,3 +218,4 @@ Agents are automatically discovered from:
 ├── settings.local.json        # Local settings
 └── AGENTS-USAGE.md            # This documentation
 ```
+
