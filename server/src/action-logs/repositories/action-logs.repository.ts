@@ -24,6 +24,13 @@ export class ActionLogsRepository implements IActionLogsRepository {
     private readonly strategyRegistry: LogTableStrategyRegistry
   ) {}
 
+  /**
+   * Converts snake_case to camelCase
+   */
+  private snakeToCamel(str: string): string {
+    return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+  }
+
   async create(data: CreateActionLogDto): Promise<ActionLog> {
     try {
       // Verify action type exists and get its log type
@@ -91,10 +98,16 @@ export class ActionLogsRepository implements IActionLogsRepository {
     }
 
     // Fetch log columns to build data dynamically
-    const logColumns = await this.prisma.logColumns.findMany({
+    const rawLogColumns = await this.prisma.logColumns.findMany({
       where: { logTypeId },
       select: { name: true, type: true },
     });
+
+    // Convert snake_case column names to camelCase
+    const logColumns = rawLogColumns.map(col => ({
+      name: this.snakeToCamel(col.name),
+      type: col.type,
+    }));
 
     // Build data object dynamically based on log columns
     const data = this.buildLogData(actionLogId, logTypeInfo, logColumns);
@@ -330,7 +343,7 @@ export class ActionLogsRepository implements IActionLogsRepository {
 
     return {
       id: data.id,
-      name: data.name,
+      name: this.snakeToCamel(data.name),
       type: data.type as 'text' | 'number' | 'boolean',
       logTypeId: data.logTypeId,
       validations,

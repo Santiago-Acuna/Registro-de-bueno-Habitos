@@ -23,6 +23,13 @@ export class LogValidationService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * Converts snake_case to camelCase
+   */
+  private snakeToCamel(str: string): string {
+    return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+  }
+
+  /**
    * Validates logTypeInfo data against backend validation functions for a specific log type
    * @param logTypeId - The UUID of the log type
    * @param logTypeInfo - The data to validate
@@ -48,7 +55,7 @@ export class LogValidationService {
       return;
     }
 
-    // Map to a more usable structure
+    // Map to a more usable structure (convert snake_case column names to camelCase)
     const columnMap = new Map<string, LogColumn>();
     for (const column of logColumns) {
       const validations = column.logColumnValidations
@@ -59,8 +66,9 @@ export class LogValidationService {
           isForFront: v.validationFunctions.isForFront,
         }));
 
-      columnMap.set(column.name, {
-        name: column.name,
+      const camelCaseName = this.snakeToCamel(column.name);
+      columnMap.set(camelCaseName, {
+        name: camelCaseName,
         type: column.type as 'text' | 'number' | 'boolean',
         validations,
       });
