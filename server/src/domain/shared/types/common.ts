@@ -31,4 +31,7 @@ export interface PaginatedResult<T> {
 
 export interface FilterOptions {
   isActive?: boolean;
+  actionTypeId?: UUID;
+  startDate?: Date;
+  endDate?: Date;
 }
