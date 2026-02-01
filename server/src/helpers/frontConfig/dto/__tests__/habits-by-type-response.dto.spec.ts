@@ -177,7 +177,7 @@ describe('HabitsByTypeResponseDto', () => {
 
       // Assert - default value is applied, so no validation errors
       expect(dto.complex).toEqual([]);
-      expect(errors.length).toBe(0);
+      expect(errors).toHaveLength(0);
     });
 
     it('should apply default value if simple is missing from source', async () => {
@@ -194,7 +194,7 @@ describe('HabitsByTypeResponseDto', () => {
 
       // Assert - default value is applied, so no validation errors
       expect(dto.simple).toEqual([]);
-      expect(errors.length).toBe(0);
+      expect(errors).toHaveLength(0);
     });
 
     it('should apply default value if withoutintervals is missing from source', async () => {
@@ -211,7 +211,7 @@ describe('HabitsByTypeResponseDto', () => {
 
       // Assert - default value is applied, so no validation errors
       expect(dto.withoutintervals).toEqual([]);
-      expect(errors.length).toBe(0);
+      expect(errors).toHaveLength(0);
     });
 
     it('should fail validation if complex is not an array', async () => {

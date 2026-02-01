@@ -36,6 +36,7 @@ describe('FrontConfigController (Integration)', () => {
     // Clean up database before each test
     await prisma.globalEntityIdentifiers.deleteMany();
     await prisma.actionTypes.deleteMany();
+    await prisma.logTypes.deleteMany();
     await prisma.habits.deleteMany();
   });
 
@@ -139,9 +140,17 @@ describe('FrontConfigController (Integration)', () => {
       });
 
       // Create action types
+      // First create log types for the action types
+      const logType1 = await prisma.logTypes.create({
+        data: {
+          name: 'for_work_log_type',
+        },
+      });
+
       const actionType1 = await prisma.actionTypes.create({
         data: {
           habitId: habit.id,
+          logTypeId: logType1.id,
         },
       });
 
@@ -161,9 +170,16 @@ describe('FrontConfigController (Integration)', () => {
         },
       });
 
+      const logType2 = await prisma.logTypes.create({
+        data: {
+          name: 'personal_project_log_type',
+        },
+      });
+
       const actionType2 = await prisma.actionTypes.create({
         data: {
           habitId: habit.id,
+          logTypeId: logType2.id,
         },
       });
 
