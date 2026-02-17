@@ -10,6 +10,8 @@ import { FrontConfigModule } from './helpers/frontConfig/frontConfig.module';
 import { configValidation } from './infrastructure/config/config.validation';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { HealthController } from './infrastructure/health/health.controller';
+import { SubtypesModule } from './subtypes/subtypes.module';
+import { TypesModule } from './types/types.module';
 
 @Module({
   imports: [
@@ -45,6 +47,8 @@ import { HealthController } from './infrastructure/health/health.controller';
     ActionTypesModule,
     ActionLogsModule,
     FrontConfigModule,
+    TypesModule,
+    SubtypesModule,
   ],
   controllers: [HealthController],
   providers: [],
