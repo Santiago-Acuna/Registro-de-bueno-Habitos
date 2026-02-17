@@ -5,6 +5,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { ActionLogsModule } from './action-logs/action-logs.module';
 import { ActionTypesModule } from './action-types/action-types.module';
 import { BooksModule } from './books/books.module';
+import { ExternalDependenciesModule } from './external-dependencies/external-dependencies.module';
 import { HabitsModule } from './habits/habits.module';
 import { FrontConfigModule } from './helpers/frontConfig/frontConfig.module';
 import { configValidation } from './infrastructure/config/config.validation';
@@ -51,6 +52,7 @@ import { TypesModule } from './types/types.module';
     TypesModule,
     SubtypesModule,
     ProgrammingLanguagesModule,
+    ExternalDependenciesModule,
   ],
   controllers: [HealthController],
   providers: [],
