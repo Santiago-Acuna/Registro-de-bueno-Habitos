@@ -10,6 +10,7 @@ import { FrontConfigModule } from './helpers/frontConfig/frontConfig.module';
 import { configValidation } from './infrastructure/config/config.validation';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { HealthController } from './infrastructure/health/health.controller';
+import { ProgrammingLanguagesModule } from './programming-languages/programming-languages.module';
 import { SubtypesModule } from './subtypes/subtypes.module';
 import { TypesModule } from './types/types.module';
 
@@ -49,6 +50,7 @@ import { TypesModule } from './types/types.module';
     FrontConfigModule,
     TypesModule,
     SubtypesModule,
+    ProgrammingLanguagesModule,
   ],
   controllers: [HealthController],
   providers: [],
