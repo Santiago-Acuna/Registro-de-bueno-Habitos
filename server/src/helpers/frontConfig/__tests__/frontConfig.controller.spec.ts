@@ -5,7 +5,7 @@ import { HabitsByTypeResponseDto } from '../dto/habits-by-type-response.dto';
 import { FrontConfigController } from '../frontConfig.controller';
 import { FrontConfigService } from '../frontConfig.service';
 
-// Mock FrontConfigService 
+// Mock FrontConfigService
 const mockFrontConfigService = {
   getHabitsByType: jest.fn(),
 };
