@@ -28,7 +28,7 @@ export class ProgrammingLanguagesRepository implements IProgrammingLanguagesRepo
     return this.prisma.programmingLanguages.count();
   }
 
-  private mapToDomain(data: { id: number; name: string }): ProgrammingLanguageEntity {
-    return new ProgrammingLanguageEntity(data.id, data.name);
+  private mapToDomain(data: { id: number; name: string; image: string | null }): ProgrammingLanguageEntity {
+    return new ProgrammingLanguageEntity(data.id, data.name, data.image);
   }
 }
