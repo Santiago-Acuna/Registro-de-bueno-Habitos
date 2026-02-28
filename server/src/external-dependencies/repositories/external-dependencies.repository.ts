@@ -32,8 +32,8 @@ export class ExternalDependenciesRepository implements IExternalDependenciesRepo
     id: number;
     name: string;
     programmingLanguageId: number | null;
-    image: string | null;
+    icon: string | null;
   }): ExternalDependencyEntity {
-    return new ExternalDependencyEntity(data.id, data.name, data.programmingLanguageId, data.image);
+    return new ExternalDependencyEntity(data.id, data.name, data.programmingLanguageId, data.icon);
   }
 }

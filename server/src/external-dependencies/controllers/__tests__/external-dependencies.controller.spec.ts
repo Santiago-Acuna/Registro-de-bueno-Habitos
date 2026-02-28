@@ -27,6 +27,7 @@ describe('ExternalDependenciesController', () => {
     id: mockExternalDependencyId,
     name: 'React',
     programmingLanguageId: 1,
+    icon: null,
     ...overrides,
   });
 

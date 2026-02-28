@@ -18,7 +18,8 @@
       "Bash(npm run lint:*)",
       "Bash(npm run test:run:*)",
       "Bash(npm run test:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(awk NR==119 || NR==210:*)"
     ],
     "deny": []
   },
