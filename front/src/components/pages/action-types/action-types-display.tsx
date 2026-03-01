@@ -171,6 +171,7 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
       {addLogTarget && (
         <TerminatorForm
           actionTypeName={addLogTarget.name}
+          actionTypeId={addLogTarget.id}
           onClose={() => setAddLogTarget(null)}
         />
       )}

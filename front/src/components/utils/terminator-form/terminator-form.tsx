@@ -3,15 +3,17 @@ import styles from "./terminator-form.module.css";
 import { useCustomDispatch, useCustomSelector } from "@/redux/hooks/hooks";
 import { fetchProgrammingLanguages } from "@/redux/slices/programming-languages";
 import { fetchExternalDependencies } from "@/redux/slices/external-dependencies";
+import { fetchLogColumnsByActionTypeId } from "@/redux/slices/log-columns";
 import type { ProgrammingLanguage } from "@/redux/slices/programming-languages";
 import type { ExternalDependency } from "@/redux/slices/external-dependencies";
 
 interface TerminatorFormProps {
   actionTypeName: string;
+  actionTypeId:string
   onClose: () => void;
 }
 
-const TerminatorForm: FC<TerminatorFormProps> = ({ actionTypeName, onClose }) => {
+const TerminatorForm: FC<TerminatorFormProps> = ({ actionTypeName, actionTypeId, onClose }) => {
   const dispatch = useCustomDispatch();
 
   const { programmingLanguages, isLoading: loadingLanguages } = useCustomSelector(
@@ -35,7 +37,8 @@ const TerminatorForm: FC<TerminatorFormProps> = ({ actionTypeName, onClose }) =>
   useEffect(() => {
     dispatch(fetchProgrammingLanguages());
     dispatch(fetchExternalDependencies());
-  }, [dispatch]);
+    dispatch(fetchLogColumnsByActionTypeId(actionTypeId));
+  }, [dispatch, actionTypeId]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

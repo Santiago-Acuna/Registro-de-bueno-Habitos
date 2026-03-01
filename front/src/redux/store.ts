@@ -6,6 +6,7 @@ import { routesReducer } from "./slices/routes/routes";
 import { actionTypesReducer } from "./slices/action-types";
 import { programmingLanguagesReducer } from "./slices/programming-languages";
 import { externalDependenciesReducer } from "./slices/external-dependencies";
+import { logColumnsReducer } from "./slices/log-columns";
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     actionTypes: actionTypesReducer,
     programmingLanguages: programmingLanguagesReducer,
     externalDependencies: externalDependenciesReducer,
+    logColumns: logColumnsReducer,
   },
 });
 
