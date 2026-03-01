@@ -70,7 +70,7 @@ describe('ExternalDependenciesService', () => {
 
     it('should map domain entities to response DTOs correctly', async () => {
       // Arrange
-      const mockExternalDependencies = [new ExternalDependencyEntity(1, 'NestJS', 2)];
+      const mockExternalDependencies = [new ExternalDependencyEntity(1, 'NestJS', 2, 'https://example.com/nestjs.png')];
       repository.findAll.mockResolvedValue(mockExternalDependencies);
 
       // Act
@@ -81,6 +81,7 @@ describe('ExternalDependenciesService', () => {
         id: 1,
         name: 'NestJS',
         programmingLanguageId: 2,
+        icon: 'https://example.com/nestjs.png',
       });
     });
 
@@ -104,7 +105,7 @@ describe('ExternalDependenciesService', () => {
   describe('findOne()', () => {
     it('should return external dependency when found', async () => {
       // Arrange
-      const mockExternalDependency = new ExternalDependencyEntity(1, 'React', 1);
+      const mockExternalDependency = new ExternalDependencyEntity(1, 'React', 1, 'https://example.com/react.png');
       repository.findById.mockResolvedValue(mockExternalDependency);
 
       // Act
@@ -115,6 +116,7 @@ describe('ExternalDependenciesService', () => {
       expect(result).toHaveProperty('id', 1);
       expect(result).toHaveProperty('name', 'React');
       expect(result).toHaveProperty('programmingLanguageId', 1);
+      expect(result).toHaveProperty('icon', 'https://example.com/react.png');
     });
 
     it('should throw NotFoundError when external dependency does not exist', async () => {
