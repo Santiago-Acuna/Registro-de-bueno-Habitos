@@ -1,7 +1,7 @@
-import { FC } from "react";
+import { FC, useState } from "react";
 import styles from "./action-types-display.module.css";
 import CreateActionTypes from "../create-action-types/create-action-types";
-import { TerminatorButton } from "@/components/utils";
+import { TerminatorButton, TerminatorForm } from "@/components/utils";
 import { manageForm } from "@/redux/slices/form/form";
 import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
 import Button from "@mui/material/Button";
@@ -18,6 +18,8 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
   onActionTypeClick,
 }) => {
   const dispatch = useCustomDispatch();
+  const [addLogTarget, setAddLogTarget] = useState<ActionType | null>(null);
+
   const getThreatLevel = (totalActions: number): number => {
     if (totalActions === 0) return 0;
     if (totalActions <= 5) return 1;
@@ -112,7 +114,7 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
                     className={styles.actionButton}
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Add log action here
+                      setAddLogTarget(actionType);
                     }}
                   >
                     <span className={styles.buttonText}>Add log</span>
@@ -164,6 +166,13 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
           );
         })}
         </div>
+      )}
+
+      {addLogTarget && (
+        <TerminatorForm
+          actionTypeName={addLogTarget.name}
+          onClose={() => setAddLogTarget(null)}
+        />
       )}
     </div>
   );
