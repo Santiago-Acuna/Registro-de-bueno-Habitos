@@ -26,6 +26,7 @@ describe('ProgrammingLanguagesController', () => {
   ): ProgrammingLanguageResponseDto => ({
     id: mockLanguageId,
     name: 'JavaScript',
+    icon: null,
     ...overrides,
   });
 

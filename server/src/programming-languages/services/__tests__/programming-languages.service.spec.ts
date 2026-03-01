@@ -40,8 +40,8 @@ describe('ProgrammingLanguagesService', () => {
     it('should return all programming languages', async () => {
       // Arrange
       const mockLanguages = [
-        new ProgrammingLanguageEntity(1, 'JavaScript'),
-        new ProgrammingLanguageEntity(2, 'TypeScript'),
+        new ProgrammingLanguageEntity(1, 'JavaScript', 'https://example.com/js.png'),
+        new ProgrammingLanguageEntity(2, 'TypeScript', null),
       ];
       repository.findAll.mockResolvedValue(mockLanguages);
 
@@ -70,7 +70,7 @@ describe('ProgrammingLanguagesService', () => {
 
     it('should map domain entities to response DTOs correctly', async () => {
       // Arrange
-      const mockLanguages = [new ProgrammingLanguageEntity(1, 'Python')];
+      const mockLanguages = [new ProgrammingLanguageEntity(1, 'Python', 'https://example.com/python.png')];
       repository.findAll.mockResolvedValue(mockLanguages);
 
       // Act
@@ -80,6 +80,7 @@ describe('ProgrammingLanguagesService', () => {
       expect(result[0]).toMatchObject({
         id: 1,
         name: 'Python',
+        icon: 'https://example.com/python.png',
       });
     });
   });
@@ -87,7 +88,7 @@ describe('ProgrammingLanguagesService', () => {
   describe('findOne()', () => {
     it('should return programming language when found', async () => {
       // Arrange
-      const mockLanguage = new ProgrammingLanguageEntity(1, 'JavaScript');
+      const mockLanguage = new ProgrammingLanguageEntity(1, 'JavaScript', 'https://example.com/js.png');
       repository.findById.mockResolvedValue(mockLanguage);
 
       // Act
@@ -97,6 +98,7 @@ describe('ProgrammingLanguagesService', () => {
       expect(repository.findById).toHaveBeenCalledWith(1);
       expect(result).toHaveProperty('id', 1);
       expect(result).toHaveProperty('name', 'JavaScript');
+      expect(result).toHaveProperty('icon', 'https://example.com/js.png');
     });
 
     it('should throw NotFoundError when programming language does not exist', async () => {

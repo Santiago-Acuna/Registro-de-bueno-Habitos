@@ -40,6 +40,7 @@ export class ExternalDependenciesService {
       id: externalDependency.id,
       name: externalDependency.name,
       programmingLanguageId: externalDependency.programmingLanguageId,
+      icon: externalDependency.icon,
     };
   }
 }

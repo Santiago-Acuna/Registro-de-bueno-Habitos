@@ -19,4 +19,11 @@ export class ExternalDependencyResponseDto {
     nullable: true,
   })
   programmingLanguageId!: number | null;
+
+  @ApiPropertyOptional({
+    description: 'External Dependency icon URL',
+    example: 'https://example.com/icons/react.png',
+    nullable: true,
+  })
+  icon!: string | null;
 }

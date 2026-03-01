@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ProgrammingLanguageResponseDto {
   @ApiProperty({
@@ -12,4 +12,11 @@ export class ProgrammingLanguageResponseDto {
     example: 'JavaScript',
   })
   name!: string;
+
+  @ApiPropertyOptional({
+    description: 'Programming Language icon URL',
+    example: 'https://example.com/icons/javascript.png',
+    nullable: true,
+  })
+  icon!: string | null;
 }

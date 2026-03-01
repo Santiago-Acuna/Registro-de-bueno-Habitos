@@ -2,7 +2,8 @@ export class ExternalDependencyEntity {
   constructor(
     public readonly id: number,
     public readonly name: string,
-    public readonly programmingLanguageId: number | null
+    public readonly programmingLanguageId: number | null,
+    public readonly icon: string | null = null
   ) {
     this.validateId(id);
     this.validateName(name);
@@ -38,6 +39,7 @@ export class ExternalDependencyEntity {
       id: this.id,
       name: this.name,
       programmingLanguageId: this.programmingLanguageId,
+      icon: this.icon,
     };
   }
 

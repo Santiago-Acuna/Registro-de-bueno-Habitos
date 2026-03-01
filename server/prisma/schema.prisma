@@ -116,7 +116,7 @@ model externalDependencies {
   id                                     Int                                      @id @default(autoincrement())
   name                                   String                                   @db.VarChar(100)
   programmingLanguageId                Int? @map("programming_language_id")
-  image                                  String?
+  icon                                   String?                                  @map("icon")
   developmentLogsExternalDependencies developmentLogsExternalDependencies[]
   programmingLanguages                  programmingLanguages?                   @relation(fields: [programmingLanguageId], references: [id], onDelete: Cascade, map: "external_dependencies_programming_languages_fk")
 
@@ -207,7 +207,7 @@ model logTypes {
 model programmingLanguages {
   id                    Int                     @id @default(autoincrement())
   name                  String                  @db.VarChar(50)
-  image                 String?
+  icon                  String?                 @map("icon")
   developmentLogs      developmentLogs[]
   externalDependencies externalDependencies[]
 

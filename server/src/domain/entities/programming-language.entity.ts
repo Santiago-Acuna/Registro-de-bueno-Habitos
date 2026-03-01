@@ -1,7 +1,8 @@
 export class ProgrammingLanguageEntity {
   constructor(
     public readonly id: number,
-    public readonly name: string
+    public readonly name: string,
+    public readonly icon: string | null = null
   ) {
     this.validateId(id);
     this.validateName(name);
@@ -26,6 +27,7 @@ export class ProgrammingLanguageEntity {
     return {
       id: this.id,
       name: this.name,
+      icon: this.icon,
     };
   }
 

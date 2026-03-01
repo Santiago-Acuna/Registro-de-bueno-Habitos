@@ -37,6 +37,7 @@ export class ProgrammingLanguagesService {
     return {
       id: language.id,
       name: language.name,
+      icon: language.icon,
     };
   }
 }
