@@ -256,6 +256,7 @@ export class ActionLogsRepository implements IActionLogsRepository {
           name: string;
           type: string;
           logTypeId: string;
+          selectSource: string | null;
           logColumnValidations: Array<{
             id: string;
             validationFunctionId: string;
@@ -320,6 +321,7 @@ export class ActionLogsRepository implements IActionLogsRepository {
     name: string;
     type: string;
     logTypeId: string;
+    selectSource: string | null;
     logColumnValidations: Array<{
       id: string;
       validationFunctionId: string;
@@ -344,8 +346,9 @@ export class ActionLogsRepository implements IActionLogsRepository {
     return {
       id: data.id,
       name: this.snakeToCamel(data.name),
-      type: data.type as 'text' | 'number' | 'boolean',
+      type: data.type as 'text' | 'number' | 'boolean' | 'select_simple' | 'select_multiple',
       logTypeId: data.logTypeId,
+      selectSource: data.selectSource,
       validations,
     };
   }
