@@ -1,10 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
   IsEnum,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsUUID,
   ValidateNested,
@@ -95,11 +96,11 @@ export class LogColumnResponseDto {
   @ApiProperty({
     description: 'Column data type (read-only configuration)',
     example: 'text',
-    enum: ['text', 'number', 'boolean'],
+    enum: ['text', 'number', 'boolean', 'select_simple', 'select_multiple'],
   })
-  @IsEnum(['text', 'number', 'boolean'])
+  @IsEnum(['text', 'number', 'boolean', 'select_simple', 'select_multiple'])
   @IsNotEmpty()
-  type!: 'text' | 'number' | 'boolean';
+  type!: 'text' | 'number' | 'boolean' | 'select_simple' | 'select_multiple';
 
   @ApiProperty({
     description: 'Log type ID this column belongs to (read-only)',
@@ -110,6 +111,17 @@ export class LogColumnResponseDto {
   @IsUUID()
   @IsNotEmpty()
   logTypeId!: UUID;
+
+  @ApiPropertyOptional({
+    description:
+      'Identifies the data source for select-type columns. Present only when type is select_simple or select_multiple.',
+    example: 'programmingLanguages',
+    type: String,
+    nullable: true,
+  })
+  @IsOptional()
+  @IsString()
+  selectSource?: string | null;
 
   @ApiProperty({
     description:
