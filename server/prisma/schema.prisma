@@ -182,6 +182,7 @@ model logColumns {
   name                   String
   type                   columnLogType
   logTypeId            String                   @map("log_type_id") @db.Uuid
+  selectSource         String?                  @map("select_source") @db.VarChar(50)
   logColumnValidations logColumnValidations[]
   logTypes              logTypes                @relation(fields: [logTypeId], references: [id], onDelete: Cascade, map: "fk_log_columns_log_type_id")
 
