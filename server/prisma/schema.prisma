@@ -128,6 +128,7 @@ model features {
   name             String             @db.VarChar(50)
   description      String             @db.VarChar(1000)
   ready            Boolean            @default(false)
+  completedAt      DateTime?          @map("completed_at") @db.Date
   developmentLogs  developmentLogs[]
 }
 
