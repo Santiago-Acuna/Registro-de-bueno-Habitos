@@ -1,0 +1,667 @@
+@keyframes gridFlicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.95; }
+}
+
+@keyframes containerPulse {
+  0%, 100% { border-color: #1a0000; }
+  50% { border-color: #330000; }
+}
+
+@keyframes borderGlow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes beamScan {
+  0% { transform: translateY(0); opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { transform: translateY(800px); opacity: 0; }
+}
+
+@keyframes cornerBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes alertPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+  50% { box-shadow: 0 0 25px rgba(255, 0, 0, 0.8); }
+}
+
+@keyframes titleGlitch {
+  0%, 90%, 100% { transform: translate(0, 0); }
+  91% { transform: translate(-2px, 1px); }
+  92% { transform: translate(2px, -1px); }
+  93% { transform: translate(-1px, 2px); }
+}
+
+@keyframes labelBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes overlayFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes formSlideIn {
+  0% { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  overflow-y: auto;
+  animation: overlayFadeIn 0.3s ease;
+}
+
+.bgPattern {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 0;
+}
+
+.bgPattern::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(139, 0, 0, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 0% 100%, rgba(180, 0, 0, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(100, 0, 0, 0.2) 0%, transparent 50%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bgPattern::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    repeating-linear-gradient(0deg, transparent 0px, transparent 3px, rgba(255, 0, 0, 0.03) 3px, rgba(255, 0, 0, 0.03) 4px),
+    repeating-linear-gradient(90deg, transparent 0px, transparent 3px, rgba(255, 0, 0, 0.03) 3px, rgba(255, 0, 0, 0.03) 4px);
+  animation: gridFlicker 0.3s infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.formContainer {
+  position: relative;
+  width: 80%;
+  max-width: 1100px;
+  background: radial-gradient(ellipse at center, #0a0a0a 0%, #000000 100%);
+  border: 4px solid #1a0000;
+  padding: 50px;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.9),
+    0 0 100px rgba(255, 0, 0, 0.2),
+    inset 0 0 100px rgba(255, 0, 0, 0.03);
+  animation: containerPulse 3s ease-in-out infinite, formSlideIn 0.4s ease;
+  z-index: 1;
+}
+
+.formContainer::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background: linear-gradient(45deg, #ff0000, transparent, #8b0000, transparent, #ff0000);
+  background-size: 400% 400%;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  animation: borderGlow 4s ease infinite;
+}
+
+.formContainer:hover::before {
+  opacity: 0.6;
+}
+
+.scanBeam {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255, 0, 0, 0.8), transparent);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 1);
+  animation: beamScan 4s linear infinite;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.corner {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 3px solid #ff0000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.8);
+  animation: cornerBlink 2s ease-in-out infinite;
+}
+
+.cornerTl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+.cornerTr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+.cornerBl { bottom: 15px; left: 15px; border-right: none; border-top: none; }
+.cornerBr { bottom: 15px; right: 15px; border-left: none; border-top: none; }
+
+.header {
+  text-align: center;
+  margin-bottom: 44px;
+  position: relative;
+  z-index: 10;
+}
+
+.systemAlert {
+  display: inline-block;
+  padding: 8px 24px;
+  background: rgba(255, 0, 0, 0.15);
+  border: 2px solid #ff0000;
+  border-left: 5px solid #ff0000;
+  color: #ff0000;
+  font-size: 0.75rem;
+  letter-spacing: 4px;
+  margin-bottom: 20px;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  animation: alertPulse 2s infinite;
+}
+
+.formTitle {
+  font-size: 2.8rem;
+  color: #ff0000;
+  font-weight: 900;
+  letter-spacing: 12px;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 20px rgba(255, 0, 0, 1),
+    0 0 40px rgba(255, 0, 0, 0.8),
+    0 0 60px rgba(255, 0, 0, 0.5),
+    3px 3px 0 #000;
+  margin-bottom: 12px;
+  animation: titleGlitch 6s infinite;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 0.875rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.formBody {
+  position: relative;
+  z-index: 10;
+}
+
+.formGroup {
+  margin-bottom: 36px;
+}
+
+.formLabel {
+  display: block;
+  font-size: 0.85rem;
+  color: #ff0000;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 15px;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 0, 0, 0.6);
+  position: relative;
+  padding-left: 20px;
+}
+
+.formLabel::before {
+  content: '\25C6';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: labelBlink 1.5s infinite;
+}
+
+.formInput {
+  width: 100%;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #1a0000;
+  color: #ffffff;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 0 rgba(255, 0, 0, 0);
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #ff0000;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(255, 0, 0, 0.4),
+    inset 0 0 20px rgba(255, 0, 0, 0.1);
+  background: rgba(10, 0, 0, 0.9);
+}
+
+.formInput::placeholder {
+  color: #333;
+  letter-spacing: 2px;
+}
+
+.formInput::-webkit-outer-spin-button,
+.formInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.formInput[type=number] {
+  -moz-appearance: textfield;
+}
+
+.selectWrapper {
+  position: relative;
+}
+
+.selectDisplay {
+  width: 100%;
+  padding: 16px 20px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #1a0000;
+  color: #ffffff;
+  font-size: 1rem;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
+.selectDisplay:hover {
+  border-color: #330000;
+}
+
+.selectDisplay.active {
+  border-color: #ff0000;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(255, 0, 0, 0.4);
+}
+
+.selectIconBox {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #dc2626;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.1);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+
+.selectIconText {
+  color: #dc2626;
+  font-size: 1.25rem;
+}
+
+.selectText {
+  flex: 1;
+}
+
+.selectArrow {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #dc2626;
+  transition: transform 0.3s ease;
+}
+
+.selectArrowOpen {
+  transform: rotate(180deg);
+}
+
+.selectDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.95);
+  border: 2px solid #ff0000;
+  margin-top: 5px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  z-index: 100;
+  box-shadow: 0 10px 40px rgba(255, 0, 0, 0.3);
+}
+
+.selectDropdown.open {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.selectDropdown::-webkit-scrollbar {
+  width: 10px;
+}
+
+.selectDropdown::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.8);
+  border-left: 2px solid #1a0000;
+}
+
+.selectDropdown::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff0000, #8b0000);
+  border: 1px solid #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+}
+
+.selectDropdown::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #ff3333, #aa0000);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+}
+
+.selectOption {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #1a0000;
+}
+
+.selectOption:hover {
+  background: rgba(255, 0, 0, 0.1);
+  border-left: 4px solid #ff0000;
+  padding-left: 16px;
+}
+
+.selectOptionIconBox {
+  width: 36px;
+  height: 36px;
+  border: 2px solid rgba(220, 38, 38, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.05);
+  flex-shrink: 0;
+}
+
+.selectOptionIcon {
+  color: #dc2626;
+}
+
+.selectIconImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.selectOptionImg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.selectOptionText {
+  flex: 1;
+  color: #d1d5db;
+  font-size: 0.875rem;
+  letter-spacing: 2px;
+}
+
+.numberRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.numberInputWrapper {
+  flex: 1;
+}
+
+.numberButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.numberBtn {
+  width: 40px;
+  height: 30px;
+  background: rgba(255, 0, 0, 0.2);
+  border: 2px solid #ff0000;
+  color: #ff0000;
+  font-size: 1.2rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.numberBtn:hover {
+  background: rgba(255, 0, 0, 0.4);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+}
+
+.numberBtn:active {
+  transform: scale(0.95);
+}
+
+.checkboxWrapper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  cursor: pointer;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #1a0000;
+  transition: all 0.3s ease;
+}
+
+.checkboxWrapper:hover {
+  border-color: #330000;
+  background: rgba(10, 0, 0, 0.6);
+}
+
+.checkboxCustom {
+  width: 35px;
+  height: 35px;
+  border: 3px solid #ff0000;
+  position: relative;
+  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 10px rgba(255, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.checkboxCustom.checked {
+  background: rgba(255, 0, 0, 0.3);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(255, 0, 0, 0.8);
+}
+
+.checkboxCustom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 15px;
+  height: 15px;
+  background: #ff0000;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 1);
+  transition: transform 0.3s ease;
+}
+
+.checkboxCustom.checked::after {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.checkboxLabel {
+  color: #d1d5db;
+  font-size: 0.875rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.submitContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 44px;
+  gap: 20px;
+}
+
+.submitButton {
+  padding: 18px 70px;
+  background: linear-gradient(145deg, rgba(255, 0, 0, 0.3), rgba(139, 0, 0, 0.3));
+  border: 3px solid #ff0000;
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    0 0 40px rgba(255, 0, 0, 0.5),
+    inset 0 0 30px rgba(255, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 1);
+}
+
+.submitButton::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+  transform: rotate(45deg);
+  transition: all 0.5s ease;
+}
+
+.submitButton:hover {
+  transform: scale(1.05);
+  box-shadow:
+    0 0 60px rgba(255, 0, 0, 0.8),
+    inset 0 0 50px rgba(255, 0, 0, 0.4);
+  background: linear-gradient(145deg, rgba(255, 0, 0, 0.5), rgba(139, 0, 0, 0.5));
+}
+
+.submitButton:hover::before {
+  left: 100%;
+}
+
+.submitButton:active {
+  transform: scale(0.98);
+}
+
+.cancelButton {
+  padding: 18px 50px;
+  background: transparent;
+  border: 3px solid #333;
+  color: #666;
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancelButton:hover {
+  border-color: #ff0000;
+  color: #ff0000;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+.cancelButton:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 768px) {
+  .formContainer {
+    width: 95%;
+    padding: 35px 25px;
+  }
+
+  .formTitle {
+    font-size: 2rem;
+    letter-spacing: 6px;
+  }
+
+  .submitButton {
+    padding: 15px 40px;
+    font-size: 1rem;
+    letter-spacing: 4px;
+  }
+
+  .cancelButton {
+    padding: 15px 30px;
+    font-size: 1rem;
+    letter-spacing: 4px;
+  }
+}
+
+.loadingMessage {
+  text-align: center;
+  color: #ff0000;
+  font-size: 1rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+  padding: 40px 0;
+  animation: labelBlink 1s infinite;
+}
+
+.hide{
+  animation: fadeOut 0.2s ease-in forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1; /* Start with full opacity */
+  }
+  100% {
+    opacity: 0; /* End with zero opacity */
+  }
+}
