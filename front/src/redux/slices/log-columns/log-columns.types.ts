@@ -9,8 +9,9 @@ export interface LogColumnValidation {
 export interface LogColumn {
   id: string;
   name: string;
-  type: 'text' | 'number' | 'boolean';
+  type: 'text' | 'number' | 'boolean' | 'select_simple' | 'select_multiple';
   logTypeId: string;
+  selectSource?: string | null;
   validations: LogColumnValidation[];
 }
 

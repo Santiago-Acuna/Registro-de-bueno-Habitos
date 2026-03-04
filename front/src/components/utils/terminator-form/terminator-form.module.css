@@ -642,6 +642,17 @@
   }
 }
 
+.loadingMessage {
+  text-align: center;
+  color: #ff0000;
+  font-size: 1rem;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+  padding: 40px 0;
+  animation: labelBlink 1s infinite;
+}
+
 .hide{
   animation: fadeOut 0.2s ease-in forwards;
 }

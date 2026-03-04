@@ -7,6 +7,7 @@ import { actionTypesReducer } from "./slices/action-types";
 import { programmingLanguagesReducer } from "./slices/programming-languages";
 import { externalDependenciesReducer } from "./slices/external-dependencies";
 import { logColumnsReducer } from "./slices/log-columns";
+import { subtypesReducer } from "./slices/subtypes";
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     programmingLanguages: programmingLanguagesReducer,
     externalDependencies: externalDependenciesReducer,
     logColumns: logColumnsReducer,
+    subtypes: subtypesReducer,
   },
 });
 

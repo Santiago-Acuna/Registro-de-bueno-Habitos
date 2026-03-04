@@ -1,58 +1,56 @@
-import { useState, useRef, useEffect, FC } from "react";
+import { useState, useEffect, FC } from "react";
 import styles from "./terminator-form.module.css";
 import { useCustomDispatch, useCustomSelector } from "@/redux/hooks/hooks";
-import { fetchProgrammingLanguages } from "@/redux/slices/programming-languages";
-import { fetchExternalDependencies } from "@/redux/slices/external-dependencies";
 import { fetchLogColumnsByActionTypeId } from "@/redux/slices/log-columns";
-import type { ProgrammingLanguage } from "@/redux/slices/programming-languages";
-import type { ExternalDependency } from "@/redux/slices/external-dependencies";
+import type { LogColumn } from "@/redux/slices/log-columns";
+import { useSelectSources } from "@/hooks/use-select-sources";
+import type { SelectSource } from "@/hooks/use-select-sources";
+import TextInput from "./inputs/TextInput";
+import NumberInput from "./inputs/NumberInput";
+import BooleanInput from "./inputs/BooleanInput";
+import SelectInput from "./inputs/SelectInput";
+import type { SelectOption } from "./inputs/SelectInput";
 
 interface TerminatorFormProps {
   actionTypeName: string;
-  actionTypeId:string
+  actionTypeId: string;
   onClose: () => void;
 }
+
+const getDefaultValue = (type: 'text' | 'number' | 'boolean'): string | number | boolean => {
+  if (type === "number") return 0;
+  if (type === "boolean") return false;
+  return "";
+};
 
 const TerminatorForm: FC<TerminatorFormProps> = ({ actionTypeName, actionTypeId, onClose }) => {
   const dispatch = useCustomDispatch();
 
-  const { programmingLanguages, isLoading: loadingLanguages } = useCustomSelector(
-    (state) => state.programmingLanguages
-  );
-  const { externalDependencies, isLoading: loadingDeps } = useCustomSelector(
-    (state) => state.externalDependencies
-  );
+  const { logColumns, isLoading } = useCustomSelector((state) => state.logColumns);
+  const { optionsBySource, isLoadingBySource } = useSelectSources(logColumns);
 
-  const [unitName, setUnitName] = useState("");
-  const [selectedLanguage, setSelectedLanguage] = useState<ProgrammingLanguage | null>(null);
-  const [selectedDependency, setSelectedDependency] = useState<ExternalDependency | null>(null);
-  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
-  const [isDependencyDropdownOpen, setIsDependencyDropdownOpen] = useState(false);
-  const [threatLevel, setThreatLevel] = useState(50);
-  const [combatMode, setCombatMode] = useState(false);
-
-  const languageSelectRef = useRef<HTMLDivElement>(null);
-  const dependencySelectRef = useRef<HTMLDivElement>(null);
+  const [formValues, setFormValues] = useState<Record<string, string | number | boolean>>({});
+  const [selectValues, setSelectValues] = useState<Record<string, SelectOption | null>>({});
 
   useEffect(() => {
-    dispatch(fetchProgrammingLanguages());
-    dispatch(fetchExternalDependencies());
     dispatch(fetchLogColumnsByActionTypeId(actionTypeId));
   }, [dispatch, actionTypeId]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (languageSelectRef.current && !languageSelectRef.current.contains(event.target as Node)) {
-        setIsLanguageDropdownOpen(false);
-      }
-      if (dependencySelectRef.current && !dependencySelectRef.current.contains(event.target as Node)) {
-        setIsDependencyDropdownOpen(false);
-      }
-    };
+    const initialFormValues: Record<string, string | number | boolean> = {};
+    const initialSelectValues: Record<string, SelectOption | null> = {};
 
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
+    logColumns.forEach((col) => {
+      if (col.type === "select_simple" || col.type === "select_multiple") {
+        initialSelectValues[col.id] = null;
+      } else {
+        initialFormValues[col.id] = getDefaultValue(col.type);
+      }
+    });
+
+    setFormValues(initialFormValues);
+    setSelectValues(initialSelectValues);
+  }, [logColumns]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -61,49 +59,91 @@ const TerminatorForm: FC<TerminatorFormProps> = ({ actionTypeName, actionTypeId,
     };
   }, []);
 
-  const handleIncrement = () => {
-    setThreatLevel((prev) => Math.min(100, prev + 1));
+  const handleChange = (columnId: string, value: string | number | boolean) => {
+    setFormValues((prev) => ({ ...prev, [columnId]: value }));
   };
 
-  const handleDecrement = () => {
-    setThreatLevel((prev) => Math.max(0, prev - 1));
+  const handleSelectChange = (columnId: string, option: SelectOption | null) => {
+    setSelectValues((prev) => ({ ...prev, [columnId]: option }));
   };
 
   const handleSubmit = () => {
-    if (!unitName.trim()) {
-      alert("ERROR: UNIT DESIGNATION REQUIRED");
+    const emptyTextColumn = logColumns.find(
+      (col) => col.type === "text" && !(formValues[col.id] as string).trim()
+    );
+    if (emptyTextColumn) {
+      alert(`ERROR: ${emptyTextColumn.name.toUpperCase()} IS REQUIRED`);
       return;
     }
 
-    if (!selectedLanguage) {
-      alert("ERROR: PROGRAMMING LANGUAGE REQUIRED");
+    const emptySelectColumn = logColumns.find(
+      (col) =>
+        (col.type === "select_simple" || col.type === "select_multiple") &&
+        selectValues[col.id] === null
+    );
+    if (emptySelectColumn) {
+      alert(`ERROR: ${emptySelectColumn.name.toUpperCase()} IS REQUIRED`);
       return;
     }
 
-    if (!selectedDependency) {
-      alert("ERROR: EXTERNAL DEPENDENCY REQUIRED");
-      return;
-    }
+    const summary = logColumns
+      .map((col) => {
+        if (col.type === "select_simple" || col.type === "select_multiple") {
+          return `${col.name.toUpperCase()}: ${selectValues[col.id]?.name ?? "—"}`;
+        }
+        return `${col.name.toUpperCase()}: ${formValues[col.id]}`;
+      })
+      .join("\n");
 
-    const combatStatus = combatMode ? "ENABLED" : "DISABLED";
+    alert(`CONFIGURATION COMPLETE\n\n${summary}\n\nSYSTEM STATUS: OPERATIONAL\nSKYNET PROTOCOL: ACTIVE`);
 
-    alert(`CONFIGURATION COMPLETE
-
-UNIT: ${unitName}
-LANGUAGE: ${selectedLanguage.name}
-DEPENDENCY: ${selectedDependency.name}
-THREAT LEVEL: ${threatLevel}
-COMBAT MODE: ${combatStatus}
-
-SYSTEM STATUS: OPERATIONAL
-SKYNET PROTOCOL: ACTIVE`);
-
-    setUnitName("");
-    setSelectedLanguage(null);
-    setSelectedDependency(null);
-    setThreatLevel(50);
-    setCombatMode(false);
     onClose();
+  };
+
+  const renderInput = (column: LogColumn) => {
+    switch (column.type) {
+      case "text":
+        return (
+          <TextInput
+            key={column.id}
+            label={column.name}
+            value={(formValues[column.id] as string) ?? ""}
+            onChange={(val) => handleChange(column.id, val)}
+          />
+        );
+      case "number":
+        return (
+          <NumberInput
+            key={column.id}
+            label={column.name}
+            value={(formValues[column.id] as number) ?? 0}
+            onChange={(val) => handleChange(column.id, val)}
+          />
+        );
+      case "boolean":
+        return (
+          <BooleanInput
+            key={column.id}
+            label={column.name}
+            value={(formValues[column.id] as boolean) ?? false}
+            onChange={(val) => handleChange(column.id, val)}
+          />
+        );
+      case "select_simple":
+      case "select_multiple": {
+        const source = column.selectSource as SelectSource | undefined;
+        return (
+          <SelectInput
+            key={column.id}
+            label={column.name}
+            options={source ? (optionsBySource[source] ?? []) : []}
+            value={selectValues[column.id] ?? null}
+            onChange={(option) => handleSelectChange(column.id, option)}
+            isLoading={source ? isLoadingBySource[source] : false}
+          />
+        );
+      }
+    }
   };
 
   return (
@@ -128,147 +168,11 @@ SKYNET PROTOCOL: ACTIVE`);
         </div>
 
         <div className={styles.formBody}>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Unit Designation</label>
-            <input
-              type="text"
-              className={styles.formInput}
-              placeholder="ENTER DESIGNATION..."
-              value={unitName}
-              onChange={(e) => setUnitName(e.target.value)}
-            />
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Programming Language</label>
-            <div className={styles.selectWrapper} ref={languageSelectRef}>
-              <div
-                className={`${styles.selectDisplay} ${isLanguageDropdownOpen ? styles.active : ""}`}
-                onClick={() => setIsLanguageDropdownOpen(!isLanguageDropdownOpen)}
-              >
-                <div className={styles.selectIconBox}>
-                  {selectedLanguage
-                    ? <img src={selectedLanguage.icon} alt={selectedLanguage.name} className={styles.selectIconImg} />
-                    : <span className={styles.selectIconText}>&#9670;</span>}
-                </div>
-                <span className={styles.selectText}>
-                  {loadingLanguages
-                    ? "LOADING..."
-                    : selectedLanguage
-                    ? selectedLanguage.name
-                    : "SELECT LANGUAGE..."}
-                </span>
-                <div
-                  className={`${styles.selectArrow} ${isLanguageDropdownOpen ? styles.selectArrowOpen : ""}`}
-                />
-              </div>
-              <div
-                className={`${styles.selectDropdown} ${isLanguageDropdownOpen ? styles.open : ""}`}
-              >
-                {programmingLanguages.map((lang) => (
-                  <div
-                    key={lang.id}
-                    className={styles.selectOption}
-                    onClick={() => {
-                      setSelectedLanguage(lang);
-                      setIsLanguageDropdownOpen(false);
-                    }}
-                  >
-                    <div className={styles.selectOptionIconBox}>
-                      <img src={lang.icon} alt={lang.name} className={styles.selectOptionImg} />
-                    </div>
-                    <span className={styles.selectOptionText}>{lang.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>External Dependency</label>
-            <div className={styles.selectWrapper} ref={dependencySelectRef}>
-              <div
-                className={`${styles.selectDisplay} ${isDependencyDropdownOpen ? styles.active : ""}`}
-                onClick={() => setIsDependencyDropdownOpen(!isDependencyDropdownOpen)}
-              >
-                <div className={styles.selectIconBox}>
-                  {selectedDependency
-                    ? <img src={selectedDependency.icon} alt={selectedDependency.name} className={styles.selectIconImg} />
-                    : <span className={styles.selectIconText}>&#9670;</span>}
-                </div>
-                <span className={styles.selectText}>
-                  {loadingDeps
-                    ? "LOADING..."
-                    : selectedDependency
-                    ? selectedDependency.name
-                    : "SELECT DEPENDENCY..."}
-                </span>
-                <div
-                  className={`${styles.selectArrow} ${isDependencyDropdownOpen ? styles.selectArrowOpen : ""}`}
-                />
-              </div>
-              <div
-                className={`${styles.selectDropdown} ${ isLanguageDropdownOpen ? styles.hide : isDependencyDropdownOpen ? styles.open : ""}`}
-              >
-                {externalDependencies.map((dep) => (
-                  <div
-                    key={dep.id}
-                    className={styles.selectOption}
-                    onClick={() => {
-                      setSelectedDependency(dep);
-                      setIsDependencyDropdownOpen(false);
-                    }}
-                  >
-                    <div className={styles.selectOptionIconBox}>
-                      <img src={dep.icon} alt={dep.name} className={styles.selectOptionImg} />
-                    </div>
-                    <span className={styles.selectOptionText}>{dep.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Threat Level</label>
-            <div className={styles.numberRow}>
-              <div className={styles.numberInputWrapper}>
-                <input
-                  type="number"
-                  className={styles.formInput}
-                  placeholder="0-100"
-                  min="0"
-                  max="100"
-                  value={threatLevel}
-                  onChange={(e) =>
-                    setThreatLevel(
-                      Math.min(100, Math.max(0, parseInt(e.target.value) || 0))
-                    )
-                  }
-                />
-              </div>
-              <div className={styles.numberButtons}>
-                <button className={styles.numberBtn} onClick={handleIncrement}>
-                  &#9650;
-                </button>
-                <button className={styles.numberBtn} onClick={handleDecrement}>
-                  &#9660;
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Combat Mode</label>
-            <label className={styles.checkboxWrapper} onClick={() => setCombatMode(!combatMode)}>
-              <div
-                className={`${styles.checkboxCustom} ${combatMode ? styles.checked : ""}`}
-              />
-              <span className={styles.checkboxLabel}>
-                Enable Lethal Force
-              </span>
-            </label>
-          </div>
+          {isLoading ? (
+            <div className={styles.loadingMessage}>LOADING PARAMETERS...</div>
+          ) : (
+            logColumns.map((column) => renderInput(column))
+          )}
 
           <div className={styles.submitContainer}>
             <button className={styles.cancelButton} onClick={onClose}>
