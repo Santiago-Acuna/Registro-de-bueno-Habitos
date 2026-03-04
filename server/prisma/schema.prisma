@@ -127,7 +127,8 @@ model features {
   id               String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name             String             @db.VarChar(50)
   description      String             @db.VarChar(1000)
-  developmentLogs developmentLogs[]
+  ready            Boolean            @default(false)
+  developmentLogs  developmentLogs[]
 }
 
 model globalEntityIdentifiers {
