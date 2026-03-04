@@ -18,6 +18,10 @@ export function useSelectSources(logColumns: LogColumn[]) {
       .filter((source): source is SelectSource => source != null)
   );
 
+  // Stable string key — the effect only re-runs when the actual set of
+  // needed sources changes, not on every render.
+  const sourcesKey = [...neededSources].sort().join(",");
+
   const programmingLanguages = useCustomSelector((s) => s.programmingLanguages.programmingLanguages);
   const programmingLanguagesLoading = useCustomSelector((s) => s.programmingLanguages.isLoading);
   const externalDependencies = useCustomSelector((s) => s.externalDependencies.externalDependencies);
@@ -29,7 +33,7 @@ export function useSelectSources(logColumns: LogColumn[]) {
     if (neededSources.has("programmingLanguages")) dispatch(fetchProgrammingLanguages());
     if (neededSources.has("externalDependencies")) dispatch(fetchExternalDependencies());
     if (neededSources.has("subtypes")) dispatch(fetchSubtypes());
-  }, [dispatch]);
+  }, [dispatch, sourcesKey]);
 
   const optionsBySource: Record<SelectSource, SelectOption[]> = {
     programmingLanguages: programmingLanguages.map((l) => ({ id: l.id, name: l.name, icon: l.icon })),
