@@ -3,10 +3,11 @@ import { useCustomDispatch, useCustomSelector } from "@/redux/hooks/hooks";
 import { fetchProgrammingLanguages } from "@/redux/slices/programming-languages";
 import { fetchExternalDependencies } from "@/redux/slices/external-dependencies";
 import { fetchSubtypes } from "@/redux/slices/subtypes";
+import { fetchFeatures } from "@/redux/slices/features";
 import type { LogColumn } from "@/redux/slices/log-columns";
 import type { SelectOption } from "@/components/utils/terminator-form/inputs/SelectInput";
 
-export type SelectSource = "programmingLanguages" | "externalDependencies" | "subtypes";
+export type SelectSource = "programmingLanguages" | "externalDependencies" | "subtypes" | "features";
 
 export function useSelectSources(logColumns: LogColumn[]) {
   const dispatch = useCustomDispatch();
@@ -28,23 +29,28 @@ export function useSelectSources(logColumns: LogColumn[]) {
   const externalDependenciesLoading = useCustomSelector((s) => s.externalDependencies.isLoading);
   const subtypes = useCustomSelector((s) => s.subtypes.subtypes);
   const subtypesLoading = useCustomSelector((s) => s.subtypes.isLoading);
+  const features = useCustomSelector((s) => s.features.features);
+  const featuresLoading = useCustomSelector((s) => s.features.isLoading);
 
   useEffect(() => {
     if (neededSources.has("programmingLanguages")) dispatch(fetchProgrammingLanguages());
     if (neededSources.has("externalDependencies")) dispatch(fetchExternalDependencies());
     if (neededSources.has("subtypes")) dispatch(fetchSubtypes());
+    if (neededSources.has("features")) dispatch(fetchFeatures());
   }, [dispatch, sourcesKey]);
 
   const optionsBySource: Record<SelectSource, SelectOption[]> = {
     programmingLanguages: programmingLanguages.map((l) => ({ id: l.id, name: l.name, icon: l.icon })),
     externalDependencies: externalDependencies.map((d) => ({ id: d.id, name: d.name, icon: d.icon })),
     subtypes: subtypes.map((s) => ({ id: s.id, name: s.name })),
+    features: features.map((f) => ({ id: f.id, name: f.name })),
   };
 
   const isLoadingBySource: Record<SelectSource, boolean> = {
     programmingLanguages: programmingLanguagesLoading,
     externalDependencies: externalDependenciesLoading,
     subtypes: subtypesLoading,
+    features: featuresLoading,
   };
 
   return { optionsBySource, isLoadingBySource };
