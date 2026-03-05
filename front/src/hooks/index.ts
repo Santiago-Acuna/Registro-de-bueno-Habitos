@@ -17,3 +17,4 @@ export { useHabitsFilter } from "./use-habits-filter";
 export { useBooks } from "./use-books";
 export { useSelectSources } from "./use-select-sources";
 export type { SelectSource } from "./use-select-sources";
+export { useFeatures } from "./use-features";
