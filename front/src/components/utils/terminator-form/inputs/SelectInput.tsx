@@ -32,8 +32,6 @@ const SelectInput: FC<SelectInputProps> = ({
   const handleOpenChange=() =>{
     setIsOpen(!isOpen)
     setIsOpenSelect(true)
-    console.log("open")
-
   }
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
