@@ -4,10 +4,12 @@ import styles from "./form.module.css";
 import { manageForm } from "../../../redux/slices/form/form";
 import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
 import { createActionType } from "../../../redux/slices/action-types";
+import SelectFeatureInput from "./select-feature-input";
 
 const ActionTypesForm: FC = () => {
   const { habit: habitId } = useParams<{ habit: string }>();
   const [unitName, setUnitName] = useState("");
+  const [featureId, setFeatureId] = useState("");
   const [previewSrc, setPreviewSrc] = useState("");
   const [hasFile, setHasFile] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -105,6 +107,7 @@ SKYNET PROTOCOL: ACTIVE`);
 
       // Reset form
       setUnitName("");
+      setFeatureId("");
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -124,6 +127,7 @@ ${error}`);
     if (window.confirm("TERMINATE SESSION?\nALL UNSAVED DATA WILL BE LOST")) {
       // Reset form
       setUnitName("");
+      setFeatureId("");
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -179,6 +183,8 @@ ${error}`);
                 onChange={(e) => setUnitName(e.target.value)}
               />
             </div>
+
+            <SelectFeatureInput value={featureId} onChange={setFeatureId} />
 
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Unit Image Upload</label>
