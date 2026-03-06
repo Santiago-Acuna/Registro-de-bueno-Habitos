@@ -13,6 +13,8 @@ interface SelectInputProps {
   value: SelectOption | null;
   onChange: (option: SelectOption | null) => void;
   isLoading?: boolean;
+  isOpenSelect: boolean;
+  setIsOpenSelect: (value:boolean)=> void
 }
 
 const SelectInput: FC<SelectInputProps> = ({
@@ -21,14 +23,23 @@ const SelectInput: FC<SelectInputProps> = ({
   value,
   onChange,
   isLoading = false,
+  isOpenSelect,
+  setIsOpenSelect
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const dynamicStyle = isOpenSelect && isOpen ? { zIndex: 100,}:{};
+  const handleOpenChange=() =>{
+    setIsOpen(!isOpen)
+    setIsOpenSelect(true)
+    console.log("open")
 
+  }
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setIsOpenSelect(true);
       }
     };
     document.addEventListener("click", handleClickOutside);
@@ -41,7 +52,7 @@ const SelectInput: FC<SelectInputProps> = ({
       <div className={styles.selectWrapper} ref={wrapperRef}>
         <div
           className={`${styles.selectDisplay} ${isOpen ? styles.active : ""}`}
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => handleOpenChange()}
         >
           <div className={styles.selectIconBox}>
             {value?.icon ? (
@@ -60,7 +71,7 @@ const SelectInput: FC<SelectInputProps> = ({
           <div className={`${styles.selectArrow} ${isOpen ? styles.selectArrowOpen : ""}`} />
         </div>
 
-        <div className={`${styles.selectDropdown} ${isOpen ? styles.open : ""}`}>
+        <div style={dynamicStyle} className={`${styles.selectDropdown} ${isOpen ? styles.open : ""}`}>
           {options.map((option) => (
             <div
               key={option.id}
@@ -68,6 +79,7 @@ const SelectInput: FC<SelectInputProps> = ({
               onClick={() => {
                 onChange(option);
                 setIsOpen(false);
+                setIsOpenSelect(false)
               }}
             >
               <div className={styles.selectOptionIconBox}>

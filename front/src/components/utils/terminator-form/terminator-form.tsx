@@ -31,6 +31,7 @@ const TerminatorForm: FC<TerminatorFormProps> = ({ actionTypeName, actionTypeId,
 
   const [formValues, setFormValues] = useState<Record<string, string | number | boolean>>({});
   const [selectValues, setSelectValues] = useState<Record<string, SelectOption | null>>({});
+  const [isOpenSelect, setIsOpenSelect] = useState(false);
 
   useEffect(() => {
     dispatch(fetchLogColumnsByActionTypeId(actionTypeId));
@@ -140,6 +141,8 @@ const TerminatorForm: FC<TerminatorFormProps> = ({ actionTypeName, actionTypeId,
             value={selectValues[column.id] ?? null}
             onChange={(option) => handleSelectChange(column.id, option)}
             isLoading={source ? isLoadingBySource[source] : false}
+            isOpenSelect={isOpenSelect}
+            setIsOpenSelect={setIsOpenSelect}
           />
         );
       }
