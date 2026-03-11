@@ -9,6 +9,7 @@ import { externalDependenciesReducer } from "./slices/external-dependencies";
 import { logColumnsReducer } from "./slices/log-columns";
 import { subtypesReducer } from "./slices/subtypes";
 import { featuresReducer } from "./slices/features";
+import { actionLogsReducer } from "./slices/action-logs";
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     logColumns: logColumnsReducer,
     subtypes: subtypesReducer,
     features: featuresReducer,
+    actionLogs: actionLogsReducer,
   },
 });
 
