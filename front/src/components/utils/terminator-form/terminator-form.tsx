@@ -10,6 +10,7 @@ import NumberInput from "./inputs/NumberInput";
 import BooleanInput from "./inputs/BooleanInput";
 import SelectInput from "./inputs/SelectInput";
 import type { SelectOption } from "./inputs/SelectInput";
+import { createActionLog } from "@/redux/slices/action-logs";
 
 interface TerminatorFormProps {
   actionTypeName: string;
@@ -75,7 +76,31 @@ const TerminatorForm: FC<TerminatorFormProps> = ({ actionTypeName, actionTypeId,
     setSelectValues((prev) => ({ ...prev, [columnId]: option }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // Step 2: Run front-end validations from log column validation functions
+    for (const col of logColumns) {
+      const frontValidations = col.validations.filter((v) => v.isForFront);
+      const value = col.type === "select_simple" || col.type === "select_multiple"
+        ? selectValues[col.id]
+        : formValues[col.id];
+
+      for (const validation of frontValidations) {
+        try {
+          // eslint-disable-next-line no-new-func
+          const validate = new Function("value", `return (${validation.functionCode})(value)`);
+          const isValid = validate(value);
+          if (!isValid) {
+            alert(`ERROR: ${col.name.toUpperCase()} - ${validation.functionName}`);
+            return;
+          }
+        } catch {
+          alert(`ERROR: Failed to run validation for ${col.name.toUpperCase()}`);
+          return;
+        }
+      }
+    }
+
+    // Step 3: Required-field validations
     const emptyTextColumn = logColumns.find(
       (col) => col.type === "text" && !(formValues[col.id] as string).trim()
     );
@@ -94,22 +119,28 @@ const TerminatorForm: FC<TerminatorFormProps> = ({ actionTypeName, actionTypeId,
       return;
     }
 
-    const summary = logColumns
-      .map((col) => {
-        if (col.type === "select_multiple") {
-          const names = (selectValues[col.id] as SelectOption[]).map((o) => o.name).join(", ");
-          return `${col.name.toUpperCase()}: ${names || "—"}`;
-        }
-        if (col.type === "select_simple") {
-          return `${col.name.toUpperCase()}: ${(selectValues[col.id] as SelectOption | null)?.name ?? "—"}`;
-        }
-        return `${col.name.toUpperCase()}: ${formValues[col.id]}`;
-      })
-      .join("\n");
+    // Step 4: Build logTypeInfo payload
+    const logTypeInfo = logColumns.reduce<Record<string, unknown>>((acc, col) => {
+      if (col.type === "select_multiple") {
+        acc[col.name] = (selectValues[col.id] as SelectOption[]).map((o) => o.id);
+      } else if (col.type === "select_simple") {
+        acc[col.name] = (selectValues[col.id] as SelectOption | null)?.id ?? null;
+      } else {
+        acc[col.name] = formValues[col.id];
+      }
+      return acc;
+    }, {});
 
-    alert(`CONFIGURATION COMPLETE\n\n${summary}\n\nSYSTEM STATUS: OPERATIONAL\nSKYNET PROTOCOL: ACTIVE`);
+    // Step 8: Capture startTime at submit time
+    const startTime = new Date();
 
-    onClose();
+    // Step 7: Dispatch createActionLog
+    try {
+      await dispatch(createActionLog({ startTime, actionTypeId, logTypeInfo })).unwrap();
+      onClose();
+    } catch (error) {
+      alert(`ERROR: ${error}`);
+    }
   };
 
   const renderInput = (column: LogColumn) => {
