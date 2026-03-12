@@ -9,6 +9,7 @@ export class ActionLog {
     public readonly actionDate: Date,
     public readonly actionTypeId: UUID,
     public readonly createdAt: Date,
-    public readonly updatedAt: Date
+    public readonly updatedAt: Date,
+    public readonly logTypeData: Record<string, unknown> | null = null
   ) {}
 }

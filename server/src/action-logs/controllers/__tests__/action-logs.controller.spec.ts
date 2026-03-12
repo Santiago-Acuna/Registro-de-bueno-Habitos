@@ -51,6 +51,7 @@ describe('ActionLogsController', () => {
     actionTypeId: mockActionTypeId,
     createdAt: fixedCreatedAt,
     updatedAt: fixedUpdatedAt,
+    logTypeData: null,
     ...overrides,
   });
 
