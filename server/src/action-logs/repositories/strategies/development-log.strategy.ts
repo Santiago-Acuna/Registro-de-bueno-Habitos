@@ -40,12 +40,20 @@ export class DevelopmentLogStrategy implements ILogTableStrategy {
     });
 
     if (externalDependencyId != null) {
-      await this.prisma.developmentLogsExternalDependencies.create({
-        data: {
-          developmentLogId: createdLog.id,
-          externalDependencyId: externalDependencyId as number,
-        },
-      });
+      const ids = Array.isArray(externalDependencyId)
+        ? (externalDependencyId as number[])
+        : [externalDependencyId as number];
+
+      await Promise.all(
+        ids.map((id) =>
+          this.prisma.developmentLogsExternalDependencies.create({
+            data: {
+              developmentLogId: createdLog.id,
+              externalDependencyId: id,
+            },
+          }),
+        ),
+      );
     }
   }
 
