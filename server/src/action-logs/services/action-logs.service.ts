@@ -27,6 +27,9 @@ export class ActionLogsService {
   async create(dto: CreateActionLogDto): Promise<ActionLogResponseDto> {
     this.logger.log(`Creating new action log for action type: ${dto.actionTypeId}`);
 
+    // Subtract 1 second to avoid clock skew violating the DB check constraint
+    dto.startTime = new Date(Date.now() - 1000);
+
     // Validate endTime >= startTime
     if (dto.endTime && dto.endTime < dto.startTime) {
       throw new ValidationException('End time must be after or equal to start time');
