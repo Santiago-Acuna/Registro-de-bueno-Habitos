@@ -10,7 +10,7 @@ import { LogColumnResponseDto } from '../dto/log-columns-response.dto';
 
 export interface IActionLogsRepository {
   create(data: CreateActionLogDto): Promise<ActionLog>;
-  findById(id: UUID): Promise<ActionLog | null>;
+  findById(id: UUID, logTypeId?: UUID): Promise<ActionLog | null>;
   findAll(
     pagination: PaginationParams,
     filters?: FilterOptions
