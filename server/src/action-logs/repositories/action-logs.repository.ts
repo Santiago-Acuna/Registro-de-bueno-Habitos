@@ -173,9 +173,33 @@ export class ActionLogsRepository implements IActionLogsRepository {
     await strategy.create(data);
   }
 
-  async findById(id: UUID): Promise<ActionLog | null> {
+  private async buildIncludeClause(logTypeId?: UUID): Promise<{
+    developmentLogs: boolean;
+    pronunciationLogs: boolean;
+    readingLogs: boolean;
+  }> {
+    if (!logTypeId) {
+      return { developmentLogs: true, pronunciationLogs: true, readingLogs: true };
+    }
+
+    const logType = await this.prisma.logTypes.findUnique({
+      where: { id: logTypeId },
+      select: { name: true },
+    });
+
+    const name = logType?.name?.toLowerCase() ?? '';
+    return {
+      developmentLogs: name.includes('development'),
+      pronunciationLogs: name.includes('pronunciation'),
+      readingLogs: name.includes('reading'),
+    };
+  }
+
+  async findById(id: UUID, logTypeId?: UUID): Promise<ActionLog | null> {
+    const include = await this.buildIncludeClause(logTypeId);
     const actionLog = await this.prisma.actionLogs.findUnique({
       where: { id },
+      include,
     });
 
     return actionLog ? this.mapToDomain(actionLog) : null;
@@ -189,6 +213,7 @@ export class ActionLogsRepository implements IActionLogsRepository {
     const skip = (page - 1) * limit;
 
     const where = this.buildWhereClause(filters);
+    const include = await this.buildIncludeClause(filters?.logTypeId);
 
     const [data, total] = await Promise.all([
       this.prisma.actionLogs.findMany({
@@ -196,6 +221,7 @@ export class ActionLogsRepository implements IActionLogsRepository {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        include,
       }),
       where ? this.prisma.actionLogs.count({ where }) : this.prisma.actionLogs.count(),
     ]);
@@ -294,6 +320,17 @@ export class ActionLogsRepository implements IActionLogsRepository {
     return Object.keys(where).length > 0 ? where : undefined;
   }
 
+  private extractLogTypeData(data: {
+    developmentLogs?: Record<string, unknown> | null;
+    pronunciationLogs?: Record<string, unknown> | null;
+    readingLogs?: Record<string, unknown> | null;
+  }): Record<string, unknown> | null {
+    if (data.developmentLogs) return data.developmentLogs as Record<string, unknown>;
+    if (data.pronunciationLogs) return data.pronunciationLogs as Record<string, unknown>;
+    if (data.readingLogs) return data.readingLogs as Record<string, unknown>;
+    return null;
+  }
+
   private mapToDomain(data: {
     id: string;
     startTime: Date;
@@ -303,6 +340,9 @@ export class ActionLogsRepository implements IActionLogsRepository {
     actionTypeId: string;
     createdAt: Date;
     updatedAt: Date;
+    developmentLogs?: Record<string, unknown> | null;
+    pronunciationLogs?: Record<string, unknown> | null;
+    readingLogs?: Record<string, unknown> | null;
   }): ActionLog {
     return new ActionLog(
       data.id,
@@ -312,7 +352,8 @@ export class ActionLogsRepository implements IActionLogsRepository {
       data.actionDate,
       data.actionTypeId,
       data.createdAt,
-      data.updatedAt
+      data.updatedAt,
+      this.extractLogTypeData(data)
     );
   }
 

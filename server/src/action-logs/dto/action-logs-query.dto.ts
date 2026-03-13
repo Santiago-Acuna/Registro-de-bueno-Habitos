@@ -41,4 +41,14 @@ export class ActionLogsQueryDto extends PaginationQueryDto {
     message: 'endDate must be after or equal to startDate',
   })
   endDate?: Date;
+
+  @ApiPropertyOptional({
+    description: 'Filter by log type ID to include only the matching specialized log table',
+    example: 'b1eebc99-9c0b-4ef8-bb6d-6bb9bd380a22',
+    type: String,
+    format: 'uuid',
+  })
+  @IsOptional()
+  @IsUUID('all', { message: 'logTypeId must be a valid UUID' })
+  logTypeId?: UUID;
 }

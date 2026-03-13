@@ -9,7 +9,7 @@ import {
   UseGuards,
   Version,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
 import { UUID, FilterOptions } from '../../domain/shared/types/common';
@@ -54,7 +54,7 @@ export class ActionLogsController {
   async findAll(
     @Query() query: ActionLogsQueryDto
   ): Promise<PaginatedResponseDto<ActionLogResponseDto>> {
-    const { page, limit, actionTypeId, startDate, endDate } = query;
+    const { page, limit, actionTypeId, startDate, endDate, logTypeId } = query;
 
     const paginationQuery: PaginationQueryDto = {
       page: page ?? 1,
@@ -62,11 +62,12 @@ export class ActionLogsController {
     };
 
     const filters: FilterOptions | undefined =
-      (actionTypeId ?? startDate ?? endDate)
+      (actionTypeId ?? startDate ?? endDate ?? logTypeId)
         ? {
             ...(actionTypeId && { actionTypeId }),
             ...(startDate && { startDate }),
             ...(endDate && { endDate }),
+            ...(logTypeId && { logTypeId }),
           }
         : undefined;
 
@@ -87,10 +88,20 @@ export class ActionLogsController {
     description: 'Action log found',
     type: ActionLogResponseDto,
   })
+  @ApiQuery({
+    name: 'logTypeId',
+    required: false,
+    type: String,
+    format: 'uuid',
+    description: 'Log type ID to include only the matching specialized log table',
+  })
   @ApiResponse({ status: 404, description: 'Action log not found' })
   @ApiResponse({ status: 400, description: 'Invalid UUID format' })
-  async findOne(@Param('id', ParseUUIDPipe) id: UUID): Promise<ActionLogResponseDto> {
-    return this.actionLogsService.findOne(id);
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: UUID,
+    @Query('logTypeId') logTypeId?: UUID
+  ): Promise<ActionLogResponseDto> {
+    return this.actionLogsService.findOne(id, logTypeId);
   }
 
   @Get('action-types/:actionTypeId/log-columns')

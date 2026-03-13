@@ -93,10 +93,10 @@ export class ActionLogsService {
     );
   }
 
-  async findOne(id: UUID): Promise<ActionLogResponseDto> {
+  async findOne(id: UUID, logTypeId?: UUID): Promise<ActionLogResponseDto> {
     this.logger.log(`Fetching action log with id: ${id}`);
 
-    const actionLog = await this.actionLogsRepository.findById(id);
+    const actionLog = await this.actionLogsRepository.findById(id, logTypeId);
 
     if (!actionLog) {
       throw new NotFoundError('ActionLog', id);
@@ -129,6 +129,7 @@ export class ActionLogsService {
       actionTypeId: actionLog.actionTypeId,
       createdAt: actionLog.createdAt,
       updatedAt: actionLog.updatedAt,
+      logTypeData: actionLog.logTypeData,
     };
   }
 }

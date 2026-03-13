@@ -34,4 +34,5 @@ export interface FilterOptions {
   actionTypeId?: UUID;
   startDate?: Date;
   endDate?: Date;
+  logTypeId?: UUID;
 }

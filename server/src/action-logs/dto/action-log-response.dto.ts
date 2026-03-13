@@ -67,4 +67,11 @@ export class ActionLogResponseDto {
     format: 'date-time',
   })
   updatedAt!: Date;
+
+  @ApiPropertyOptional({
+    description: 'Specialized log data for the associated log type (development, reading, pronunciation)',
+    type: Object,
+    nullable: true,
+  })
+  logTypeData!: Record<string, unknown> | null;
 }
