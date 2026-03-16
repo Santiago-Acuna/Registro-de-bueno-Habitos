@@ -12,8 +12,9 @@ const WithoutIntervalsHabits: React.FC = () => {
   const dispatch = useCustomDispatch();
   const { habits: allHabits } = useCustomSelector((state) => state.habit);
 
-  const complexHabits =
-    allHabits.length && allHabits.filter((h) => h.habitType === "Complex");
+  const withoutIntervalsHabits = allHabits.filter(
+    (h) => h.habitType === "Without Intervals"
+  );
 
 
   useEffect(() => {
@@ -21,7 +22,7 @@ const WithoutIntervalsHabits: React.FC = () => {
   }, [dispatch]);
   return (
     <SpaceBackground className={styles.container} >
-  
+
       <div className={styles.buttonContainer}>
         <div>
       <Link to="/" className={styles.backButton}>
@@ -29,14 +30,14 @@ const WithoutIntervalsHabits: React.FC = () => {
       </Link>
       </div>
       </div>
-      {allHabits.length === 0 && (
+      {withoutIntervalsHabits.length === 0 && (
         <div>
           <p className={styles.noHabits}>There are no habits</p>
         </div>
       )}
-      {allHabits.length > 0 && complexHabits && (
+      {withoutIntervalsHabits.length > 0 && (
         <div className={styles.cardsContainers}>
-          {complexHabits?.map((h) => (
+          {withoutIntervalsHabits.map((h) => (
             <HabitsCard habits={h} key={h.id} />
           ))}
         </div>
