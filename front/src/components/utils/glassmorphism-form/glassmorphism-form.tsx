@@ -86,7 +86,7 @@ const GlassmorphismForm: React.FC<GlassmorphismFormProps> = ({
 
       <div className={styles.card} onClick={(e) => e.stopPropagation()}>
         <button className={styles.closeBtn} onClick={onClose}>
-          ×
+          ✕
         </button>
 
         <div className={styles.header}>
