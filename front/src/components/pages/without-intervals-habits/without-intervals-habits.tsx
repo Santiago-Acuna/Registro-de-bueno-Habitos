@@ -6,6 +6,7 @@ import HabitsCard from "./habits-card/habits-card";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import SpaceBackground from "./space-background/space-background";
+import { GlassmorphismButton } from "@/components/utils";
 
 
 const WithoutIntervalsHabits: React.FC = () => {
@@ -24,11 +25,10 @@ const WithoutIntervalsHabits: React.FC = () => {
     <SpaceBackground className={styles.container} >
 
       <div className={styles.buttonContainer}>
-        <div>
-      <Link to="/" className={styles.backButton}>
-        <Button variant="contained">Back</Button>
-      </Link>
-      </div>
+        <Link to="/" className={styles.backButton}>
+          <Button variant="contained">Back</Button>
+        </Link>
+        <GlassmorphismButton text="Create Habit" onClick={() => {}} />
       </div>
       {withoutIntervalsHabits.length === 0 && (
         <div>
