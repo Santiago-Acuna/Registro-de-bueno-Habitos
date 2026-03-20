@@ -13,7 +13,11 @@ const GlassmorphismButton: React.FC<GlassmorphismButtonProps> = ({
 }) => {
   return (
     <button className={styles.btn} onClick={onClick} disabled={disabled}>
-      <span className={styles.label}>{text}</span>
+      <span className={styles.label}>
+        <span className={styles.star}>✨</span>
+        {text}
+        <span className={styles.star}>✨</span>
+      </span>
     </button>
   );
 };
