@@ -42,7 +42,7 @@ const ComplexHabits: React.FC = () => {
                 Back
               </Button>
             </Link>
-            <TerminatorButton text="Create Action" onClick={openCreateForm} />
+            <TerminatorButton text="Create Habit" onClick={openCreateForm} />
           </div>
         </div>
       )}

@@ -5,6 +5,7 @@ import type { ActionLogsState } from "./action-logs.types";
 const initialState: ActionLogsState = {
   isLoading: false,
   error: null,
+  logsByActionType: {},
 };
 
 const actionLogsSlice = createSlice({

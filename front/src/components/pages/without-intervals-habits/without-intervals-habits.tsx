@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import styles from "./without-intervals-habits.module.css";
 import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks";
 import { fetchHabits } from "../../../redux/slices/habits/async-actions";
@@ -6,14 +6,17 @@ import HabitsCard from "./habits-card/habits-card";
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import SpaceBackground from "./space-background/space-background";
+import { GlassmorphismButton, GlassmorphismForm } from "@/components/utils";
 
 
 const WithoutIntervalsHabits: React.FC = () => {
   const dispatch = useCustomDispatch();
   const { habits: allHabits } = useCustomSelector((state) => state.habit);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
-  const complexHabits =
-    allHabits.length && allHabits.filter((h) => h.habitType === "Complex");
+  const withoutIntervalsHabits = allHabits.filter(
+    (h) => h.habitType === "Without Intervals"
+  );
 
 
   useEffect(() => {
@@ -21,28 +24,28 @@ const WithoutIntervalsHabits: React.FC = () => {
   }, [dispatch]);
   return (
     <SpaceBackground className={styles.container} >
-  
+
       <div className={styles.buttonContainer}>
-        <div>
-      <Link to="/" className={styles.backButton}>
-        <Button variant="contained">Back</Button>
-      </Link>
+        <Link to="/" className={styles.backButton}>
+          <Button variant="contained">Back</Button>
+        </Link>
+        <GlassmorphismButton text="Create Habit" onClick={() => setIsFormOpen(true)} />
       </div>
-      </div>
-      {allHabits.length === 0 && (
+      {withoutIntervalsHabits.length === 0 && (
         <div>
           <p className={styles.noHabits}>There are no habits</p>
         </div>
       )}
-      {allHabits.length > 0 && complexHabits && (
+      {withoutIntervalsHabits.length > 0 && (
         <div className={styles.cardsContainers}>
-          {complexHabits?.map((h) => (
+          {withoutIntervalsHabits.map((h) => (
             <HabitsCard habits={h} key={h.id} />
           ))}
         </div>
       )}
 
 
+      {isFormOpen && <GlassmorphismForm onClose={() => setIsFormOpen(false)} />}
     </SpaceBackground>
   );
 };
