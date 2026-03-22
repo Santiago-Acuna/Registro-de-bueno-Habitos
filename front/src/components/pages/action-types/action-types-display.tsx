@@ -7,6 +7,8 @@ import { useCustomDispatch, useCustomSelector } from "../../../redux/hooks/hooks
 import Button from "@mui/material/Button";
 import { Link } from "react-router-dom";
 import type { ActionType } from "@/redux/slices/action-types";
+import { fetchActionLogsByActionType } from "@/redux/slices/action-logs";
+import TerminatorStatsChart from "@/components/utils/terminator-stats-chart/terminator-stats-chart";
 
 interface ActionTypesDisplayProps {
   actionTypes: ActionType[];
@@ -19,6 +21,14 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
 }) => {
   const dispatch = useCustomDispatch();
   const [addLogTarget, setAddLogTarget] = useState<ActionType | null>(null);
+  const [statsTarget, setStatsTarget] = useState<ActionType | null>(null);
+  const logsByActionType = useCustomSelector((state) => state.actionLogs.logsByActionType);
+
+  const openStatistics = (e: React.MouseEvent, actionType: ActionType) => {
+    e.stopPropagation();
+    dispatch(fetchActionLogsByActionType(actionType.id));
+    setStatsTarget(actionType);
+  };
 
   const getThreatLevel = (totalActions: number): number => {
     if (totalActions === 0) return 0;
@@ -121,10 +131,7 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
                   </button>
                   <button
                     className={styles.actionButton}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Statistics action here
-                    }}
+                    onClick={(e) => openStatistics(e, actionType)}
                   >
                     <span className={styles.buttonText}>Statistics</span>
                   </button>
@@ -173,6 +180,14 @@ const ActionTypesDisplay: FC<ActionTypesDisplayProps> = ({
           actionTypeName={addLogTarget.name}
           actionTypeId={addLogTarget.id}
           onClose={() => setAddLogTarget(null)}
+        />
+      )}
+
+      {statsTarget && (
+        <TerminatorStatsChart
+          actionLogs={logsByActionType[statsTarget.id] ?? []}
+          actionTypeName={statsTarget.name}
+          onClose={() => setStatsTarget(null)}
         />
       )}
     </div>
