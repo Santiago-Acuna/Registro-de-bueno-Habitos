@@ -133,7 +133,7 @@ model features {
 model globalEntityIdentifiers {
   id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String        @unique(map: "global_entity_identifiers_name_unique") @db.VarChar(255)
-  icon        String        @unique(map: "global_entity_identifiers_icon_unique")
+  icon        String?       @unique(map: "global_entity_identifiers_icon_unique")
   entityType  String        @map("entity_type") @db.VarChar(20)
   entityId    String        @map("entity_id") @db.Uuid
   actionTypes actionTypes[]
