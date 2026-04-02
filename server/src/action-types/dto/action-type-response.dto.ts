@@ -16,11 +16,12 @@ export class ActionTypeResponseDto {
   })
   name!: string;
 
-  @ApiProperty({
-    description: 'Icon URL for the action type',
+  @ApiPropertyOptional({
+    description: 'Icon URL for the action type. Null for simple habits.',
     example: 'https://example.com/pushups-icon.png',
+    nullable: true,
   })
-  icon!: string;
+  icon!: string | null;
 
   @ApiProperty({
     description: 'UUID of the habit this action type belongs to',
