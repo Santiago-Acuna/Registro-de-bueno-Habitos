@@ -43,20 +43,22 @@ export class ActionTypesController {
   @UseInterceptors(FileInterceptor('icon'))
   async create(
     @Body() createActionTypeDto: CreateActionTypeDto,
-    @UploadedFile() icon: Express.Multer.File
+    @UploadedFile() icon?: Express.Multer.File
   ): Promise<ActionTypeResponseDto> {
-    const uploadImageDto = new UploadImageDto();
-    uploadImageDto.image = icon;
+    if (icon) {
+      const uploadImageDto = new UploadImageDto();
+      uploadImageDto.image = icon;
 
-    const errors = await validate(uploadImageDto);
-    if (errors.length > 0) {
-      const errorGroups = errors.map(err => Object.values(err.constraints ?? {}));
-      const nonEmptyGroups = errorGroups.filter(group => group.length > 0);
-      const message =
-        nonEmptyGroups.length > 0
-          ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
-          : 'Uncontrolled error with the image you sent';
-      throw new ValidationException(message);
+      const errors = await validate(uploadImageDto);
+      if (errors.length > 0) {
+        const errorGroups = errors.map(err => Object.values(err.constraints ?? {}));
+        const nonEmptyGroups = errorGroups.filter(group => group.length > 0);
+        const message =
+          nonEmptyGroups.length > 0
+            ? nonEmptyGroups.map(group => group.join(', ')).join('; ')
+            : 'Uncontrolled error with the image you sent';
+        throw new ValidationException(message);
+      }
     }
 
     return this.actionTypesService.create(createActionTypeDto, icon);
