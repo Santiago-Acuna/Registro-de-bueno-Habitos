@@ -6,18 +6,37 @@ import { Link } from "react-router-dom";
 
 interface HabitsCardProps {
   habits: Habit;
+  onAddLog?: () => void;
 }
 
-const HabitsCard: React.FC<HabitsCardProps> = ({ habits }: HabitsCardProps) => {
+const HabitsCard: React.FC<HabitsCardProps> = ({ habits, onAddLog }: HabitsCardProps) => {
   const { formState: form } = useCustomSelector((state) => state.form);
   const display = { display: form !== "" ? "none" : "flex" };
 
   return (
     <div className={styles.card} style={display}>
       <Link to="/Reading" className={styles.link}>
-        <span className={styles.title}>{habits.name}</span>
         <img className={styles.image} src={habits.icon} alt="img not found" />
+        <div className={styles.imageOverlay} />
+        <div className={styles.targetingGrid} />
+        <div className={styles.cardContent}>
+          <span className={styles.title}>{habits.name}</span>
+        </div>
       </Link>
+
+      <div className={styles.cornerTL} />
+      <div className={styles.cornerTR} />
+      <div className={styles.cornerBL} />
+      <div className={styles.cornerBR} />
+
+      <div className={styles.actionButtons}>
+        <button className={styles.actionButton} onClick={(e) => { e.stopPropagation(); e.preventDefault(); onAddLog?.(); }}>
+          Add Log
+        </button>
+        <button className={styles.actionButton} onClick={(e) => e.stopPropagation()}>
+          Statistics
+        </button>
+      </div>
     </div>
   );
 };
