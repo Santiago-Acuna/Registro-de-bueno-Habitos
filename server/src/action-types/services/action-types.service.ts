@@ -5,6 +5,7 @@ import { PaginatedResult, UUID } from '../../domain/shared/types/common';
 import { IdentifierIcon } from '../../domain/value-objects/identifier-icon';
 import { IdentifierName } from '../../domain/value-objects/identifier-name';
 import { CloudinaryService } from '../../helpers/cloudinary/cloudinary.service';
+import { IHabitsRepository } from '../../habits/interfaces/habits-repository.interface';
 import { PaginatedResponseDto } from '../../infrastructure/dto/paginated-response.dto';
 import { PaginationQueryDto } from '../../infrastructure/dto/pagination-query.dto';
 import {
@@ -27,12 +28,14 @@ export class ActionTypesService {
   constructor(
     @Inject('IActionTypesRepository')
     private readonly actionTypesRepository: IActionTypesRepository,
+    @Inject('IHabitsRepository')
+    private readonly habitsRepository: IHabitsRepository,
     private readonly cloudinaryService: CloudinaryService
   ) {}
 
   async create(
     createActionTypeDto: CreateActionTypeDto,
-    icon: Express.Multer.File
+    icon?: Express.Multer.File
   ): Promise<ActionTypeResponseDto> {
     this.logger.log(`Creating new action type: ${createActionTypeDto.name}`);
 
@@ -47,36 +50,50 @@ export class ActionTypesService {
       );
     }
 
-    const result = await this.cloudinaryService.uploadImage(icon, {
-      public_id: icon.originalname.split('.')[0] as string,
-      folder: 'action-types',
-      resourceType: 'auto',
-    });
-    const imageUrl = result.url;
-    if (!result.success) {
-      throw new ValidationException(
-        result.error?.message ?? 'Failed to upload image. Uncontrolled error'
-      );
+    const habit = await this.habitsRepository.findById(createActionTypeDto.habitId);
+    if (!habit) {
+      throw new NotFoundError('Habit', createActionTypeDto.habitId);
     }
 
-    // Validate that Cloudinary returned a valid URL
-    if (!imageUrl || imageUrl.trim() === '') {
-      throw new ValidationException('Icon must be a non-empty string');
+    let iconValue: string | undefined;
+
+    if (!habit.isSimple()) {
+      if (!icon) {
+        throw new ValidationException('Icon is required for non-simple habits');
+      }
+
+      const result = await this.cloudinaryService.uploadImage(icon, {
+        public_id: icon.originalname.split('.')[0] as string,
+        folder: 'action-types',
+        resourceType: 'auto',
+      });
+
+      if (!result.success) {
+        throw new ValidationException(
+          result.error?.message ?? 'Failed to upload image. Uncontrolled error'
+        );
+      }
+
+      if (!result.url || result.url.trim() === '') {
+        throw new ValidationException('Icon must be a non-empty string');
+      }
+
+      iconValue = result.url;
     }
 
     try {
-      // Validate domain rules before saving
       const actionTypeName = IdentifierName.create(createActionTypeDto.name);
-      const actionTypeIcon = IdentifierIcon.create(imageUrl!);
 
-      // Create action type data for repository
-      const createActionTypeData = {
+      const createActionTypeData: { name: string; habitId: UUID; icon?: string } = {
         name: actionTypeName.getValue(),
         habitId: createActionTypeDto.habitId,
-        icon: actionTypeIcon.getValue(),
       };
 
-      // Save to repository
+      if (iconValue) {
+        const actionTypeIcon = IdentifierIcon.create(iconValue);
+        createActionTypeData.icon = actionTypeIcon.getValue();
+      }
+
       const savedActionType = await this.actionTypesRepository.create(createActionTypeData);
 
       this.logger.log(`Successfully created action type with id: ${savedActionType.id}`);
@@ -241,7 +258,7 @@ export class ActionTypesService {
     return {
       id: actionType.id,
       name: actionType.globalEntityIdentifier.name.getValue(),
-      icon: actionType.globalEntityIdentifier.icon.getValue(),
+      icon: actionType.globalEntityIdentifier.icon?.getValue() ?? null,
       habitId: actionType.habitId,
       totalActionsCount: actionType.totalActionsCount,
       lastActionDate: actionType.lastActionDate ? new Date(actionType.lastActionDate) : null,

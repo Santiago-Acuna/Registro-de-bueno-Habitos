@@ -8,7 +8,7 @@ import {
 
 export interface CreateActionTypeData {
   name: string;
-  icon: string;
+  icon?: string;
   habitId: UUID;
 }
 

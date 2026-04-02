@@ -381,7 +381,7 @@ export class ActionTypesRepository implements IActionTypesRepository {
     globalEntityIdentifiers: {
       id: string;
       name: string;
-      icon: string;
+      icon: string | null;
       entityType: string;
       entityId: string;
     };
@@ -389,7 +389,7 @@ export class ActionTypesRepository implements IActionTypesRepository {
     const globalIdentifier = new GlobalEntityIdentifier(
       data.globalEntityIdentifiers.id,
       IdentifierName.create(data.globalEntityIdentifiers.name),
-      IdentifierIcon.create(data.globalEntityIdentifiers.icon),
+      data.globalEntityIdentifiers.icon ? IdentifierIcon.create(data.globalEntityIdentifiers.icon) : null,
       data.globalEntityIdentifiers.entityType,
       data.globalEntityIdentifiers.entityId
     );

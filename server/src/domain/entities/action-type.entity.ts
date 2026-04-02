@@ -31,8 +31,8 @@ export class ActionType implements ActionTypeProps {
     return this.globalEntityIdentifier.name.getValue();
   }
 
-  get icon(): string {
-    return this.globalEntityIdentifier.icon.getValue();
+  get icon(): string | null {
+    return this.globalEntityIdentifier.icon ? this.globalEntityIdentifier.icon.getValue() : null;
   }
 
   public toJSON(): Record<string, unknown> {

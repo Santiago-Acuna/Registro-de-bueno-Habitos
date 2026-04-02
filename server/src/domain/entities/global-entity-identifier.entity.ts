@@ -6,7 +6,7 @@ export class GlobalEntityIdentifier {
   constructor(
     public readonly id: UUID,
     public readonly name: IdentifierName,
-    public readonly icon: IdentifierIcon,
+    public readonly icon: IdentifierIcon | null,
     public readonly entityType: string,
     public readonly entityId: UUID
   ) {
