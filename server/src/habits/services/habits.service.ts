@@ -200,7 +200,7 @@ export class HabitsService {
         // Name updated but not icon, include existing icon
         dataToUpdate = {
           ...updateData,
-          icon: existingHabit.globalEntityIdentifier.icon.getValue(),
+          icon: existingHabit.globalEntityIdentifier.icon?.getValue() ?? null,
         };
       } else {
         // Icon updated (with or without name update)
@@ -242,7 +242,7 @@ export class HabitsService {
       id: habit.id,
       name: habit.globalEntityIdentifier.name.getValue(),
       habitType: habit.habitType,
-      icon: habit.globalEntityIdentifier.icon.getValue(),
+      icon: habit.globalEntityIdentifier.icon?.getValue() ?? null,
       isActive: habit.isActive,
       totalActionsCount: habit.totalActionsCount,
       lastActionDate: habit.lastActionDate ? new Date(habit.lastActionDate) : null,
