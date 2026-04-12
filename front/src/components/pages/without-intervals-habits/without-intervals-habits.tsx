@@ -58,7 +58,7 @@ const WithoutIntervalsHabits: React.FC = () => {
       {addLogTarget && (
         <GlassmorphismLogForm
           actionTypeName={addLogTarget.name}
-          actionTypeId={addLogTarget.id}
+          habitId={addLogTarget.id}
           onClose={() => setAddLogTarget(null)}
         />
       )}
