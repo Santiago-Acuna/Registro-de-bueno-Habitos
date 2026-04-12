@@ -11,10 +11,10 @@ import BooleanInput from "./inputs/BooleanInput";
 import SelectInput from "./inputs/SelectInput";
 import type { SelectOption } from "./inputs/SelectInput";
 import { createActionLog } from "@/redux/slices/action-logs";
-
+import { fetchActionTypesByHabitId } from "@/redux/slices/action-types";
 interface GlassmorphismLogFormProps {
   actionTypeName: string;
-  actionTypeId: string;
+  habitId: string;
   onClose: () => void;
 }
 
@@ -29,7 +29,7 @@ const toSentenceCase = (str: string): string => {
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 };
 
-const GlassmorphismLogForm: FC<GlassmorphismLogFormProps> = ({ actionTypeName, actionTypeId, onClose }) => {
+const GlassmorphismLogForm: FC<GlassmorphismLogFormProps> = ({ actionTypeName, habitId, onClose }) => {
   const dispatch = useCustomDispatch();
 
   const { logColumns, isLoading } = useCustomSelector((state) => state.logColumns);
@@ -38,10 +38,17 @@ const GlassmorphismLogForm: FC<GlassmorphismLogFormProps> = ({ actionTypeName, a
   const [formValues, setFormValues] = useState<Record<string, string | number | boolean>>({});
   const [selectValues, setSelectValues] = useState<Record<string, SelectOption | SelectOption[] | null>>({});
   const [isOpenSelect, setIsOpenSelect] = useState(false);
+  const [actionTypeId, setActionTypeId] = useState<string>("");
+  const fecthColumns = async () => {
+    const actionType = await dispatch(fetchActionTypesByHabitId(habitId)).unwrap();
+    const actionTypeId = actionType[0]
+    setActionTypeId(actionTypeId.id);
+    dispatch(fetchLogColumnsByActionTypeId(actionTypeId.id));
+  }
 
   useEffect(() => {
-    dispatch(fetchLogColumnsByActionTypeId(actionTypeId));
-  }, [dispatch, actionTypeId]);
+    fecthColumns();
+  }, [dispatch, habitId]);
 
   useEffect(() => {
     const initialFormValues: Record<string, string | number | boolean> = {};
