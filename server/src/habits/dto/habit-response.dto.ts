@@ -27,7 +27,7 @@ export class HabitResponseDto {
     example:
       'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
   })
-  icon!: string;
+  icon!: string | null;
 
   @ApiProperty({
     description: 'Whether the habit is active',

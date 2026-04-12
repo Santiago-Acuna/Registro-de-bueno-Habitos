@@ -45,7 +45,7 @@ export class ActionTypesRepository implements IActionTypesRepository {
       const globalIdentifier = await this.prisma.globalEntityIdentifiers.create({
         data: {
           name: data.name,
-          icon: data.icon,
+          icon: data.icon ?? null,
           entityType: 'action_type',
           entityId: createdActionType.id,
         },
