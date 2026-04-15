@@ -5,7 +5,7 @@ import { fetchHabits } from "../../../redux/slices/habits/async-actions";
 import HabitsCard from "./habits-card/habits-card";
 import { Link } from "react-router-dom";
 import SpaceBackground from "./space-background/space-background";
-import { GlassmorphismButton, GlassmorphismForm, GlassmorphismLogForm } from "@/components/utils";
+import { GlassmorphismButton, GlassmorphismForm, GlassmorphismLogForm, GlassmorphismChart } from "@/components/utils";
 import type { Habit } from "../../../habits-types";
 
 
@@ -14,6 +14,7 @@ const WithoutIntervalsHabits: React.FC = () => {
   const { habits: allHabits } = useCustomSelector((state) => state.habit);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [addLogTarget, setAddLogTarget] = useState<Habit | null>(null);
+  const [statisticsTarget, setStatisticsTarget] = useState<Habit | null>(null);
 
   const withoutIntervalsHabits = allHabits.filter(
     (h) => h.habitType === "Without Intervals"
@@ -48,12 +49,18 @@ const WithoutIntervalsHabits: React.FC = () => {
       {withoutIntervalsHabits.length > 0 && (
         <div className={styles.cardsContainers}>
           {withoutIntervalsHabits.map((h) => (
-            <HabitsCard habits={h} key={h.id} onAddLog={() => setAddLogTarget(h)} />
+            <HabitsCard habits={h} key={h.id} onAddLog={() => setAddLogTarget(h)} onShowStatistics={() => setStatisticsTarget(h)} />
           ))}
         </div>
       )}
 
 
+      {statisticsTarget && (
+        <GlassmorphismChart
+          actionTypeName={statisticsTarget.name}
+          onClose={() => setStatisticsTarget(null)}
+        />
+      )}
       {isFormOpen && <GlassmorphismForm onClose={() => setIsFormOpen(false)} />}
       {addLogTarget && (
         <GlassmorphismLogForm
