@@ -195,10 +195,21 @@ model logTypes {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String       @unique(map: "log_types_name_unique") @db.VarChar(50)
   actionTypes actionTypes?
+  chartInfo   chartInfo[]
   logColumns  logColumns[]
 
   @@index([name], map: "idx_log_types_name")
   @@map("log_types")
+}
+
+model chartInfo {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label      String
+  logTypeId  String   @map("log_type_id") @db.Uuid
+  logTypes   logTypes @relation(fields: [logTypeId], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "chart_info_log_type_id_fk")
+
+  @@index([logTypeId], map: "idx_chart_info_log_type_id")
+  @@map("chart_info")
 }
 
 model programmingLanguages {
