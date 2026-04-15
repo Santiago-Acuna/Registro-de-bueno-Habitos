@@ -7,9 +7,10 @@ import { Link } from "react-router-dom";
 interface HabitsCardProps {
   habits: Habit;
   onAddLog?: () => void;
+  onShowStatistics?: () => void;
 }
 
-const HabitsCard: React.FC<HabitsCardProps> = ({ habits, onAddLog }: HabitsCardProps) => {
+const HabitsCard: React.FC<HabitsCardProps> = ({ habits, onAddLog, onShowStatistics }: HabitsCardProps) => {
   const { formState: form } = useCustomSelector((state) => state.form);
   const display = { display: form !== "" ? "none" : "flex" };
 
@@ -33,7 +34,7 @@ const HabitsCard: React.FC<HabitsCardProps> = ({ habits, onAddLog }: HabitsCardP
         <button className={styles.actionButton} onClick={(e) => { e.stopPropagation(); e.preventDefault(); onAddLog?.(); }}>
           Add Log
         </button>
-        <button className={styles.actionButton} onClick={(e) => e.stopPropagation()}>
+        <button className={styles.actionButton} onClick={(e) => { e.stopPropagation(); e.preventDefault(); onShowStatistics?.(); }}>
           Statistics
         </button>
       </div>
