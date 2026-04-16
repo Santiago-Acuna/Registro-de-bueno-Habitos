@@ -3,7 +3,9 @@ import { Injectable, Logger, Inject } from '@nestjs/common';
 import { IActionTypesRepository } from '../../action-types/interfaces/action-types-repository.interface';
 import { HabitComplexity } from '../../domain/shared/types/common';
 import { IHabitsRepository } from '../../habits/interfaces/habits-repository.interface';
+import { PrismaService } from '../../infrastructure/database/prisma.service';
 
+import { ChartInfoItemDto } from './dto/chart-info-response.dto';
 import { HabitsByTypeResponseDto } from './dto/habits-by-type-response.dto';
 
 @Injectable()
@@ -14,7 +16,8 @@ export class FrontConfigService {
     @Inject('IHabitsRepository')
     private readonly habitsRepository: IHabitsRepository,
     @Inject('IActionTypesRepository')
-    private readonly actionTypesRepository: IActionTypesRepository
+    private readonly actionTypesRepository: IActionTypesRepository,
+    private readonly prisma: PrismaService
   ) {}
 
   async getHabitsByType(): Promise<HabitsByTypeResponseDto> {
@@ -58,5 +61,19 @@ export class FrontConfigService {
       withoutintervals:
         Object.keys(withoutIntervalsHabits).length > 0 ? [withoutIntervalsHabits] : [],
     };
+  }
+
+  async getChartInfoByLogTypeId(logTypeId: string): Promise<ChartInfoItemDto[]> {
+    this.logger.log(`Fetching chart info for log type: ${logTypeId}`);
+
+    const items = await this.prisma.chartInfo.findMany({
+      where: { logTypeId },
+    });
+
+    return items.map(item => ({
+      id: item.id,
+      label: item.label,
+      logTypeId: item.logTypeId,
+    }));
   }
 }

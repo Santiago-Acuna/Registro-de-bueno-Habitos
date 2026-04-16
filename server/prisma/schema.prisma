@@ -195,7 +195,7 @@ model logTypes {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String       @unique(map: "log_types_name_unique") @db.VarChar(50)
   actionTypes actionTypes?
-  chartInfo   chartInfo[]
+clear  chartInfo   chartInfo[]
   logColumns  logColumns[]
 
   @@index([name], map: "idx_log_types_name")
