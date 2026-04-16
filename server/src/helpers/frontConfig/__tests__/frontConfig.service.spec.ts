@@ -9,7 +9,15 @@ import { HabitComplexity, UUID } from '../../../domain/shared/types/common';
 import { IdentifierIcon } from '../../../domain/value-objects/identifier-icon';
 import { IdentifierName } from '../../../domain/value-objects/identifier-name';
 import { IHabitsRepository } from '../../../habits/interfaces/habits-repository.interface';
+import { PrismaService } from '../../../infrastructure/database/prisma.service';
 import { FrontConfigService } from '../frontConfig.service';
+
+// Mock PrismaService
+const mockPrismaService = {
+  chartInfo: {
+    findMany: jest.fn(),
+  },
+};
 
 // Mock implementations
 const mockHabitsRepository = {
@@ -43,6 +51,7 @@ describe('FrontConfigService', () => {
   let service: FrontConfigService;
   let habitsRepository: jest.Mocked<IHabitsRepository>;
   let actionTypesRepository: jest.Mocked<IActionTypesRepository>;
+  let prisma: jest.Mocked<PrismaService>;
 
   // Test data fixtures
   const fixedDate = new Date('2024-01-01T00:00:00.000Z');
@@ -108,12 +117,17 @@ describe('FrontConfigService', () => {
           provide: 'IActionTypesRepository',
           useValue: mockActionTypesRepository,
         },
+        {
+          provide: PrismaService,
+          useValue: mockPrismaService,
+        },
       ],
     }).compile();
 
     service = module.get<FrontConfigService>(FrontConfigService);
     habitsRepository = module.get('IHabitsRepository');
     actionTypesRepository = module.get('IActionTypesRepository');
+    prisma = module.get(PrismaService);
   });
 
   describe('getHabitsByType()', () => {
@@ -651,6 +665,72 @@ describe('FrontConfigService', () => {
       // This test will fail initially until logging is implemented
       expect(loggerSpy).toHaveBeenCalled();
       loggerSpy.mockRestore();
+    });
+  });
+
+  describe('getChartInfoByLogTypeId()', () => {
+    const logTypeId = '550e8400-e29b-41d4-a716-446655440000';
+
+    it('should be defined', () => {
+      expect(service.getChartInfoByLogTypeId).toBeDefined();
+    });
+
+    it('should return label strings for the given log type ID', async () => {
+      // Arrange
+      const prismaRows = [
+        { label: 'Characters per minute' },
+        { label: 'Breaths per minute' },
+      ];
+      (prisma.chartInfo.findMany as jest.Mock).mockResolvedValue(prismaRows);
+
+      // Act
+      const result = await service.getChartInfoByLogTypeId(logTypeId);
+
+      // Assert
+      expect(prisma.chartInfo.findMany).toHaveBeenCalledWith({
+        where: { logTypeId },
+        select: { label: true },
+      });
+      expect(result).toEqual(['Characters per minute', 'Breaths per minute']);
+    });
+
+    it('should return empty array when no chart info exists for log type', async () => {
+      // Arrange
+      (prisma.chartInfo.findMany as jest.Mock).mockResolvedValue([]);
+
+      // Act
+      const result = await service.getChartInfoByLogTypeId(logTypeId);
+
+      // Assert
+      expect(prisma.chartInfo.findMany).toHaveBeenCalledWith({
+        where: { logTypeId },
+        select: { label: true },
+      });
+      expect(result).toEqual([]);
+    });
+
+    it('should log when fetching chart info', async () => {
+      // Arrange
+      const loggerSpy = jest.spyOn(Logger.prototype, 'log');
+      (prisma.chartInfo.findMany as jest.Mock).mockResolvedValue([]);
+
+      // Act
+      await service.getChartInfoByLogTypeId(logTypeId);
+
+      // Assert
+      expect(loggerSpy).toHaveBeenCalled();
+      loggerSpy.mockRestore();
+    });
+
+    it('should propagate database errors', async () => {
+      // Arrange
+      const error = new Error('Database connection failed');
+      (prisma.chartInfo.findMany as jest.Mock).mockRejectedValue(error);
+
+      // Act & Assert
+      await expect(service.getChartInfoByLogTypeId(logTypeId)).rejects.toThrow(
+        'Database connection failed'
+      );
     });
   });
 });

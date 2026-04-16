@@ -8,6 +8,7 @@ import { FrontConfigService } from '../frontConfig.service';
 // Mock FrontConfigService
 const mockFrontConfigService = {
   getHabitsByType: jest.fn(),
+  getChartInfoByLogTypeId: jest.fn(),
 };
 
 // Mock ThrottlerGuard
@@ -267,6 +268,50 @@ describe('FrontConfigController', () => {
       expect(typeof result.complex[0]).toBe('object');
       expect(typeof result.simple[0]).toBe('object');
       expect(typeof result.withoutintervals[0]).toBe('object');
+    });
+  });
+
+  describe('getChartInfoByLogTypeId()', () => {
+    const logTypeId = '550e8400-e29b-41d4-a716-446655440000';
+
+    it('should be defined', () => {
+      expect(controller.getChartInfoByLogTypeId).toBeDefined();
+    });
+
+    it('should return label strings for a given log type ID', async () => {
+      // Arrange
+      const expectedLabels: string[] = ['Characters per minute', 'Breaths per minute'];
+      service.getChartInfoByLogTypeId.mockResolvedValue(expectedLabels);
+
+      // Act
+      const result = await controller.getChartInfoByLogTypeId(logTypeId);
+
+      // Assert
+      expect(service.getChartInfoByLogTypeId).toHaveBeenCalledWith(logTypeId);
+      expect(result).toEqual(expectedLabels);
+    });
+
+    it('should return empty array when no chart info exists for log type', async () => {
+      // Arrange
+      service.getChartInfoByLogTypeId.mockResolvedValue([]);
+
+      // Act
+      const result = await controller.getChartInfoByLogTypeId(logTypeId);
+
+      // Assert
+      expect(service.getChartInfoByLogTypeId).toHaveBeenCalledWith(logTypeId);
+      expect(result).toEqual([]);
+    });
+
+    it('should propagate errors from service', async () => {
+      // Arrange
+      const error = new Error('Database connection failed');
+      service.getChartInfoByLogTypeId.mockRejectedValue(error);
+
+      // Act & Assert
+      await expect(controller.getChartInfoByLogTypeId(logTypeId)).rejects.toThrow(
+        'Database connection failed'
+      );
     });
   });
 
