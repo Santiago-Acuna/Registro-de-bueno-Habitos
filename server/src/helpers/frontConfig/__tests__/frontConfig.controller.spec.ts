@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
-import { ChartInfoItemDto } from '../dto/chart-info-response.dto';
 import { HabitsByTypeResponseDto } from '../dto/habits-by-type-response.dto';
 import { FrontConfigController } from '../frontConfig.controller';
 import { FrontConfigService } from '../frontConfig.service';
@@ -279,20 +278,17 @@ describe('FrontConfigController', () => {
       expect(controller.getChartInfoByLogTypeId).toBeDefined();
     });
 
-    it('should return chart info items for a given log type ID', async () => {
+    it('should return label strings for a given log type ID', async () => {
       // Arrange
-      const expectedItems: ChartInfoItemDto[] = [
-        { id: 'item-id-1', label: 'Characters per minute', logTypeId },
-        { id: 'item-id-2', label: 'Breaths per minute', logTypeId },
-      ];
-      service.getChartInfoByLogTypeId.mockResolvedValue(expectedItems);
+      const expectedLabels: string[] = ['Characters per minute', 'Breaths per minute'];
+      service.getChartInfoByLogTypeId.mockResolvedValue(expectedLabels);
 
       // Act
       const result = await controller.getChartInfoByLogTypeId(logTypeId);
 
       // Assert
       expect(service.getChartInfoByLogTypeId).toHaveBeenCalledWith(logTypeId);
-      expect(result).toEqual(expectedItems);
+      expect(result).toEqual(expectedLabels);
     });
 
     it('should return empty array when no chart info exists for log type', async () => {

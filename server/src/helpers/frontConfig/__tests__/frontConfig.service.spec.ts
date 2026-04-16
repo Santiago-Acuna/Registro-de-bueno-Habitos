@@ -675,11 +675,11 @@ describe('FrontConfigService', () => {
       expect(service.getChartInfoByLogTypeId).toBeDefined();
     });
 
-    it('should return mapped chart info items for the given log type ID', async () => {
+    it('should return label strings for the given log type ID', async () => {
       // Arrange
       const prismaRows = [
-        { id: 'item-1', label: 'Characters per minute', logTypeId },
-        { id: 'item-2', label: 'Breaths per minute', logTypeId },
+        { label: 'Characters per minute' },
+        { label: 'Breaths per minute' },
       ];
       (prisma.chartInfo.findMany as jest.Mock).mockResolvedValue(prismaRows);
 
@@ -687,11 +687,11 @@ describe('FrontConfigService', () => {
       const result = await service.getChartInfoByLogTypeId(logTypeId);
 
       // Assert
-      expect(prisma.chartInfo.findMany).toHaveBeenCalledWith({ where: { logTypeId } });
-      expect(result).toEqual([
-        { id: 'item-1', label: 'Characters per minute', logTypeId },
-        { id: 'item-2', label: 'Breaths per minute', logTypeId },
-      ]);
+      expect(prisma.chartInfo.findMany).toHaveBeenCalledWith({
+        where: { logTypeId },
+        select: { label: true },
+      });
+      expect(result).toEqual(['Characters per minute', 'Breaths per minute']);
     });
 
     it('should return empty array when no chart info exists for log type', async () => {
@@ -702,7 +702,10 @@ describe('FrontConfigService', () => {
       const result = await service.getChartInfoByLogTypeId(logTypeId);
 
       // Assert
-      expect(prisma.chartInfo.findMany).toHaveBeenCalledWith({ where: { logTypeId } });
+      expect(prisma.chartInfo.findMany).toHaveBeenCalledWith({
+        where: { logTypeId },
+        select: { label: true },
+      });
       expect(result).toEqual([]);
     });
 

@@ -5,7 +5,6 @@ import { HabitComplexity } from '../../domain/shared/types/common';
 import { IHabitsRepository } from '../../habits/interfaces/habits-repository.interface';
 import { PrismaService } from '../../infrastructure/database/prisma.service';
 
-import { ChartInfoItemDto } from './dto/chart-info-response.dto';
 import { HabitsByTypeResponseDto } from './dto/habits-by-type-response.dto';
 
 @Injectable()
@@ -63,17 +62,14 @@ export class FrontConfigService {
     };
   }
 
-  async getChartInfoByLogTypeId(logTypeId: string): Promise<ChartInfoItemDto[]> {
+  async getChartInfoByLogTypeId(logTypeId: string): Promise<string[]> {
     this.logger.log(`Fetching chart info for log type: ${logTypeId}`);
 
     const items = await this.prisma.chartInfo.findMany({
       where: { logTypeId },
+      select: { label: true },
     });
 
-    return items.map(item => ({
-      id: item.id,
-      label: item.label,
-      logTypeId: item.logTypeId,
-    }));
+    return items.map(item => item.label);
   }
 }

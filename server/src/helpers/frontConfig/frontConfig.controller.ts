@@ -2,7 +2,6 @@ import { Controller, Get, Param, ParseUUIDPipe, UseGuards, Version } from '@nest
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
-import { ChartInfoItemDto } from './dto/chart-info-response.dto';
 import { HabitsByTypeResponseDto } from './dto/habits-by-type-response.dto';
 import { FrontConfigService } from './frontConfig.service';
 
@@ -42,13 +41,12 @@ export class FrontConfigController {
   })
   @ApiResponse({
     status: 200,
-    description: 'Chart info entries for the given log type',
-    type: ChartInfoItemDto,
-    isArray: true,
+    description: 'Chart info labels for the given log type',
+    schema: { type: 'array', items: { type: 'string' } },
   })
   async getChartInfoByLogTypeId(
     @Param('logTypeId', ParseUUIDPipe) logTypeId: string
-  ): Promise<ChartInfoItemDto[]> {
+  ): Promise<string[]> {
     return this.frontConfigService.getChartInfoByLogTypeId(logTypeId);
   }
 }
